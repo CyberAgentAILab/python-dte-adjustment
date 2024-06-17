@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "~=1.26"
+matplotlib = "~=3.7"
+
+[dev-packages]
+build = "~=1.2.1"
+ruff = "~=0.4.9"
+
+[requires]
+python_version = "3.11"
+
+[scripts]
+format = "ruff format"
+lint = "ruff check"
+unittest = "python -m unittest"
