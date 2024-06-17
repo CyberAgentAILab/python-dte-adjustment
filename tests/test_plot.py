@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import numpy as np
-import matplotlib.pyplot as plt
 from dte_adj.plot import plot
 
 

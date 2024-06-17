@@ -18,4 +18,5 @@ python_version = "3.11"
 [scripts]
 format = "ruff format"
 lint = "ruff check"
+lint-fix = "ruff check --fix"
 unittest = "python -m unittest"
