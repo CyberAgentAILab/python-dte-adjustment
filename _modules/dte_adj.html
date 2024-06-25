@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dte_adj &#8212; dte_adj 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
+    <script src="../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dte_adj</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+
+<div class="viewcode-block" id="DistributionFunctionMixin">
+<a class="viewcode-back" href="../modules.html#dte_adj.DistributionFunctionMixin">[docs]</a>
+<span class="k">class</span> <span class="nc">DistributionFunctionMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A mixin including several convenience functions to compute and display distribution functions.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the DistributionFunctionMixin.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DistributionFunctionMixin: An instance of the estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confounding</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outcome</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="DistributionFunctionMixin.predict_dte">
+<a class="viewcode-back" href="../modules.html#dte_adj.DistributionFunctionMixin.predict_dte">[docs]</a>
+    <span class="k">def</span> <span class="nf">predict_dte</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute DTE based on the estimator for the distribution function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target_treatment_arm (int): The index of the treatment arm of the target group.</span>
+<span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
+<span class="sd">            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
+<span class="sd">            alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
+<span class="sd">                - Expected DTEs</span>
+<span class="sd">                - Upper bands</span>
+<span class="sd">                - Lower bands</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dtes</span><span class="p">(</span>
+            <span class="n">target_treatment_arm</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">,</span> <span class="n">alpha</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DistributionFunctionMixin.predict_pte">
+<a class="viewcode-back" href="../modules.html#dte_adj.DistributionFunctionMixin.predict_pte">[docs]</a>
+    <span class="k">def</span> <span class="nf">predict_pte</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute PTE based on the estimator for the distribution function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target_treatment_arm (int): The index of the treatment arm of the target group.</span>
+<span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
+<span class="sd">            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
+<span class="sd">            width (float): The width of each outcome interval.</span>
+<span class="sd">            alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
+<span class="sd">                - Expected PTEs</span>
+<span class="sd">                - Upper bands</span>
+<span class="sd">                - Lower bands</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_ptes</span><span class="p">(</span>
+            <span class="n">target_treatment_arm</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">alpha</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DistributionFunctionMixin.predict_qte">
+<a class="viewcode-back" href="../modules.html#dte_adj.DistributionFunctionMixin.predict_qte">[docs]</a>
+    <span class="k">def</span> <span class="nf">predict_qte</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">quantiles</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="mf">0.1</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+        <span class="p">),</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute QTE based on the estimator for the distribution function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target_treatment_arm (int): The index of the treatment arm of the target group.</span>
+<span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
+<span class="sd">            quantiles (np.ndarray, optional): Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].</span>
+<span class="sd">            alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
+<span class="sd">                - Expected QTEs</span>
+<span class="sd">                - Upper bands</span>
+<span class="sd">                - Lower bands</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_expected_qtes</span><span class="p">(</span>
+            <span class="n">target_treatment_arm</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">alpha</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_compute_outcomes_from_training_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute outcomes from training data.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcome</span><span class="p">[</span><span class="n">target_treatment_arm</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_compute_dtes</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute expected DTEs.&quot;&quot;&quot;</span>
+        <span class="n">target_cumulative</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_treatment_arm</span><span class="p">),</span> <span class="n">outcomes</span>
+        <span class="p">)</span>
+        <span class="n">control_cumulative</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">),</span> <span class="n">outcomes</span>
+        <span class="p">)</span>
+
+        <span class="n">n_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_num_data</span><span class="p">(</span><span class="n">target_treatment_arm</span><span class="p">)</span>
+        <span class="n">n_control</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_num_data</span><span class="p">(</span><span class="n">control_treatment_arm</span><span class="p">)</span>
+
+        <span class="n">target_variance</span> <span class="o">=</span> <span class="n">target_cumulative</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">target_cumulative</span><span class="p">)</span>
+        <span class="n">control_variance</span> <span class="o">=</span> <span class="n">control_cumulative</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">control_cumulative</span><span class="p">)</span>
+
+        <span class="n">deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">target_variance</span> <span class="o">*</span> <span class="n">n_target</span> <span class="o">+</span> <span class="n">control_variance</span> <span class="o">*</span> <span class="n">n_control</span><span class="p">)</span>
+            <span class="o">/</span> <span class="p">(</span><span class="n">n_target</span> <span class="o">*</span> <span class="n">n_control</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">dte</span> <span class="o">=</span> <span class="n">target_cumulative</span> <span class="o">-</span> <span class="n">control_cumulative</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">dte</span><span class="p">,</span>
+            <span class="n">dte</span> <span class="o">-</span> <span class="n">deviation</span> <span class="o">*</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="n">dte</span> <span class="o">+</span> <span class="n">deviation</span> <span class="o">*</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_ptes</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute expected PTEs.&quot;&quot;&quot;</span>
+        <span class="n">target_cumulative_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_treatment_arm</span><span class="p">),</span> <span class="n">outcomes</span>
+        <span class="p">)</span>
+        <span class="n">target_cumulative_post</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_treatment_arm</span><span class="p">),</span> <span class="n">outcomes</span> <span class="o">+</span> <span class="n">width</span>
+        <span class="p">)</span>
+        <span class="n">target_likelihood</span> <span class="o">=</span> <span class="n">target_cumulative_post</span> <span class="o">-</span> <span class="n">target_cumulative_pre</span>
+        <span class="n">control_cumulative_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">),</span> <span class="n">outcomes</span>
+        <span class="p">)</span>
+        <span class="n">control_cumulative_post</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">),</span> <span class="n">outcomes</span> <span class="o">+</span> <span class="n">width</span>
+        <span class="p">)</span>
+        <span class="n">control_likelihood</span> <span class="o">=</span> <span class="n">control_cumulative_post</span> <span class="o">-</span> <span class="n">control_cumulative_pre</span>
+
+        <span class="n">n_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_num_data</span><span class="p">(</span><span class="n">target_treatment_arm</span><span class="p">)</span>
+        <span class="n">n_control</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_num_data</span><span class="p">(</span><span class="n">control_treatment_arm</span><span class="p">)</span>
+
+        <span class="n">target_variance</span> <span class="o">=</span> <span class="n">target_cumulative_pre</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="mi">1</span> <span class="o">-</span> <span class="n">target_cumulative_pre</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="n">target_cumulative_post</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">target_cumulative_post</span><span class="p">)</span>
+        <span class="n">control_variance</span> <span class="o">=</span> <span class="n">control_cumulative_pre</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="mi">1</span> <span class="o">-</span> <span class="n">control_cumulative_pre</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="n">control_cumulative_post</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">control_cumulative_post</span><span class="p">)</span>
+
+        <span class="n">deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">target_variance</span> <span class="o">*</span> <span class="n">n_target</span> <span class="o">+</span> <span class="n">control_variance</span> <span class="o">*</span> <span class="n">n_control</span><span class="p">)</span>
+            <span class="o">/</span> <span class="p">(</span><span class="n">n_target</span> <span class="o">*</span> <span class="n">n_control</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">pte</span> <span class="o">=</span> <span class="n">target_likelihood</span> <span class="o">-</span> <span class="n">control_likelihood</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">pte</span><span class="p">,</span>
+            <span class="n">pte</span> <span class="o">-</span> <span class="n">deviation</span> <span class="o">*</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="n">pte</span> <span class="o">+</span> <span class="n">deviation</span> <span class="o">*</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_expected_qtes</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">quantiles</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute expected QTEs.&quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">quantiles</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">quantiles</span><span class="p">):</span>
+            <span class="n">target_quantile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcome</span><span class="p">[</span><span class="n">target_treatment_arm</span><span class="p">][</span>
+                <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">q</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">control_quantile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcome</span><span class="p">[</span><span class="n">control_treatment_arm</span><span class="p">][</span>
+                <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">q</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_quantile</span> <span class="o">-</span> <span class="n">control_quantile</span>
+
+        <span class="c1"># TODO: compute the right upperband and lowerband of QTE</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">_compute_bernoulli_upper_bands</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute upper confidence bands.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">estimates</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">estimates</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">estimates</span><span class="p">))</span> <span class="o">*</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_bernoulli_lower_bands</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute lower confidence bands.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">estimates</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">estimates</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">estimates</span><span class="p">))</span> <span class="o">*</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DistributionFunctionMixin.predict">
+<a class="viewcode-back" href="../modules.html#dte_adj.DistributionFunctionMixin.predict">[docs]</a>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute cumulative distribution values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            treatment_arm (np.ndarray): The index of the treatment arm.</span>
+<span class="sd">            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: Estimated cumulative distribution values for the input.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_get_num_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the number of records with the specified treatment arm.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounding</span><span class="p">[</span><span class="n">treatment_arm</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="find_le">
+<a class="viewcode-back" href="../modules.html#dte_adj.find_le">[docs]</a>
+<span class="k">def</span> <span class="nf">find_le</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the rightmost value less than or equal to threshold in a sorted array</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        array (np.ndarray): The sorted array to search in.</span>
+<span class="sd">        threshold (float): The threshold value.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: The index where the value first exceeds the threshold.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">while</span> <span class="n">low</span> <span class="o">&lt;=</span> <span class="n">high</span><span class="p">:</span>
+        <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">low</span> <span class="o">+</span> <span class="n">high</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="n">array</span><span class="p">[</span><span class="n">mid</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">mid</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">high</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="SimpleDistributionEstimator">
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleDistributionEstimator">[docs]</a>
+<span class="k">class</span> <span class="nc">SimpleDistributionEstimator</span><span class="p">(</span><span class="n">DistributionFunctionMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for computing the empirical distribution function and the distributional parameters</span>
+<span class="sd">    based on the distribution function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the SimpleDistributionEstimator.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SimpleDistributionEstimator: An instance of the estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SimpleDistributionEstimator.fit">
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleDistributionEstimator.fit">[docs]</a>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">confounding</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">treatment_arm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcome</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SimpleDistributionEstimator&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Train the SimpleDistributionEstimator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            confounding (np.ndarray): Pre-treatment covariates.</span>
+<span class="sd">            treatment_arm (np.ndarray): The index of the treatment arm.</span>
+<span class="sd">            outcome (np.ndarray): Scalar-valued observed outcome.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SimpleDistributionEstimator: The fitted estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">confounding</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">treatment_arm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;The shape of confounding and treatment_arm should be same&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">confounding</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">outcome</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;The shape of confounding and outcome should be same&quot;</span><span class="p">)</span>
+
+        <span class="n">unique_treatment_arm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">treatment_arm</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">arm</span> <span class="ow">in</span> <span class="n">unique_treatment_arm</span><span class="p">:</span>
+            <span class="n">selected_confounding</span> <span class="o">=</span> <span class="n">confounding</span><span class="p">[</span><span class="n">treatment_arm</span> <span class="o">==</span> <span class="n">arm</span><span class="p">]</span>
+            <span class="n">selected_outcome</span> <span class="o">=</span> <span class="n">outcome</span><span class="p">[</span><span class="n">treatment_arm</span> <span class="o">==</span> <span class="n">arm</span><span class="p">]</span>
+            <span class="n">sorted_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">selected_outcome</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">confounding</span><span class="p">[</span><span class="n">arm</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_confounding</span><span class="p">[</span><span class="n">sorted_indices</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">outcome</span><span class="p">[</span><span class="n">arm</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_outcome</span><span class="p">[</span><span class="n">sorted_indices</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SimpleDistributionEstimator.predict">
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleDistributionEstimator.predict">[docs]</a>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute cumulative distribution values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            treatment_arm (np.ndarray): The index of the treatment arm.</span>
+<span class="sd">            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: Estimated cumulative distribution values for the input.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcome</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;This estimator has not been trained yet. Please call fit first&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span><span class="n">treatment_arm</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_compute_cumulative_distribution</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the cumulative distribution values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            treatment_arm (np.ndarray): The index of the treatment arm.</span>
+<span class="sd">            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: Estimated cumulative distribution values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cumulative_distribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">outcome</span><span class="p">,</span> <span class="n">arm</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">treatment_arm</span><span class="p">)):</span>
+            <span class="n">cumulative_distribution</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">find_le</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome</span><span class="p">[</span><span class="n">arm</span><span class="p">],</span> <span class="n">outcome</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcome</span><span class="p">[</span><span class="n">arm</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">cumulative_distribution</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">dte_adj</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, CyberAgent, Inc..
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
