@@ -198,8 +198,9 @@ class DistributionFunctionMixin(object):
             control_quantile = self.outcome[control_treatment_arm][
                 math.floor(self.outcome[i].shape[0] * q)
             ]
-            result[i] = target_quantile = control_quantile
+            result[i] = target_quantile - control_quantile
 
+        # TODO: compute the right upperband and lowerband of QTE
         return result, result, result
 
     def _compute_bernoulli_upper_bands(
