@@ -36,6 +36,54 @@
 <div class="toctree-wrapper compound">
 </div>
 <dl class="py class" id="module-dte_adj">
+<dt class="sig sig-object py" id="dte_adj.AdjustedDistributionEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dte_adj.</span></span><span class="sig-name descname"><span class="pre">AdjustedDistributionEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dte_adj.html#AdjustedDistributionEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedDistributionEstimator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dte_adj.DistributionFunctionMixin" title="dte_adj.DistributionFunctionMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">DistributionFunctionMixin</span></code></a></p>
+<p>A class is for estimating the adjusted distribution function and computing the Distributional parameters based on the trained conditional estimator.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.AdjustedDistributionEstimator.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">confounding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcome</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dte_adj.AdjustedDistributionEstimator" title="dte_adj.AdjustedDistributionEstimator"><span class="pre">AdjustedDistributionEstimator</span></a></span></span><a class="reference internal" href="_modules/dte_adj.html#AdjustedDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedDistributionEstimator.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Train the AdjustedDistributionEstimator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>confounding</strong> (<em>np.ndarray</em>) – Pre-treatment covariates.</p></li>
+<li><p><strong>treatment_arm</strong> (<em>np.ndarray</em>) – The index of the treatment arm.</p></li>
+<li><p><strong>outcome</strong> (<em>np.ndarray</em>) – Scalar-valued observed outcome.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted estimator.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#dte_adj.AdjustedDistributionEstimator" title="dte_adj.AdjustedDistributionEstimator">AdjustedDistributionEstimator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.AdjustedDistributionEstimator.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/dte_adj.html#AdjustedDistributionEstimator.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedDistributionEstimator.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Compute cumulative distribution values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>treatment_arm</strong> (<em>np.ndarray</em>) – The index of the treatment arm.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Estimated cumulative distribution values for the input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="dte_adj.DistributionFunctionMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dte_adj.</span></span><span class="sig-name descname"><span class="pre">DistributionFunctionMixin</span></span><a class="reference internal" href="_modules/dte_adj.html#DistributionFunctionMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.DistributionFunctionMixin" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
@@ -62,15 +110,17 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.DistributionFunctionMixin.predict_dte">
-<span class="sig-name descname"><span class="pre">predict_dte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#DistributionFunctionMixin.predict_dte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.DistributionFunctionMixin.predict_dte" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">predict_dte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#DistributionFunctionMixin.predict_dte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.DistributionFunctionMixin.predict_dte" title="Link to this definition">¶</a></dt>
 <dd><p>Compute DTE based on the estimator for the distribution function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the target group.</p></li>
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>outcomes</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence band. Defaults to 0.05.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -92,16 +142,17 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.DistributionFunctionMixin.predict_pte">
-<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#DistributionFunctionMixin.predict_pte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.DistributionFunctionMixin.predict_pte" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#DistributionFunctionMixin.predict_pte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.DistributionFunctionMixin.predict_pte" title="Link to this definition">¶</a></dt>
 <dd><p>Compute PTE based on the estimator for the distribution function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the target group.</p></li>
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>outcomes</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
 <li><p><strong>width</strong> (<em>float</em>) – The width of each outcome interval.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence band. Defaults to 0.05.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -123,15 +174,16 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.DistributionFunctionMixin.predict_qte">
-<span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">array([0.1,</span> <span class="pre">0.2,</span> <span class="pre">0.3,</span> <span class="pre">0.4,</span> <span class="pre">0.5,</span> <span class="pre">0.6,</span> <span class="pre">0.7,</span> <span class="pre">0.8,</span> <span class="pre">0.9],</span> <span class="pre">dtype=float32)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#DistributionFunctionMixin.predict_qte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.DistributionFunctionMixin.predict_qte" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">array([0.1,</span> <span class="pre">0.2,</span> <span class="pre">0.3,</span> <span class="pre">0.4,</span> <span class="pre">0.5,</span> <span class="pre">0.6,</span> <span class="pre">0.7,</span> <span class="pre">0.8,</span> <span class="pre">0.9],</span> <span class="pre">dtype=float32)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#DistributionFunctionMixin.predict_qte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.DistributionFunctionMixin.predict_qte" title="Link to this definition">¶</a></dt>
 <dd><p>Compute QTE based on the estimator for the distribution function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the target group.</p></li>
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
 <li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence band. Defaults to 0.05.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -182,13 +234,13 @@ based on the distribution function.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleDistributionEstimator.predict">
-<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleDistributionEstimator.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleDistributionEstimator.predict" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleDistributionEstimator.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleDistributionEstimator.predict" title="Link to this definition">¶</a></dt>
 <dd><p>Compute cumulative distribution values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>treatment_arm</strong> (<em>np.ndarray</em>) – The index of the treatment arm.</p></li>
-<li><p><strong>outcomes</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -200,6 +252,44 @@ based on the distribution function.</p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dte_adj.compute_confidence_intervals">
+<span class="sig-prename descclassname"><span class="pre">dte_adj.</span></span><span class="sig-name descname"><span class="pre">compute_confidence_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vec_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vec_d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vec_loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat_y_u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vec_prediction_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vec_prediction_control</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat_entire_predictions_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat_entire_predictions_control</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ind_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ind_control</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dte_adj.html#compute_confidence_intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.compute_confidence_intervals" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the confidence intervals of distribution parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vec_y</strong> (<em>np.ndarray</em>) – Outcome variable vector.</p></li>
+<li><p><strong>vec_d</strong> (<em>np.ndarray</em>) – Treatment indicator vector.</p></li>
+<li><p><strong>vec_loc</strong> (<em>np.ndarray</em>) – Locations where the distribution parameters are estimated.</p></li>
+<li><p><strong>mat_y_u</strong> (<em>np.ndarray</em>) – Indicator function for 1{Y⩽y}. Shape is n_obs * n_loc.</p></li>
+<li><p><strong>vec_prediction_target</strong> (<em>np.ndarray</em>) – Estimated values from the conditional model for the treatment group.</p></li>
+<li><p><strong>vec_prediction_control</strong> (<em>np.ndarray</em>) – Estimated values from the conditional model for the control group.</p></li>
+<li><p><strong>mat_entire_predictions_target</strong> (<em>np.ndarray</em>) – Prediction of the conditional distribution estimator for target group.</p></li>
+<li><p><strong>mat_entire_predictions_control</strong> (<em>np.ndarray</em>) – Prediction of the conditional distribution estimator for control group.</p></li>
+<li><p><strong>ind_target</strong> (<em>int</em>) – Index of the target treatment indicator.</p></li>
+<li><p><strong>ind_control</strong> (<em>int</em>) – Index of the control treatment indicator.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence band. Defaults to 0.05.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>np.ndarray: lower band.</p></li>
+<li><p>np.ndarray: upper band.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -270,8 +360,10 @@ based on the distribution function.</p>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dte_adj.AdjustedDistributionEstimator"><code class="docutils literal notranslate"><span class="pre">AdjustedDistributionEstimator</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dte_adj.DistributionFunctionMixin"><code class="docutils literal notranslate"><span class="pre">DistributionFunctionMixin</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dte_adj.SimpleDistributionEstimator"><code class="docutils literal notranslate"><span class="pre">SimpleDistributionEstimator</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dte_adj.compute_confidence_intervals"><code class="docutils literal notranslate"><span class="pre">compute_confidence_intervals()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dte_adj.find_le"><code class="docutils literal notranslate"><span class="pre">find_le()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dte_adj.plot.plot"><code class="docutils literal notranslate"><span class="pre">plot()</span></code></a></li>
 </ul>
