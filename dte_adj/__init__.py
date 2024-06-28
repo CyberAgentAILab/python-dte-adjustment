@@ -24,7 +24,7 @@ class DistributionFunctionMixin(object):
         control_treatment_arm: int,
         outcomes: np.ndarray,
         alpha: float = 0.05,
-        variance_type="pointwise",
+        variance_type="moment",
         n_bootstrap=500,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute DTE based on the estimator for the distribution function.
@@ -34,7 +34,7 @@ class DistributionFunctionMixin(object):
             control_treatment_arm (int): The index of the treatment arm of the control group.
             outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
             alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.
-            variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are pointwise, analytic, and uniform.
+            variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are moment, analytic, and uniform.
             n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.
 
         Returns:
@@ -196,12 +196,18 @@ class DistributionFunctionMixin(object):
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute expected QTEs."""
         result = np.zeros(quantiles.shape)
+        treatment_cumulative = self.predict(
+            np.full(self.outcome.shape, target_treatment_arm), self.outcome
+        )
+        control_cumulative = self.predict(
+            np.full(self.outcome.shape, control_treatment_arm), self.outcome
+        )
         for i, q in enumerate(quantiles):
-            treatment_quantile = self.outcome[target_treatment_arm][
-                math.floor(self.outcome[i].shape[0] * q)
+            treatment_quantile = treatment_cumulative[
+                math.floor(treatment_cumulative.shape[0] * q)
             ]
-            control_quantile = self.outcome[control_treatment_arm][
-                math.floor(self.outcome[i].shape[0] * q)
+            control_quantile = control_cumulative[
+                math.floor(control_cumulative.shape[0] * q)
             ]
             result[i] = treatment_quantile - control_quantile
 
@@ -481,7 +487,7 @@ def compute_dte_confidence_intervals(
     ind_target: int,
     ind_control: int,
     alpha: 0.05,
-    variance_type="pointwise",
+    variance_type="moment",
     n_bootstrap=500,
 ):
     """Computes the confidence intervals of DTE.
@@ -497,7 +503,7 @@ def compute_dte_confidence_intervals(
         ind_target (int): Index of the target treatment indicator.
         ind_control (int): Index of the control treatment indicator.
         alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.
-        variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are pointwise, analytic, and uniform.
+        variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are moment, analytic, and uniform.
         n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.
 
     Returns:
@@ -530,7 +536,7 @@ def compute_dte_confidence_intervals(
 
     omega = (influence_function**2).mean(axis=0)
 
-    if variance_type == "pointwise":
+    if variance_type == "moment":
         vec_dte_lower_moment = vec_dte + norm.ppf(alpha / 2) * np.sqrt(omega / num_obs)
         vec_dte_upper_moment = vec_dte + norm.ppf(1 - alpha / 2) * np.sqrt(
             omega / num_obs
