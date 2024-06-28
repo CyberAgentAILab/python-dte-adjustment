@@ -22,7 +22,7 @@ class DistributionFunctionMixin(object):
         self,
         target_treatment_arm: int,
         control_treatment_arm: int,
-        outcomes: np.ndarray,
+        locations: np.ndarray,
         alpha: float = 0.05,
         variance_type="moment",
         n_bootstrap=500,
@@ -32,9 +32,9 @@ class DistributionFunctionMixin(object):
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
             control_treatment_arm (int): The index of the treatment arm of the control group.
-            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
             alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.
-            variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are moment, analytic, and uniform.
+            variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.
             n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.
 
         Returns:
@@ -46,7 +46,7 @@ class DistributionFunctionMixin(object):
         return self._compute_dtes(
             target_treatment_arm,
             control_treatment_arm,
-            outcomes,
+            locations,
             alpha,
             variance_type,
             n_bootstrap,
@@ -57,17 +57,19 @@ class DistributionFunctionMixin(object):
         target_treatment_arm: int,
         control_treatment_arm: int,
         width: float,
-        outcomes: np.ndarray,
+        locations: np.ndarray,
         alpha: float = 0.05,
+        variance_type="moment",
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute PTE based on the estimator for the distribution function.
 
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
             control_treatment_arm (int): The index of the treatment arm of the control group.
-            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
             width (float): The width of each outcome interval.
             alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.
+            variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -76,7 +78,12 @@ class DistributionFunctionMixin(object):
                 - Lower bands
         """
         return self._compute_ptes(
-            target_treatment_arm, control_treatment_arm, outcomes, width, alpha
+            target_treatment_arm,
+            control_treatment_arm,
+            locations,
+            width,
+            alpha,
+            variance_type,
         )
 
     def predict_qte(
@@ -87,6 +94,7 @@ class DistributionFunctionMixin(object):
             [0.1 * i for i in range(1, 10)], dtype=np.float32
         ),
         alpha: float = 0.05,
+        n_bootstrap=500,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute QTE based on the estimator for the distribution function.
 
@@ -95,6 +103,7 @@ class DistributionFunctionMixin(object):
             control_treatment_arm (int): The index of the treatment arm of the control group.
             quantiles (np.ndarray, optional): Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].
             alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.
+            n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -102,35 +111,72 @@ class DistributionFunctionMixin(object):
                 - Upper bands
                 - Lower bands
         """
-        return self._compute_expected_qtes(
-            target_treatment_arm, control_treatment_arm, quantiles, alpha
+        qte = self._compute_qtes(
+            target_treatment_arm,
+            control_treatment_arm,
+            quantiles,
+            self.confounding,
+            self.treatment_arm,
+            self.outcome,
         )
+        n_obs = len(self.outcome)
+        indexes = np.arange(n_obs)
+
+        qtes = np.zeros((n_bootstrap, qte.shape[0]))
+        for b in range(n_bootstrap):
+            bootstrap_indexes = np.random.choice(indexes, size=n_obs, replace=True)
+            qtes[b] = self._compute_qtes(
+                target_treatment_arm,
+                control_treatment_arm,
+                quantiles,
+                self.confounding[bootstrap_indexes],
+                self.treatment_arm[bootstrap_indexes],
+                self.outcome[bootstrap_indexes],
+            )
+
+        qte_var = qtes.var(axis=0)
+
+        qte_lower = qte + norm.ppf(alpha / 2) / np.sqrt(qte_var)
+        qte_upper = qte + norm.ppf(1 - alpha / 2) / np.sqrt(qte_var)
+
+        return qte, qte_lower, qte_upper
 
     def _compute_dtes(
         self,
         target_treatment_arm: int,
         control_treatment_arm: int,
-        outcomes: np.ndarray,
+        locations: np.ndarray,
         alpha: float,
         variance_type: str,
         n_bootstrap: int,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute expected DTEs."""
         treatment_cdf, treatment_cdf_mat = self._compute_cumulative_distribution(
-            np.full(outcomes.shape, target_treatment_arm), outcomes
+            np.full(locations.shape, target_treatment_arm),
+            locations,
+            self.confounding,
+            self.treatment_arm,
+            self.outcome,
         )
         control_cdf, control_cdf_mat = self._compute_cumulative_distribution(
-            np.full(outcomes.shape, control_treatment_arm), outcomes
+            np.full(locations.shape, control_treatment_arm),
+            locations,
+            self.confounding,
+            self.treatment_arm,
+            self.outcome,
         )
 
         dte = treatment_cdf - control_cdf
 
-        lower_band, upper_band = compute_dte_confidence_intervals(
+        mat_indicator = (self.outcome[:, np.newaxis] <= locations).astype(int)
+
+        lower_band, upper_band = compute_confidence_intervals(
             vec_y=self.outcome,
             vec_d=self.treatment_arm,
-            vec_loc=outcomes,
-            vec_cdf_target=treatment_cdf,
-            vec_cdf_control=control_cdf,
+            vec_loc=locations,
+            mat_y_u=mat_indicator,
+            vec_prediction_target=treatment_cdf,
+            vec_prediction_control=control_cdf,
             mat_entire_predictions_target=treatment_cdf_mat,
             mat_entire_predictions_control=control_cdf_mat,
             ind_target=target_treatment_arm,
@@ -150,35 +196,72 @@ class DistributionFunctionMixin(object):
         self,
         target_treatment_arm: int,
         control_treatment_arm: int,
-        outcomes: np.ndarray,
+        locations: np.ndarray,
         width: float,
         alpha: float,
+        variance_type: str,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute expected PTEs."""
-        treatment_cumulative_pre = self.predict(
-            np.full(outcomes.shape, target_treatment_arm), outcomes
+        treatment_cumulative_pre, treatment_cdf_mat_pre = (
+            self._compute_cumulative_distribution(
+                np.full(locations.shape, target_treatment_arm),
+                locations,
+                self.confounding,
+                self.treatment_arm,
+                self.outcome,
+            )
         )
-        treatment_cumulative_post = self.predict(
-            np.full(outcomes.shape, target_treatment_arm), outcomes + width
+        treatment_cumulative_post, treatment_cdf_mat_post = (
+            self._compute_cumulative_distribution(
+                np.full(locations.shape, target_treatment_arm),
+                locations + width,
+                self.confounding,
+                self.treatment_arm,
+                self.outcome,
+            )
         )
         treatment_pdf = treatment_cumulative_post - treatment_cumulative_pre
-        control_cumulative_pre = self.predict(
-            np.full(outcomes.shape, control_treatment_arm), outcomes
+        control_cumulative_pre, control_cdf_mat_pre = (
+            self._compute_cumulative_distribution(
+                np.full(locations.shape, control_treatment_arm),
+                locations,
+                self.confounding,
+                self.treatment_arm,
+                self.outcome,
+            )
         )
-        control_cumulative_post = self.predict(
-            np.full(outcomes.shape, control_treatment_arm), outcomes + width
+        control_cumulative_post, control_cdf_mat_post = (
+            self._compute_cumulative_distribution(
+                np.full(locations.shape, control_treatment_arm),
+                locations + width,
+                self.confounding,
+                self.treatment_arm,
+                self.outcome,
+            )
         )
         control_pdf = control_cumulative_post - control_cumulative_pre
 
         pte = treatment_pdf - control_pdf
 
-        lower_band, upper_band = compute_pte_confidence_intervals(
+        mat_indicator_pre = (self.outcome[:, np.newaxis] <= locations).astype(int)
+        mat_indicator_post = (self.outcome[:, np.newaxis] <= locations + width).astype(
+            int
+        )
+
+        lower_band, upper_band = compute_confidence_intervals(
+            vec_y=self.outcome,
             vec_d=self.treatment_arm,
-            vec_pdf_target=treatment_pdf,
-            vec_pdf_control=control_pdf,
+            vec_loc=locations,
+            mat_y_u=mat_indicator_post - mat_indicator_pre,
+            vec_prediction_target=treatment_pdf,
+            vec_prediction_control=control_pdf,
+            mat_entire_predictions_target=treatment_cdf_mat_post
+            - treatment_cdf_mat_pre,
+            mat_entire_predictions_control=control_cdf_mat_post - control_cdf_mat_pre,
             ind_target=target_treatment_arm,
             ind_control=control_treatment_arm,
             alpha=alpha,
+            variance_type=variance_type,
         )
 
         return (
@@ -187,52 +270,37 @@ class DistributionFunctionMixin(object):
             upper_band,
         )
 
-    def _compute_expected_qtes(
+    def _compute_qtes(
         self,
         target_treatment_arm: int,
         control_treatment_arm: int,
         quantiles: np.ndarray,
-        alpha: float,
+        confounding: np.ndarray,
+        treatment_arm: np.ndarray,
+        outcome: np.array,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute expected QTEs."""
+        treatment_cumulative, _ = self._compute_cumulative_distribution(
+            np.full(outcome.shape, target_treatment_arm),
+            outcome,
+            confounding,
+            treatment_arm,
+            outcome,
+        )
+        control_cumulative, _ = self._compute_cumulative_distribution(
+            np.full(outcome.shape, control_treatment_arm),
+            outcome,
+            confounding,
+            treatment_arm,
+            outcome,
+        )
         result = np.zeros(quantiles.shape)
-        treatment_cumulative = self.predict(
-            np.full(self.outcome.shape, target_treatment_arm), self.outcome
-        )
-        control_cumulative = self.predict(
-            np.full(self.outcome.shape, control_treatment_arm), self.outcome
-        )
         for i, q in enumerate(quantiles):
-            treatment_quantile = treatment_cumulative[
-                math.floor(treatment_cumulative.shape[0] * q)
-            ]
-            control_quantile = control_cumulative[
-                math.floor(control_cumulative.shape[0] * q)
-            ]
-            result[i] = treatment_quantile - control_quantile
+            treatment_idx = find_le(treatment_cumulative, q)
+            control_idx = find_le(control_cumulative, q)
+            result[i] = outcome[treatment_idx] - outcome[control_idx]
 
-        # TODO: compute the right upperband and lowerband of QTE
-        return result, result, result
-
-    def _compute_bernoulli_upper_bands(
-        self,
-        estimates: np.ndarray,
-        alpha: float,
-        target_treatment_arm: int,
-        control_treatment_arm: int,
-    ) -> np.ndarray:
-        """Compute upper confidence bands."""
-        return estimates + np.sqrt(estimates * (1 - estimates)) * norm.ppf(alpha / 2)
-
-    def _compute_bernoulli_lower_bands(
-        self,
-        estimates: np.ndarray,
-        alpha: float,
-        target_treatment_arm: int,
-        control_treatment_arm: int,
-    ) -> np.ndarray:
-        """Compute lower confidence bands."""
-        return estimates - np.sqrt(estimates * (1 - estimates)) * norm.ppf(alpha / 2)
+        return result
 
     def predict(self, treatment_arm: np.ndarray, outcomes: np.ndarray) -> np.ndarray:
         """Compute cumulative distribution values.
@@ -247,14 +315,15 @@ class DistributionFunctionMixin(object):
         raise NotImplementedError()
 
     def _compute_cumulative_distribution(
-        self, treatment_arm: np.ndarray, outcomes: np.ndarray
+        self,
+        target_treatment_arm: np.ndarray,
+        locations: np.ndarray,
+        confounding: np.ndarray,
+        treatment_arm: np.ndarray,
+        outcome: np.array,
     ) -> np.ndarray:
         """Compute the cumulative distribution values."""
         raise NotImplementedError()
-
-    def _get_num_data(self, treatment_arm: int) -> int:
-        """Get the number of records with the specified treatment arm."""
-        return ((self.treatment_arm == treatment_arm) * 1).sum()
 
 
 def find_le(array: np.ndarray, threshold):
@@ -319,12 +388,12 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
 
         return self
 
-    def predict(self, treatment_arm: np.ndarray, outcomes: np.ndarray) -> np.ndarray:
+    def predict(self, treatment_arm: np.ndarray, locations: np.ndarray) -> np.ndarray:
         """Compute cumulative distribution values.
 
         Args:
             treatment_arm (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
 
         Returns:
             np.ndarray: Estimated cumulative distribution values for the input.
@@ -334,16 +403,26 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
                 "This estimator has not been trained yet. Please call fit first"
             )
 
-        return self._compute_cumulative_distribution(treatment_arm, outcomes)[0]
+        return self._compute_cumulative_distribution(
+            treatment_arm, locations, self.confounding, self.treatment_arm, self.outcome
+        )[0]
 
     def _compute_cumulative_distribution(
-        self, treatment_arm: np.ndarray, outcomes: np.ndarray
+        self,
+        target_treatment_arm: np.ndarray,
+        locations: np.ndarray,
+        confounding: np.ndarray,
+        treatment_arm: np.ndarray,
+        outcome: np.array,
     ) -> np.ndarray:
         """Compute the cumulative distribution values.
 
         Args:
-            treatment_arm (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            target_treatment_arm (np.ndarray): The index of the treatment arm.
+            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            confounding: (np.ndarray): An array of confounding variables in the observed data
+            treatment_arm (np.ndarray): An array of treatment arms in the observed data
+            outcome (np.ndarray): An array of outcomes in the observed data
 
         Returns:
             np.ndarray: Estimated cumulative distribution values.
@@ -351,16 +430,16 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
         unique_treatment_arm = np.unique(treatment_arm)
         d_confounding = {}
         d_outcome = {}
-        n_obs = self.outcome.shape[0]
-        n_loc = outcomes.shape[0]
+        n_obs = outcome.shape[0]
+        n_loc = locations.shape[0]
         for arm in unique_treatment_arm:
-            selected_confounding = self.confounding[self.treatment_arm == arm]
-            selected_outcome = self.outcome[self.treatment_arm == arm]
+            selected_confounding = confounding[treatment_arm == arm]
+            selected_outcome = outcome[treatment_arm == arm]
             sorted_indices = np.argsort(selected_outcome)
             d_confounding[arm] = selected_confounding[sorted_indices]
             d_outcome[arm] = selected_outcome[sorted_indices]
-        cumulative_distribution = np.zeros(outcomes.shape)
-        for i, (outcome, arm) in enumerate(zip(outcomes, treatment_arm)):
+        cumulative_distribution = np.zeros(locations.shape)
+        for i, (outcome, arm) in enumerate(zip(locations, target_treatment_arm)):
             cumulative_distribution[i] = (
                 find_le(d_outcome[arm], outcome) + 1
             ) / d_outcome[arm].shape[0]
@@ -375,7 +454,7 @@ class AdjustedDistributionEstimator(DistributionFunctionMixin):
 
         Args:
             base_model (scikit-learn estimator): The base model implementing used for conditional distribution function estimators. The model should implement scikit-learn interface: https://scikit-learn.org/stable/developers/develop.html.
-            outcomes (np.ndarray): The number of folds for cross-fitting.
+            folds (int): The number of folds for cross-fitting.
 
         Returns:
             AdjustedDistributionEstimator: An instance of the estimator.
@@ -411,12 +490,12 @@ class AdjustedDistributionEstimator(DistributionFunctionMixin):
 
         return self
 
-    def predict(self, treatment_arm: np.ndarray, outcomes: np.ndarray) -> np.ndarray:
+    def predict(self, treatment_arm: np.ndarray, locations: np.ndarray) -> np.ndarray:
         """Compute cumulative distribution values.
 
         Args:
             treatment_arm (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
 
         Returns:
             np.ndarray: Estimated cumulative distribution values for the input.
@@ -426,29 +505,39 @@ class AdjustedDistributionEstimator(DistributionFunctionMixin):
                 "This estimator has not been trained yet. Please call fit first"
             )
 
-        return self._compute_cumulative_distribution(treatment_arm, outcomes)[0]
+        return self._compute_cumulative_distribution(
+            treatment_arm, locations, self.confounding, self.treatment_arm, self.outcome
+        )[0]
 
     def _compute_cumulative_distribution(
-        self, treatment_arm: np.ndarray, outcomes: np.ndarray
+        self,
+        target_treatment_arm: np.ndarray,
+        locations: np.ndarray,
+        confounding: np.ndarray,
+        treatment_arm: np.ndarray,
+        outcome: np.array,
     ) -> np.ndarray:
         """Compute the cumulative distribution values.
 
         Args:
-            treatment_arm (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            target_treatment_arm (np.ndarray): The index of the treatment arm.
+            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            confounding: (np.ndarray): An array of confounding variables in the observed data
+            treatment_arm (np.ndarray): An array of treatment arms in the observed data
+            outcome (np.ndarray): An array of outcomes in the observed data
 
         Returns:
             np.ndarray: Estimated cumulative distribution values.
         """
-        n_obs = self.outcome.shape[0]
-        n_loc = outcomes.shape[0]
-        cumulative_distribution = np.zeros(outcomes.shape)
+        n_obs = outcome.shape[0]
+        n_loc = locations.shape[0]
+        cumulative_distribution = np.zeros(locations.shape)
         superset_prediction = np.zeros((n_obs, n_loc))
-        for i, (outcome, arm) in enumerate(zip(outcomes, treatment_arm)):
-            confounding_in_arm = self.confounding[self.treatment_arm == arm]
-            outcome_in_arm = self.outcome[self.treatment_arm == arm]
+        for i, (location, arm) in enumerate(zip(locations, target_treatment_arm)):
+            confounding_in_arm = confounding[treatment_arm == arm]
+            outcome_in_arm = outcome[treatment_arm == arm]
             subset_prediction = np.zeros(outcome_in_arm.shape[0])
-            binominal = (outcome_in_arm <= outcome) * 1
+            binominal = (outcome_in_arm <= location) * 1
             cdf = binominal.mean()
             for fold in range(self.folds):
                 subset_mask = (
@@ -468,7 +557,7 @@ class AdjustedDistributionEstimator(DistributionFunctionMixin):
                     :, 1
                 ]
                 superset_prediction[superset_mask, i] = model.predict_proba(
-                    self.confounding[superset_mask]
+                    confounding[superset_mask]
                 )[:, 1]
             cumulative_distribution[i] = (
                 cdf - subset_prediction.mean() + superset_prediction[:, i].mean()
@@ -476,12 +565,13 @@ class AdjustedDistributionEstimator(DistributionFunctionMixin):
         return cumulative_distribution, superset_prediction
 
 
-def compute_dte_confidence_intervals(
+def compute_confidence_intervals(
     vec_y: np.ndarray,
     vec_d: np.ndarray,
     vec_loc: np.ndarray,
-    vec_cdf_target: np.ndarray,
-    vec_cdf_control: np.ndarray,
+    mat_y_u: np.ndarray,
+    vec_prediction_target: np.ndarray,
+    vec_prediction_control: np.ndarray,
     mat_entire_predictions_target: np.ndarray,
     mat_entire_predictions_control: np.ndarray,
     ind_target: int,
@@ -490,20 +580,21 @@ def compute_dte_confidence_intervals(
     variance_type="moment",
     n_bootstrap=500,
 ):
-    """Computes the confidence intervals of DTE.
+    """Computes the confidence intervals of distribution parameters.
 
     Args:
         vec_y (np.ndarray): Outcome variable vector.
         vec_d (np.ndarray): Treatment indicator vector.
-        vec_loc (np.ndarray): Locations where the DTE is estimated.
-        vec_cdf_target (np.ndarray): Estimated Cumulative Distributional Function of treatment group.
-        vec_cdf_control (np.ndarray): Estimated Cumulative Distributional Function of control group.
+        vec_loc (np.ndarray): Locations where the distribution parameters are estimated.
+        mat_y_u (np.ndarray): Indicator function for 1{Y⩽y}. Shape is n_obs * n_loc.
+        vec_prediction_target (np.ndarray): Estimated values from the conditional model for the treatment group.
+        vec_prediction_control (np.ndarray): Estimated values from the conditional model for the control group.
         mat_entire_predictions_target (np.ndarray): Prediction of the conditional distribution estimator for target group.
         mat_entire_predictions_control (np.ndarray): Prediction of the conditional distribution estimator for control group.
         ind_target (int): Index of the target treatment indicator.
         ind_control (int): Index of the control treatment indicator.
         alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.
-        variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are moment, analytic, and uniform.
+        variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.
         n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.
 
     Returns:
@@ -512,10 +603,9 @@ def compute_dte_confidence_intervals(
             - np.ndarray: upper band.
     """
     num_obs = vec_y.shape[0]
-    mat_y_u = (vec_y[:, np.newaxis] <= vec_loc).astype(int)
     n_loc = vec_loc.shape[0]
     mat_d = np.tile(vec_d, (n_loc, 1)).T
-    vec_dte = vec_cdf_target - vec_cdf_control
+    vec_dte = vec_prediction_target - vec_prediction_control
     mat_dte = np.tile(vec_dte, (num_obs, 1))
 
     num_target = (vec_d == ind_target).sum()
@@ -562,65 +652,20 @@ def compute_dte_confidence_intervals(
         vec_dte_lower_boot = vec_dte - quantile_max_tstats * np.sqrt(omega / num_obs)
         vec_dte_upper_boot = vec_dte + quantile_max_tstats * np.sqrt(omega / num_obs)
         return vec_dte_lower_boot, vec_dte_upper_boot
-    elif variance_type == "analytic":
+    elif variance_type == "simple":
         w_target = num_obs / num_target
         w_control = num_obs / num_control
         vec_dte_var = w_target * (
-            vec_cdf_target * (1 - vec_cdf_target)
-        ) + w_control * vec_cdf_control * (1 - vec_cdf_control)
+            vec_prediction_target * (1 - vec_prediction_target)
+        ) + w_control * vec_prediction_control * (1 - vec_prediction_control)
 
-        vec_dte_lower_analytic = vec_dte + norm.ppf(alpha / 2) / np.sqrt(
+        vec_dte_lower_simple = vec_dte + norm.ppf(alpha / 2) / np.sqrt(
             num_obs
         ) * np.sqrt(vec_dte_var)
-        vec_dte_upper_analytic = vec_dte + norm.ppf(1 - alpha / 2) / np.sqrt(
+        vec_dte_upper_simple = vec_dte + norm.ppf(1 - alpha / 2) / np.sqrt(
             num_obs
         ) * np.sqrt(vec_dte_var)
 
-        return vec_dte_lower_analytic, vec_dte_upper_analytic
+        return vec_dte_lower_simple, vec_dte_upper_simple
     else:
         raise RuntimeError(f"Invalid variance type was speficied: {variance_type}")
-
-
-def compute_pte_confidence_intervals(
-    vec_d: np.ndarray,
-    vec_pdf_target: np.ndarray,
-    vec_pdf_control: np.ndarray,
-    ind_target: int,
-    ind_control: int,
-    alpha: 0.05,
-):
-    """
-    Compute the confidence interval of PTE.
-
-    Args:
-        vec_d (np.ndarray): Treatment indicator vector.
-        vec_pdf_target (np.ndarray): Estimated Probability Density Function of treatment group.
-        vec_pdf_control (np.ndarray): Estimated Probability Density Function of control group.
-        ind_target (int): Index of the target treatment indicator.
-        ind_control (int): Index of the control treatment indicator.
-        alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.
-
-    Returns:
-        Tuple[np.ndarray, np.ndarray]: A tuple containing:
-            - np.ndarray: lower band.
-            - np.ndarray: upper band.
-    """
-    num_obs = vec_d.shape[0]
-    num_target = (vec_d == ind_target).sum()
-    num_control = (vec_d == ind_control).sum()
-    w_target = num_obs / num_target
-    w_control = num_obs / num_control
-    vec_pdf_var_target = vec_pdf_target * (1 - vec_pdf_target)
-    vec_pdf_var_control = vec_pdf_control * (1 - vec_pdf_control)
-    vec_pte = vec_pdf_target - vec_pdf_control
-
-    vec_pte_var = (w_target * vec_pdf_var_target) + (w_control * vec_pdf_var_control)
-
-    vec_pte_lower_analytic = vec_pte + norm.ppf(alpha / 2) / np.sqrt(num_obs) * np.sqrt(
-        vec_pte_var
-    )
-    vec_pte_upper_analytic = vec_pte + norm.ppf(1 - alpha / 2) / np.sqrt(
-        num_obs
-    ) * np.sqrt(vec_pte_var)
-
-    return vec_pte_lower_analytic, vec_pte_upper_analytic
