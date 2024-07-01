@@ -39,10 +39,11 @@
 <div class="viewcode-block" id="plot">
 <a class="viewcode-back" href="../../modules.html#dte_adj.plot.plot">[docs]</a>
 <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span>
-    <span class="n">x_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">y_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">upper_bands</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">lower_bands</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">means</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">upper_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">lower_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">chart_type</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
     <span class="n">ax</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">axis</span><span class="o">.</span><span class="n">Axis</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">xlabel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -51,10 +52,11 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Visualize distributional parameters and their confidence intervals.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        x_values (np.Array): values to be used for x axis.</span>
-<span class="sd">        y_values (np.Array): Expected distributional parameters.</span>
-<span class="sd">        upper_bands (np.Array): Upper band for the distributional parameters.</span>
-<span class="sd">        lower_bands (np.Array): Lower band for the distributional parameters.</span>
+<span class="sd">        X (np.Array): values to be used for x axis.</span>
+<span class="sd">        means (np.Array): Expected distributional parameters.</span>
+<span class="sd">        upper_bounds (np.Array): Upper bound for the distributional parameters.</span>
+<span class="sd">        lower_bounds (np.Array): Lower bound for the distributional parameters.</span>
+<span class="sd">        chart_type (str): Chart type of the plotting. Available values are line or bar.</span>
 <span class="sd">        ax (matplotlib.axes.Axes, optional): Target axes instance. If None, a new figure and axes will be created.</span>
 <span class="sd">        title (str, optional): Axes title.</span>
 <span class="sd">        xlabel (str, optional): X-axis title label.</span>
@@ -66,15 +68,28 @@
     <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="n">y_values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Values&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span>
-        <span class="n">x_values</span><span class="p">,</span>
-        <span class="n">lower_bands</span><span class="p">,</span>
-        <span class="n">upper_bands</span><span class="p">,</span>
-        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">,</span>
-        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
-        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Confidence Interval&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">chart_type</span> <span class="o">==</span> <span class="s2">&quot;line&quot;</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">means</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Values&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span>
+            <span class="n">lower_bounds</span><span class="p">,</span>
+            <span class="n">upper_bounds</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Confidence Interval&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">chart_type</span> <span class="o">==</span> <span class="s2">&quot;bar&quot;</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span>
+            <span class="n">means</span><span class="p">,</span>
+            <span class="n">yerr</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">means</span> <span class="o">-</span> <span class="n">lower_bounds</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">upper_bounds</span> <span class="o">-</span> <span class="n">means</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">],</span>
+            <span class="n">capsize</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Chart type </span><span class="si">{</span><span class="n">chart_type</span><span class="si">}</span><span class="s2"> is not supported&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>

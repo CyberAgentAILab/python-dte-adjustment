@@ -35,6 +35,7 @@
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">compute_confidence_intervals</span><span class="p">,</span> <span class="n">find_le</span>
 
 
 <div class="viewcode-block" id="DistributionFunctionMixin">
@@ -69,15 +70,15 @@
 <span class="sd">            target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
 <span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
 <span class="sd">            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
-<span class="sd">            alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.</span>
+<span class="sd">            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
 <span class="sd">            variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</span>
 <span class="sd">            n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
 <span class="sd">                - Expected DTEs</span>
-<span class="sd">                - Upper bands</span>
-<span class="sd">                - Lower bands</span>
+<span class="sd">                - Upper bounds</span>
+<span class="sd">                - Lower bounds</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dtes</span><span class="p">(</span>
             <span class="n">target_treatment_arm</span><span class="p">,</span>
@@ -107,14 +108,14 @@
 <span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
 <span class="sd">            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
 <span class="sd">            width (float): The width of each outcome interval.</span>
-<span class="sd">            alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.</span>
+<span class="sd">            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
 <span class="sd">            variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
 <span class="sd">                - Expected PTEs</span>
-<span class="sd">                - Upper bands</span>
-<span class="sd">                - Lower bands</span>
+<span class="sd">                - Upper bounds</span>
+<span class="sd">                - Lower bounds</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_ptes</span><span class="p">(</span>
             <span class="n">target_treatment_arm</span><span class="p">,</span>
@@ -144,14 +145,14 @@
 <span class="sd">            target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
 <span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
 <span class="sd">            quantiles (np.ndarray, optional): Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].</span>
-<span class="sd">            alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.</span>
+<span class="sd">            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
 <span class="sd">            n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
 <span class="sd">                - Expected QTEs</span>
-<span class="sd">                - Upper bands</span>
-<span class="sd">                - Lower bands</span>
+<span class="sd">                - Upper bounds</span>
+<span class="sd">                - Lower bounds</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">qte</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_qtes</span><span class="p">(</span>
             <span class="n">target_treatment_arm</span><span class="p">,</span>
@@ -213,7 +214,7 @@
 
         <span class="n">mat_indicator</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">locations</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
-        <span class="n">lower_band</span><span class="p">,</span> <span class="n">upper_band</span> <span class="o">=</span> <span class="n">compute_confidence_intervals</span><span class="p">(</span>
+        <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">compute_confidence_intervals</span><span class="p">(</span>
             <span class="n">vec_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome</span><span class="p">,</span>
             <span class="n">vec_d</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">treatment_arm</span><span class="p">,</span>
             <span class="n">vec_loc</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
@@ -231,8 +232,8 @@
 
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">dte</span><span class="p">,</span>
-            <span class="n">lower_band</span><span class="p">,</span>
-            <span class="n">upper_band</span><span class="p">,</span>
+            <span class="n">lower_bound</span><span class="p">,</span>
+            <span class="n">upper_bound</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_compute_ptes</span><span class="p">(</span>
@@ -291,7 +292,7 @@
             <span class="nb">int</span>
         <span class="p">)</span>
 
-        <span class="n">lower_band</span><span class="p">,</span> <span class="n">upper_band</span> <span class="o">=</span> <span class="n">compute_confidence_intervals</span><span class="p">(</span>
+        <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">compute_confidence_intervals</span><span class="p">(</span>
             <span class="n">vec_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome</span><span class="p">,</span>
             <span class="n">vec_d</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">treatment_arm</span><span class="p">,</span>
             <span class="n">vec_loc</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
@@ -309,8 +310,8 @@
 
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">pte</span><span class="p">,</span>
-            <span class="n">lower_band</span><span class="p">,</span>
-            <span class="n">upper_band</span><span class="p">,</span>
+            <span class="n">lower_bound</span><span class="p">,</span>
+            <span class="n">upper_bound</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_compute_qtes</span><span class="p">(</span>
@@ -370,31 +371,6 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the cumulative distribution values.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
-
-
-
-<div class="viewcode-block" id="find_le">
-<a class="viewcode-back" href="../modules.html#dte_adj.find_le">[docs]</a>
-<span class="k">def</span> <span class="nf">find_le</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the rightmost value less than or equal to threshold in a sorted array</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        array (np.ndarray): The sorted array to search in.</span>
-<span class="sd">        threshold (float): The threshold value.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        int: The index where the value first exceeds the threshold.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="k">while</span> <span class="n">low</span> <span class="o">&lt;=</span> <span class="n">high</span><span class="p">:</span>
-        <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">low</span> <span class="o">+</span> <span class="n">high</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="k">if</span> <span class="n">array</span><span class="p">[</span><span class="n">mid</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">threshold</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">mid</span>
-            <span class="n">low</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">high</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="n">result</span></div>
 
 
 
@@ -631,114 +607,6 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">cumulative_distribution</span><span class="p">,</span> <span class="n">superset_prediction</span></div>
 
-
-
-<div class="viewcode-block" id="compute_confidence_intervals">
-<a class="viewcode-back" href="../modules.html#dte_adj.compute_confidence_intervals">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_confidence_intervals</span><span class="p">(</span>
-    <span class="n">vec_y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">vec_d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">vec_loc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">mat_y_u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">vec_prediction_target</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">vec_prediction_control</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">mat_entire_predictions_target</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">mat_entire_predictions_control</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">ind_target</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">ind_control</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">alpha</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
-    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span><span class="p">,</span>
-    <span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the confidence intervals of distribution parameters.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        vec_y (np.ndarray): Outcome variable vector.</span>
-<span class="sd">        vec_d (np.ndarray): Treatment indicator vector.</span>
-<span class="sd">        vec_loc (np.ndarray): Locations where the distribution parameters are estimated.</span>
-<span class="sd">        mat_y_u (np.ndarray): Indicator function for 1{Y⩽y}. Shape is n_obs * n_loc.</span>
-<span class="sd">        vec_prediction_target (np.ndarray): Estimated values from the conditional model for the treatment group.</span>
-<span class="sd">        vec_prediction_control (np.ndarray): Estimated values from the conditional model for the control group.</span>
-<span class="sd">        mat_entire_predictions_target (np.ndarray): Prediction of the conditional distribution estimator for target group.</span>
-<span class="sd">        mat_entire_predictions_control (np.ndarray): Prediction of the conditional distribution estimator for control group.</span>
-<span class="sd">        ind_target (int): Index of the target treatment indicator.</span>
-<span class="sd">        ind_control (int): Index of the control treatment indicator.</span>
-<span class="sd">        alpha (float, optional): Significance level of the confidence band. Defaults to 0.05.</span>
-<span class="sd">        variance_type (str, optional): Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</span>
-<span class="sd">        n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[np.ndarray, np.ndarray]: A tuple containing:</span>
-<span class="sd">            - np.ndarray: lower band.</span>
-<span class="sd">            - np.ndarray: upper band.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">num_obs</span> <span class="o">=</span> <span class="n">vec_y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">n_loc</span> <span class="o">=</span> <span class="n">vec_loc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">mat_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">vec_d</span><span class="p">,</span> <span class="p">(</span><span class="n">n_loc</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
-    <span class="n">vec_dte</span> <span class="o">=</span> <span class="n">vec_prediction_target</span> <span class="o">-</span> <span class="n">vec_prediction_control</span>
-    <span class="n">mat_dte</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">vec_dte</span><span class="p">,</span> <span class="p">(</span><span class="n">num_obs</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-
-    <span class="n">num_target</span> <span class="o">=</span> <span class="p">(</span><span class="n">vec_d</span> <span class="o">==</span> <span class="n">ind_target</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="n">num_control</span> <span class="o">=</span> <span class="p">(</span><span class="n">vec_d</span> <span class="o">==</span> <span class="n">ind_control</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="n">influence_function</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">num_obs</span>
-        <span class="o">/</span> <span class="n">num_target</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">mat_d</span> <span class="o">==</span> <span class="n">ind_target</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">mat_y_u</span> <span class="o">-</span> <span class="n">mat_entire_predictions_target</span><span class="p">)</span>
-        <span class="o">+</span> <span class="n">mat_entire_predictions_target</span>
-        <span class="o">-</span> <span class="n">num_obs</span>
-        <span class="o">/</span> <span class="n">num_control</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">mat_d</span> <span class="o">==</span> <span class="n">ind_control</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">mat_y_u</span> <span class="o">-</span> <span class="n">mat_entire_predictions_control</span><span class="p">)</span>
-        <span class="o">-</span> <span class="n">mat_entire_predictions_control</span>
-        <span class="o">-</span> <span class="n">mat_dte</span>
-    <span class="p">)</span>
-
-    <span class="n">omega</span> <span class="o">=</span> <span class="p">(</span><span class="n">influence_function</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">variance_type</span> <span class="o">==</span> <span class="s2">&quot;moment&quot;</span><span class="p">:</span>
-        <span class="n">vec_dte_lower_moment</span> <span class="o">=</span> <span class="n">vec_dte</span> <span class="o">+</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">omega</span> <span class="o">/</span> <span class="n">num_obs</span><span class="p">)</span>
-        <span class="n">vec_dte_upper_moment</span> <span class="o">=</span> <span class="n">vec_dte</span> <span class="o">+</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-            <span class="n">omega</span> <span class="o">/</span> <span class="n">num_obs</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">vec_dte_lower_moment</span><span class="p">,</span> <span class="n">vec_dte_upper_moment</span>
-    <span class="k">elif</span> <span class="n">variance_type</span> <span class="o">==</span> <span class="s2">&quot;uniform&quot;</span><span class="p">:</span>
-        <span class="n">tstats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_bootstrap</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">vec_loc</span><span class="p">)))</span>
-        <span class="n">boot_draw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_bootstrap</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">vec_loc</span><span class="p">)))</span>
-
-        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">):</span>
-            <span class="n">eta1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_obs</span><span class="p">)</span>
-            <span class="n">eta2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_obs</span><span class="p">)</span>
-            <span class="n">xi</span> <span class="o">=</span> <span class="n">eta1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">eta2</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
-
-            <span class="n">boot_draw</span><span class="p">[</span><span class="n">b</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="mi">1</span> <span class="o">/</span> <span class="n">num_obs</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xi</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">influence_function</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-            <span class="p">)</span>
-
-        <span class="n">tstats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">boot_draw</span><span class="p">)[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">omega</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">num_obs</span><span class="p">)</span>
-        <span class="n">max_tstats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tstats</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">quantile_max_tstats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">max_tstats</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span>
-
-        <span class="n">vec_dte_lower_boot</span> <span class="o">=</span> <span class="n">vec_dte</span> <span class="o">-</span> <span class="n">quantile_max_tstats</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">omega</span> <span class="o">/</span> <span class="n">num_obs</span><span class="p">)</span>
-        <span class="n">vec_dte_upper_boot</span> <span class="o">=</span> <span class="n">vec_dte</span> <span class="o">+</span> <span class="n">quantile_max_tstats</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">omega</span> <span class="o">/</span> <span class="n">num_obs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">vec_dte_lower_boot</span><span class="p">,</span> <span class="n">vec_dte_upper_boot</span>
-    <span class="k">elif</span> <span class="n">variance_type</span> <span class="o">==</span> <span class="s2">&quot;simple&quot;</span><span class="p">:</span>
-        <span class="n">w_target</span> <span class="o">=</span> <span class="n">num_obs</span> <span class="o">/</span> <span class="n">num_target</span>
-        <span class="n">w_control</span> <span class="o">=</span> <span class="n">num_obs</span> <span class="o">/</span> <span class="n">num_control</span>
-        <span class="n">vec_dte_var</span> <span class="o">=</span> <span class="n">w_target</span> <span class="o">*</span> <span class="p">(</span>
-            <span class="n">vec_prediction_target</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">vec_prediction_target</span><span class="p">)</span>
-        <span class="p">)</span> <span class="o">+</span> <span class="n">w_control</span> <span class="o">*</span> <span class="n">vec_prediction_control</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">vec_prediction_control</span><span class="p">)</span>
-
-        <span class="n">vec_dte_lower_simple</span> <span class="o">=</span> <span class="n">vec_dte</span> <span class="o">+</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-            <span class="n">num_obs</span>
-        <span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vec_dte_var</span><span class="p">)</span>
-        <span class="n">vec_dte_upper_simple</span> <span class="o">=</span> <span class="n">vec_dte</span> <span class="o">+</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-            <span class="n">num_obs</span>
-        <span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vec_dte_var</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">vec_dte_lower_simple</span><span class="p">,</span> <span class="n">vec_dte_upper_simple</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid variance type was speficied: </span><span class="si">{</span><span class="n">variance_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 </pre></div>
 
