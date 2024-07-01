@@ -5,10 +5,11 @@ from typing import Optional
 
 
 def plot(
-    x_values: np.ndarray,
-    y_values: np.ndarray,
-    upper_bands: np.ndarray,
-    lower_bands: np.ndarray,
+    X: np.ndarray,
+    means: np.ndarray,
+    upper_bounds: np.ndarray,
+    lower_bounds: np.ndarray,
+    chart_type="line",
     ax: Optional[axis.Axis] = None,
     title: Optional[str] = None,
     xlabel: Optional[str] = None,
@@ -17,10 +18,11 @@ def plot(
     """Visualize distributional parameters and their confidence intervals.
 
     Args:
-        x_values (np.Array): values to be used for x axis.
-        y_values (np.Array): Expected distributional parameters.
-        upper_bands (np.Array): Upper band for the distributional parameters.
-        lower_bands (np.Array): Lower band for the distributional parameters.
+        X (np.Array): values to be used for x axis.
+        means (np.Array): Expected distributional parameters.
+        upper_bounds (np.Array): Upper bound for the distributional parameters.
+        lower_bounds (np.Array): Lower bound for the distributional parameters.
+        chart_type (str): Chart type of the plotting. Available values are line or bar.
         ax (matplotlib.axes.Axes, optional): Target axes instance. If None, a new figure and axes will be created.
         title (str, optional): Axes title.
         xlabel (str, optional): X-axis title label.
@@ -32,15 +34,28 @@ def plot(
     if ax is None:
         fig, ax = plt.subplots()
 
-    ax.plot(x_values, y_values, label="Values", color="blue")
-    ax.fill_between(
-        x_values,
-        lower_bands,
-        upper_bands,
-        color="gray",
-        alpha=0.3,
-        label="Confidence Interval",
-    )
+    if chart_type == "line":
+        ax.plot(X, means, label="Values", color="blue")
+        ax.fill_between(
+            X,
+            lower_bounds,
+            upper_bounds,
+            color="gray",
+            alpha=0.3,
+            label="Confidence Interval",
+        )
+    elif chart_type == "bar":
+        ax.bar(
+            X,
+            means,
+            yerr=[
+                np.clip(means - lower_bounds, 0, None),
+                np.clip(upper_bounds - means, 0, None),
+            ],
+            capsize=5,
+        )
+    else:
+        raise ValueError(f"Chart type {chart_type} is not supported")
 
     if title is not None:
         ax.set_title(title)
