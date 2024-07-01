@@ -3,7 +3,7 @@ Get Started
 
 This page contains basic usage of dte_adj library.
 
-Generate data and train cumulative distribution function.
+Generate data for training cumulative distribution function:
 
 .. code-block:: python
 
@@ -65,7 +65,7 @@ Distributional treatment effect (DTE) can be computed easily in the following co
 
   dte, lower_bound, upper_bound = estimator.predict_dte(target_treatment_arm=1, control_treatment_arm=0, locations=np.sort(Y), variance_type="simple")
 
-An convenience function is available to visualize distribution effects. This method can be used for other distribution parameters including Probability Treatment Effect (PTE) and Quantile Treatment Effect (QTE).
+A convenience function is available to visualize distribution effects. This method can be used for other distribution parameters including Probability Treatment Effect (PTE) and Quantile Treatment Effect (QTE).
 
 .. code-block:: python
 
@@ -101,7 +101,7 @@ DTE can be computed and visualized in the following code.
    :width: 450px
    :align: center
 
-Confidence bands can be computed in different ways. In the following code, we used moment method to calculate the confidence bands.
+Confidence bands can be computed in different ways. In the following code, we use moment method to calculate the confidence band.
 
 .. code-block:: python
 
@@ -114,7 +114,7 @@ Confidence bands can be computed in different ways. In the following code, we us
    :width: 450px
    :align: center
 
-Also, uniform confidence band is used when "uniform" is specified for the "variance_type" argument.
+Also, an uniform confidence band is used when "uniform" is specified for the "variance_type" argument.
 
 .. code-block:: python
 
@@ -141,7 +141,7 @@ To compute PTE, we can use "predict_pte" method.
    :width: 450px
    :align: center
 
-To compute QTE, we can use "predict_qte" method. The confidence band is computed by bootstrap method.
+To compute QTE, we use "predict_qte" method. The confidence band is computed by bootstrap method.
 
 .. code-block:: python
 
