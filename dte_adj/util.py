@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import norm
 
+
 def compute_confidence_intervals(
     vec_y: np.ndarray,
     vec_d: np.ndarray,
@@ -104,7 +105,8 @@ def compute_confidence_intervals(
 
         return vec_dte_lower_simple, vec_dte_upper_simple
     else:
-        raise RuntimeError(f"Invalid variance type was speficied: {variance_type}")
+        raise ValueError(f"Invalid variance type was speficied: {variance_type}")
+
 
 def find_le(array: np.ndarray, threshold):
     """Find the rightmost value less than or equal to threshold in a sorted array

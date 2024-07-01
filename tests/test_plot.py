@@ -9,7 +9,7 @@ class TestPlot(unittest.TestCase):
     def test_plot(self, mock_plt):
         # Arrange
         x_values = np.array([1, 2, 3, 4, 5])
-        y_values = np.array([1, 2, 3, 4, 5])
+        means = np.array([1, 2, 3, 4, 5])
         upper_bands = np.array([2, 3, 4, 5, 6])
         lower_bands = np.array([0, 1, 2, 3, 4])
         mock_ax = MagicMock()
@@ -18,12 +18,13 @@ class TestPlot(unittest.TestCase):
         # Act
         result_ax = plot(
             x_values,
-            y_values,
-            upper_bands,
+            means,
             lower_bands,
+            upper_bands,
             title="Test Title",
             xlabel="X Axis",
             ylabel="Y Axis",
+            chart_type="line",
         )
 
         # Assert
@@ -34,7 +35,7 @@ class TestPlot(unittest.TestCase):
         plot_args, plot_kwargs = plot_call
         x_values_arg, y_values_arg = plot_args
         self.assertTrue(np.array_equal(x_values_arg, x_values))
-        self.assertTrue(np.array_equal(y_values_arg, y_values))
+        self.assertTrue(np.array_equal(y_values_arg, means))
         fill_between_args, fill_between_kwargs = fill_between_call
         x_fill, lower_fill, upper_fill = fill_between_args
         self.assertTrue(np.array_equal(x_fill, x_values_arg))
@@ -46,8 +47,30 @@ class TestPlot(unittest.TestCase):
         mock_ax.set_title.assert_called_once_with("Test Title")
         mock_ax.set_xlabel.assert_called_once_with("X Axis")
         mock_ax.set_ylabel.assert_called_once_with("Y Axis")
-        mock_ax.legend.assert_called_once()
 
+    def test_plot_fail_unknown_chart_type(self):
+        # Arrange
+        x_values = np.array([1, 2, 3, 4, 5])
+        means = np.array([1, 2, 3, 4, 5])
+        upper_bands = np.array([2, 3, 4, 5, 6])
+        lower_bands = np.array([0, 1, 2, 3, 4])
+
+        # Act, Assert
+        with self.assertRaises(ValueError) as cm:
+          plot(
+              x_values,
+              means,
+              lower_bands,
+              upper_bands,
+              title="Test Title",
+              xlabel="X Axis",
+              ylabel="Y Axis",
+              chart_type="other",
+          )
+        self.assertEqual(
+            str(cm.exception),
+            "Chart type other is not supported",
+        )
 
 if __name__ == "__main__":
     unittest.main()

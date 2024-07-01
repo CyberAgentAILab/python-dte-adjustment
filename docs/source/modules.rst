@@ -6,6 +6,7 @@ Modules
 
 .. automodule:: dte_adj
    :members:
+   :inherited-members:
    :undoc-members:
    :show-inheritance:
 
