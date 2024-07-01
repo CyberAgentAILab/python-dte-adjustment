@@ -1,7 +1,6 @@
 import numpy as np
 from typing import Tuple
 from scipy.stats import norm
-import math
 from copy import deepcopy
 from .util import compute_confidence_intervals, find_le
 
