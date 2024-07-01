@@ -355,12 +355,12 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
             SimpleDistributionEstimator: The fitted estimator.
         """
         if confoundings.shape[0] != treatment_arms.shape[0]:
-            raise RuntimeError(
+            raise ValueError(
                 "The shape of confounding and treatment_arm should be same"
             )
 
         if confoundings.shape[0] != outcomes.shape[0]:
-            raise RuntimeError("The shape of confounding and outcome should be same")
+            raise ValueError("The shape of confounding and outcome should be same")
 
         self.confoundings = confoundings
         self.treatment_arms = treatment_arms
@@ -379,7 +379,7 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
             np.ndarray: Estimated cumulative distribution values for the input.
         """
         if self.outcomes is None:
-            raise RuntimeError(
+            raise ValueError(
                 "This estimator has not been trained yet. Please call fit first"
             )
 
@@ -461,12 +461,12 @@ class AdjustedDistributionEstimator(DistributionFunctionMixin):
             AdjustedDistributionEstimator: The fitted estimator.
         """
         if confoundings.shape[0] != treatment_arms.shape[0]:
-            raise RuntimeError(
+            raise ValueError(
                 "The shape of confounding and treatment_arm should be same"
             )
 
         if confoundings.shape[0] != outcomes.shape[0]:
-            raise RuntimeError("The shape of confounding and outcome should be same")
+            raise ValueError("The shape of confounding and outcome should be same")
 
         self.confoundings = confoundings
         self.treatment_arms = treatment_arms
@@ -485,7 +485,7 @@ class AdjustedDistributionEstimator(DistributionFunctionMixin):
             np.ndarray: Estimated cumulative distribution values for the input.
         """
         if self.outcomes is None:
-            raise RuntimeError(
+            raise ValueError(
                 "This estimator has not been trained yet. Please call fit first"
             )
 

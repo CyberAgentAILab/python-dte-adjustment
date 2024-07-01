@@ -105,7 +105,7 @@ def compute_confidence_intervals(
 
         return vec_dte_lower_simple, vec_dte_upper_simple
     else:
-        raise RuntimeError(f"Invalid variance type was speficied: {variance_type}")
+        raise ValueError(f"Invalid variance type was speficied: {variance_type}")
 
 
 def find_le(array: np.ndarray, threshold):

@@ -18,7 +18,7 @@ class TestAdjustedEstimator(unittest.TestCase):
         subject = AdjustedDistributionEstimator(base_model)
 
         # Act, Assert
-        with self.assertRaises(RuntimeError) as cm:
+        with self.assertRaises(ValueError) as cm:
             subject.predict(D, Y)
         self.assertEqual(
             str(cm.exception),
@@ -35,7 +35,7 @@ class TestAdjustedEstimator(unittest.TestCase):
         subject = AdjustedDistributionEstimator(base_model)
 
         # Act, Assert
-        with self.assertRaises(RuntimeError) as cm:
+        with self.assertRaises(ValueError) as cm:
             subject.fit(X, D, Y)
         self.assertEqual(
             str(cm.exception),
