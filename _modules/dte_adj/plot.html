@@ -41,8 +41,8 @@
 <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">means</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">upper_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">lower_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">upper_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">chart_type</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
     <span class="n">ax</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">axis</span><span class="o">.</span><span class="n">Axis</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -54,8 +54,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        X (np.Array): values to be used for x axis.</span>
 <span class="sd">        means (np.Array): Expected distributional parameters.</span>
-<span class="sd">        upper_bounds (np.Array): Upper bound for the distributional parameters.</span>
 <span class="sd">        lower_bounds (np.Array): Lower bound for the distributional parameters.</span>
+<span class="sd">        upper_bounds (np.Array): Upper bound for the distributional parameters.</span>
 <span class="sd">        chart_type (str): Chart type of the plotting. Available values are line or bar.</span>
 <span class="sd">        ax (matplotlib.axes.Axes, optional): Target axes instance. If None, a new figure and axes will be created.</span>
 <span class="sd">        title (str, optional): Axes title.</span>
@@ -83,8 +83,8 @@
             <span class="n">X</span><span class="p">,</span>
             <span class="n">means</span><span class="p">,</span>
             <span class="n">yerr</span><span class="o">=</span><span class="p">[</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">means</span> <span class="o">-</span> <span class="n">lower_bounds</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">upper_bounds</span> <span class="o">-</span> <span class="n">means</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">means</span> <span class="o">-</span> <span class="n">lower_bounds</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">upper_bounds</span> <span class="o">-</span> <span class="n">means</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
             <span class="p">],</span>
             <span class="n">capsize</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
         <span class="p">)</span>
@@ -97,8 +97,6 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ylabel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
-
-    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">ax</span></div>
 
@@ -122,6 +120,8 @@
 <h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules</a></li>
 </ul>
 
