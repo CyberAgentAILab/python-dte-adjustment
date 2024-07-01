@@ -7,8 +7,8 @@ from typing import Optional
 def plot(
     X: np.ndarray,
     means: np.ndarray,
-    upper_bounds: np.ndarray,
     lower_bounds: np.ndarray,
+    upper_bounds: np.ndarray,
     chart_type="line",
     ax: Optional[axis.Axis] = None,
     title: Optional[str] = None,
@@ -20,8 +20,8 @@ def plot(
     Args:
         X (np.Array): values to be used for x axis.
         means (np.Array): Expected distributional parameters.
-        upper_bounds (np.Array): Upper bound for the distributional parameters.
         lower_bounds (np.Array): Lower bound for the distributional parameters.
+        upper_bounds (np.Array): Upper bound for the distributional parameters.
         chart_type (str): Chart type of the plotting. Available values are line or bar.
         ax (matplotlib.axes.Axes, optional): Target axes instance. If None, a new figure and axes will be created.
         title (str, optional): Axes title.
@@ -49,8 +49,8 @@ def plot(
             X,
             means,
             yerr=[
-                np.clip(means - lower_bounds, 0, None),
-                np.clip(upper_bounds - means, 0, None),
+                np.maximum(means - lower_bounds, 0),
+                np.maximum(upper_bounds - means, 0),
             ],
             capsize=5,
         )
@@ -63,7 +63,5 @@ def plot(
         ax.set_xlabel(xlabel)
     if ylabel is not None:
         ax.set_ylabel(ylabel)
-
-    ax.legend()
 
     return ax

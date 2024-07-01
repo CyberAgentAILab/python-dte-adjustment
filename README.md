@@ -9,7 +9,7 @@ This an a Python package for building the regression adjusted distribution funct
     pip install dte_adj
     ```
 
-2. **Install from source**
+2. **Install from Source**
 
     ```sh
     git clone https://github.com/CyberAgentAILab/python-dte-adjustment
