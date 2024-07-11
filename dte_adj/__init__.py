@@ -282,25 +282,32 @@ class DistributionFunctionMixin(object):
         outcomes: np.array,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute expected QTEs."""
-        treatment_cumulative, _ = self._compute_cumulative_distribution(
-            np.full(outcomes.shape, target_treatment_arm),
-            outcomes,
-            confoundings,
-            treatment_arms,
-            outcomes,
-        )
-        control_cumulative, _ = self._compute_cumulative_distribution(
-            np.full(outcomes.shape, control_treatment_arm),
-            outcomes,
-            confoundings,
-            treatment_arms,
-            outcomes,
-        )
+        locations = np.sort(outcomes)
+
+        def find_quantile(quantile, arm):
+            low, high = 0, locations.shape[0] - 1
+            result = -1
+            while low <= high:
+                mid = (low + high) // 2
+                val, _ = self._compute_cumulative_distribution(
+                    np.full((1), arm),
+                    np.full((1), locations[mid]),
+                    confoundings,
+                    treatment_arms,
+                    outcomes,
+                )
+                if val[0] <= quantile:
+                    result = locations[mid]
+                    low = mid + 1
+                else:
+                    high = mid - 1
+            return result
+
         result = np.zeros(quantiles.shape)
         for i, q in enumerate(quantiles):
-            treatment_idx = find_le(treatment_cumulative, q)
-            control_idx = find_le(control_cumulative, q)
-            result[i] = outcomes[treatment_idx] - outcomes[control_idx]
+            result[i] = find_quantile(q, target_treatment_arm) - find_quantile(
+                q, control_treatment_arm
+            )
 
         return result
 
@@ -415,15 +422,15 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
         d_confounding = {}
         d_outcome = {}
         n_obs = outcomes.shape[0]
-        n_loc = outcomes.shape[0]
+        n_loc = locations.shape[0]
         for arm in unique_treatment_arm:
             selected_confounding = confoundings[treatment_arms == arm]
             selected_outcome = outcomes[treatment_arms == arm]
             sorted_indices = np.argsort(selected_outcome)
             d_confounding[arm] = selected_confounding[sorted_indices]
             d_outcome[arm] = selected_outcome[sorted_indices]
-        cumulative_distribution = np.zeros(outcomes.shape)
-        for i, (outcome, arm) in enumerate(zip(outcomes, target_treatment_arms)):
+        cumulative_distribution = np.zeros(locations.shape)
+        for i, (outcome, arm) in enumerate(zip(locations, target_treatment_arms)):
             cumulative_distribution[i] = (
                 find_le(d_outcome[arm], outcome) + 1
             ) / d_outcome[arm].shape[0]
@@ -518,10 +525,10 @@ class AdjustedDistributionEstimator(DistributionFunctionMixin):
             np.ndarray: Estimated cumulative distribution values.
         """
         n_obs = outcomes.shape[0]
-        n_loc = outcomes.shape[0]
-        cumulative_distribution = np.zeros(outcomes.shape)
+        n_loc = locations.shape[0]
+        cumulative_distribution = np.zeros(locations.shape)
         superset_prediction = np.zeros((n_obs, n_loc))
-        for i, (location, arm) in enumerate(zip(outcomes, target_treatment_arms)):
+        for i, (location, arm) in enumerate(zip(locations, target_treatment_arms)):
             confounding_in_arm = confoundings[treatment_arms == arm]
             outcome_in_arm = outcomes[treatment_arms == arm]
             subset_prediction = np.zeros(outcome_in_arm.shape[0])

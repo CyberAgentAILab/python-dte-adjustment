@@ -3,8 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-dte_adj Documentation
+dte_adj
 ===================================
+
+This a Python package for building the regression adjusted distribution function estimator proposed in "Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction".
 
 .. toctree::
    :maxdepth: 2
@@ -12,6 +14,7 @@ dte_adj Documentation
 
    installation
    get_started
+   development
    modules
 
 Indices and tables

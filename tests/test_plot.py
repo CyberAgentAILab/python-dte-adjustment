@@ -57,20 +57,21 @@ class TestPlot(unittest.TestCase):
 
         # Act, Assert
         with self.assertRaises(ValueError) as cm:
-          plot(
-              x_values,
-              means,
-              lower_bands,
-              upper_bands,
-              title="Test Title",
-              xlabel="X Axis",
-              ylabel="Y Axis",
-              chart_type="other",
-          )
+            plot(
+                x_values,
+                means,
+                lower_bands,
+                upper_bands,
+                title="Test Title",
+                xlabel="X Axis",
+                ylabel="Y Axis",
+                chart_type="other",
+            )
         self.assertEqual(
             str(cm.exception),
             "Chart type other is not supported",
         )
+
 
 if __name__ == "__main__":
     unittest.main()

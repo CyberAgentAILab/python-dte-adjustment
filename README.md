@@ -1,6 +1,6 @@
 ## Overview
 
-This an a Python package for building the regression adjusted distribution function estimator proposed in "Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction".
+This a Python package for building the regression adjusted distribution function estimator proposed in "Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction". For the details of this package, see [the documentation](https://cyberagentailab.github.io/python-dte-adjustment/).
 
 ## Installation
 
