@@ -99,7 +99,7 @@
 <a class="reference internal image-reference" href="_images/dte_empirical.png"><img alt="DTE of empirical estimator" class="align-center" src="_images/dte_empirical.png" style="width: 450px; height: 300px;" />
 </a>
 <p>To initialize the adjusted distribution function, the base model for conditional distribution function needs to be passed.
-In the following example, we use Logistic Regression.</p>
+In the following example, we use Logistic Regression. Please make sure that your base model implements <cite>fit</cite> and <cite>predict_proba</cite> methods.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
 <span class="n">logit</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
 <span class="n">estimator</span> <span class="o">=</span> <span class="n">dte_adj</span><span class="o">.</span><span class="n">AdjustedDistributionEstimator</span><span class="p">(</span><span class="n">logit</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
