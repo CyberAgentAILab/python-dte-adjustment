@@ -79,7 +79,7 @@ A convenience function is available to visualize distribution effects. This meth
    :align: center
 
 To initialize the adjusted distribution function, the base model for conditional distribution function needs to be passed.
-In the following example, we use Logistic Regression.
+In the following example, we use Logistic Regression. Please make sure that your base model implements `fit` and `predict_proba` methods.
 
 .. code-block:: python
 
