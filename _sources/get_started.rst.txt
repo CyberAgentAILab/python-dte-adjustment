@@ -43,11 +43,11 @@ Generate data for training cumulative distribution function:
       quadratic_term = np.dot(X**2, gamma)
       
       # Outcome equation
-      Y = D + linear_term + quadratic_term + U
+      Y = 5 * D + linear_term + quadratic_term + U
       
       return X, D, Y
 
-  n = 100  # Sample size
+  n = 1000  # Sample size
   X, D, Y = generate_data(n)
 
 Then, let's build an empirical cumulative distribution function (CDF).
@@ -63,13 +63,14 @@ Distributional treatment effect (DTE) can be computed easily in the following co
 
 .. code-block:: python
 
-  dte, lower_bound, upper_bound = estimator.predict_dte(target_treatment_arm=1, control_treatment_arm=0, locations=np.sort(Y), variance_type="simple")
+  locations = np.linspace(Y.min(), Y.max(), 20)
+  dte, lower_bound, upper_bound = estimator.predict_dte(target_treatment_arm=1, control_treatment_arm=0, locations=locations, variance_type="simple")
 
 A convenience function is available to visualize distribution effects. This method can be used for other distribution parameters including Probability Treatment Effect (PTE) and Quantile Treatment Effect (QTE).
 
 .. code-block:: python
 
-  plot(np.sort(Y), dte, lower_bound, upper_bound, title="DTE of simple estimator")
+  plot(locations, dte, lower_bound, upper_bound, title="DTE of simple estimator")
 
 .. image:: _static/dte_empirical.png
    :alt: DTE of empirical estimator
@@ -92,8 +93,8 @@ DTE can be computed and visualized in the following code.
 
 .. code-block:: python
 
-  dte, lower_bound, upper_bound = estimator.predict_dte(target_treatment_arm=1, control_treatment_arm=0, locations=np.sort(Y), variance_type="simple")
-  plot(np.sort(Y), dte, lower_bound, upper_bound, title="DTE of adjusted estimator with simple confidence band")
+  dte, lower_bound, upper_bound = estimator.predict_dte(target_treatment_arm=1, control_treatment_arm=0, locations=locations, variance_type="simple")
+  plot(locations, dte, lower_bound, upper_bound, title="DTE of adjusted estimator with simple confidence band")
 
 .. image:: _static/dte_simple.png
    :alt: DTE of adjusted estimator with simple confidence band
@@ -105,8 +106,8 @@ Confidence bands can be computed in different ways. In the following code, we us
 
 .. code-block:: python
 
-  dte, lower_bound, upper_bound = estimator.predict_dte(target_treatment_arm=1, control_treatment_arm=0, locations=np.sort(Y), variance_type="moment")
-  plot(np.sort(Y), dte, lower_bound, upper_bound, title="DTE of adjusted estimator with moment confidence band")
+  dte, lower_bound, upper_bound = estimator.predict_dte(target_treatment_arm=1, control_treatment_arm=0, locations=locations, variance_type="moment")
+  plot(locations, dte, lower_bound, upper_bound, title="DTE of adjusted estimator with moment confidence band")
 
 .. image:: _static/dte_moment.png
    :alt: DTE of adjusted estimator with moment confidence band
@@ -118,8 +119,8 @@ Also, an uniform confidence band is used when "uniform" is specified for the "va
 
 .. code-block:: python
 
-  dte, lower_bound, upper_bound = estimator.predict_dte(target_treatment_arm=1, control_treatment_arm=0, locations=np.sort(Y), variance_type="uniform")
-  plot(np.sort(Y), dte, lower_bound, upper_bound, title="DTE of adjusted estimator with uniform confidence band")
+  dte, lower_bound, upper_bound = estimator.predict_dte(target_treatment_arm=1, control_treatment_arm=0, locations=locations, variance_type="uniform")
+  plot(locations, dte, lower_bound, upper_bound, title="DTE of adjusted estimator with uniform confidence band")
 
 .. image:: _static/dte_uniform.png
    :alt: DTE of adjusted estimator with uniform confidence band
@@ -131,7 +132,6 @@ To compute PTE, we can use "predict_pte" method.
 
 .. code-block:: python
 
-  locations = np.linspace(Y.min(), Y.max(), 20)
   pte, lower_bound, upper_bound = estimator.predict_pte(target_treatment_arm=1, control_treatment_arm=0, width=1, locations=locations, variance_type="simple")
   plot(locations, pte, lower_bound, upper_bound, chart_type="bar", title="PTE of adjusted estimator with simple confidence band")
 
