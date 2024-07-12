@@ -1,6 +1,6 @@
 ## Overview
 
-This an a Python package for building the regression adjusted distribution function estimator proposed in "Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction".
+This a Python package for building the regression adjusted distribution function estimator proposed in "Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction". For the details of this package, see [the documentation](https://cyberagentailab.github.io/python-dte-adjustment/).
 
 ## Installation
 
@@ -17,29 +17,15 @@ This an a Python package for building the regression adjusted distribution funct
     pip install -e .
     ```
 
+## Basic Usage
+Examples of how to use this package are available in [this Get-started Guide](https://cyberagentailab.github.io/python-dte-adjustment/get_started.html).
+
 ## Development
+We welcome contributions to the project! Please review our [Contribution Guide](CONTRIBUTING.md) for details on how to get started.
 
-### Install Pipenv
-If you don't have `pipenv` installed, you can install it using `pip`:
+## License
 
-```sh
-pip install pipenv
-```
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### Linting
-We use `ruff` for linting the code. To run the linter, use the following command:
-```sh
-pipenv run lint
-```
-
-### Auto format
-We use `ruff` for formatting the code. To run the formatter, use the following command:
-```sh
-pipenv run format
-```
-
-### Unit test
-We use `unittest` for testing the code. To run the unit tests, use the following command:
-```sh
-pipenv run unittest
-```
+## Maintainers
+- [Tomu Hirata](https://github.com/TomeHirata)
