@@ -7,7 +7,7 @@ from .util import compute_confidence_intervals, find_le
 __all__ = ["SimpleDistributionEstimator", "AdjustedDistributionEstimator"]
 
 
-class DistributionFunctionMixin(object):
+class DistributionEstimatorBase(object):
     """A mixin including several convenience functions to compute and display distribution functions."""
 
     def __init__(self):
@@ -335,7 +335,7 @@ class DistributionFunctionMixin(object):
         raise NotImplementedError()
 
 
-class SimpleDistributionEstimator(DistributionFunctionMixin):
+class SimpleDistributionEstimator(DistributionEstimatorBase):
     """A class for computing the empirical distribution function and the distributional parameters
     based on the distribution function.
     """
@@ -437,7 +437,7 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
         return cumulative_distribution, np.zeros((n_obs, n_loc))
 
 
-class AdjustedDistributionEstimator(DistributionFunctionMixin):
+class AdjustedDistributionEstimator(DistributionEstimatorBase):
     """A class is for estimating the adjusted distribution function and computing the Distributional parameters based on the trained conditional estimator."""
 
     def __init__(self, base_model, folds=3):
