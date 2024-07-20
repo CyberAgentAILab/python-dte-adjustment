@@ -311,7 +311,7 @@ class DistributionEstimatorBase(object):
 
         return result
 
-    def predict(self, treatment_arms: np.ndarray, outcomes: np.ndarray) -> np.ndarray:
+    def predict(self, treatment_arms: np.ndarray, locations: np.ndarray) -> np.ndarray:
         """Compute cumulative distribution values.
 
         Args:
@@ -321,7 +321,25 @@ class DistributionEstimatorBase(object):
         Returns:
             np.ndarray: Estimated cumulative distribution values for the input.
         """
-        raise NotImplementedError()
+        if self.outcomes is None:
+            raise ValueError(
+                "This estimator has not been trained yet. Please call fit first"
+            )
+
+        unincluded_arms = set(treatment_arms) - set(self.treatment_arms)
+
+        if len(unincluded_arms) > 0:
+            raise ValueError(
+                f"This treatment_arms argument contains arms not included in the training data: {unincluded_arms}"
+            )
+
+        return self._compute_cumulative_distribution(
+            treatment_arms,
+            locations,
+            self.confoundings,
+            self.treatment_arms,
+            self.outcomes,
+        )[0]
 
     def _compute_cumulative_distribution(
         self,
@@ -374,29 +392,6 @@ class SimpleDistributionEstimator(DistributionEstimatorBase):
         self.outcomes = outcomes
 
         return self
-
-    def predict(self, treatment_arms: np.ndarray, locations: np.ndarray) -> np.ndarray:
-        """Compute cumulative distribution values.
-
-        Args:
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
-
-        Returns:
-            np.ndarray: Estimated cumulative distribution values for the input.
-        """
-        if self.outcomes is None:
-            raise ValueError(
-                "This estimator has not been trained yet. Please call fit first"
-            )
-
-        return self._compute_cumulative_distribution(
-            treatment_arms,
-            locations,
-            self.confoundings,
-            self.treatment_arms,
-            self.outcomes,
-        )[0]
 
     def _compute_cumulative_distribution(
         self,
