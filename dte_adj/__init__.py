@@ -2,12 +2,13 @@ import numpy as np
 from typing import Tuple
 from scipy.stats import norm
 from copy import deepcopy
-from .util import compute_confidence_intervals, find_le
+from abc import ABC
+from .util import compute_confidence_intervals
 
 __all__ = ["SimpleDistributionEstimator", "AdjustedDistributionEstimator"]
 
 
-class DistributionEstimatorBase(object):
+class DistributionEstimatorBase(ABC):
     """A mixin including several convenience functions to compute and display distribution functions."""
 
     def __init__(self):
@@ -310,6 +311,33 @@ class DistributionEstimatorBase(object):
             )
 
         return result
+    
+    def fit(
+        self, confoundings: np.ndarray, treatment_arms: np.ndarray, outcomes: np.ndarray
+    ) -> "DistributionEstimatorBase":
+        """Train the DistributionEstimatorBase.
+
+        Args:
+            confoundings (np.ndarray): Pre-treatment covariates.
+            treatment_arms (np.ndarray): The index of the treatment arm.
+            outcomes (np.ndarray): Scalar-valued observed outcome.
+
+        Returns:
+            DistributionEstimatorBase: The fitted estimator.
+        """
+        if confoundings.shape[0] != treatment_arms.shape[0]:
+            raise ValueError(
+                "The shape of confounding and treatment_arm should be same"
+            )
+
+        if confoundings.shape[0] != outcomes.shape[0]:
+            raise ValueError("The shape of confounding and outcome should be same")
+
+        self.confoundings = confoundings
+        self.treatment_arms = treatment_arms
+        self.outcomes = outcomes
+
+        return self
 
     def predict(self, treatment_arms: np.ndarray, locations: np.ndarray) -> np.ndarray:
         """Compute cumulative distribution values.
@@ -366,33 +394,6 @@ class SimpleDistributionEstimator(DistributionEstimatorBase):
         """
         super().__init__()
 
-    def fit(
-        self, confoundings: np.ndarray, treatment_arms: np.ndarray, outcomes: np.ndarray
-    ) -> "SimpleDistributionEstimator":
-        """Train the SimpleDistributionEstimator.
-
-        Args:
-            confoundings (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
-
-        Returns:
-            SimpleDistributionEstimator: The fitted estimator.
-        """
-        if confoundings.shape[0] != treatment_arms.shape[0]:
-            raise ValueError(
-                "The shape of confounding and treatment_arm should be same"
-            )
-
-        if confoundings.shape[0] != outcomes.shape[0]:
-            raise ValueError("The shape of confounding and outcome should be same")
-
-        self.confoundings = confoundings
-        self.treatment_arms = treatment_arms
-        self.outcomes = outcomes
-
-        return self
-
     def _compute_cumulative_distribution(
         self,
         target_treatment_arms: np.ndarray,
@@ -427,7 +428,7 @@ class SimpleDistributionEstimator(DistributionEstimatorBase):
         cumulative_distribution = np.zeros(locations.shape)
         for i, (outcome, arm) in enumerate(zip(locations, target_treatment_arms)):
             cumulative_distribution[i] = (
-                find_le(d_outcome[arm], outcome) + 1
+                np.searchsorted(d_outcome[arm], outcome, side="right")
             ) / d_outcome[arm].shape[0]
         return cumulative_distribution, np.zeros((n_obs, n_loc))
 
@@ -445,59 +446,11 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
         Returns:
             AdjustedDistributionEstimator: An instance of the estimator.
         """
+        if (not hasattr(base_model, 'predict')) and (not hasattr(base_model, 'predict_proba')):
+            raise ValueError('base_model should implement either predict_proba or predict')
         self.base_model = base_model
         self.folds = folds
         super().__init__()
-
-    def fit(
-        self, confoundings: np.ndarray, treatment_arms: np.ndarray, outcomes: np.ndarray
-    ) -> "AdjustedDistributionEstimator":
-        """Train the AdjustedDistributionEstimator.
-
-        Args:
-            confoundings (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
-
-        Returns:
-            AdjustedDistributionEstimator: The fitted estimator.
-        """
-        if confoundings.shape[0] != treatment_arms.shape[0]:
-            raise ValueError(
-                "The shape of confounding and treatment_arm should be same"
-            )
-
-        if confoundings.shape[0] != outcomes.shape[0]:
-            raise ValueError("The shape of confounding and outcome should be same")
-
-        self.confoundings = confoundings
-        self.treatment_arms = treatment_arms
-        self.outcomes = outcomes
-
-        return self
-
-    def predict(self, treatment_arms: np.ndarray, locations: np.ndarray) -> np.ndarray:
-        """Compute cumulative distribution values.
-
-        Args:
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
-
-        Returns:
-            np.ndarray: Estimated cumulative distribution values for the input.
-        """
-        if self.outcomes is None:
-            raise ValueError(
-                "This estimator has not been trained yet. Please call fit first"
-            )
-
-        return self._compute_cumulative_distribution(
-            treatment_arms,
-            locations,
-            self.confoundings,
-            self.treatment_arms,
-            self.outcomes,
-        )[0]
 
     def _compute_cumulative_distribution(
         self,
