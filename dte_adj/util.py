@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import norm
+from typing import Tuple
 
 
 def compute_confidence_intervals(
@@ -16,7 +17,7 @@ def compute_confidence_intervals(
     alpha: 0.05,
     variance_type="moment",
     n_bootstrap=500,
-):
+) -> Tuple[np.ndarray, np.ndarray]:
     """Computes the confidence intervals of distribution parameters.
 
     Args:
@@ -106,25 +107,3 @@ def compute_confidence_intervals(
         return vec_dte_lower_simple, vec_dte_upper_simple
     else:
         raise ValueError(f"Invalid variance type was speficied: {variance_type}")
-
-
-def find_le(array: np.ndarray, threshold):
-    """Find the rightmost value less than or equal to threshold in a sorted array
-
-    Args:
-        array (np.ndarray): The sorted array to search in.
-        threshold (float): The threshold value.
-
-    Returns:
-        int: The index where the value first exceeds the threshold.
-    """
-    low, high = 0, array.shape[0] - 1
-    result = -1
-    while low <= high:
-        mid = (low + high) // 2
-        if array[mid] <= threshold:
-            result = mid
-            low = mid + 1
-        else:
-            high = mid - 1
-    return result

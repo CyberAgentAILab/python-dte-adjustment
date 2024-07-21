@@ -2,12 +2,13 @@ import numpy as np
 from typing import Tuple
 from scipy.stats import norm
 from copy import deepcopy
-from .util import compute_confidence_intervals, find_le
+from abc import ABC
+from .util import compute_confidence_intervals
 
 __all__ = ["SimpleDistributionEstimator", "AdjustedDistributionEstimator"]
 
 
-class DistributionFunctionMixin(object):
+class DistributionEstimatorBase(ABC):
     """A mixin including several convenience functions to compute and display distribution functions."""
 
     def __init__(self):
@@ -311,47 +312,10 @@ class DistributionFunctionMixin(object):
 
         return result
 
-    def predict(self, treatment_arms: np.ndarray, outcomes: np.ndarray) -> np.ndarray:
-        """Compute cumulative distribution values.
-
-        Args:
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
-
-        Returns:
-            np.ndarray: Estimated cumulative distribution values for the input.
-        """
-        raise NotImplementedError()
-
-    def _compute_cumulative_distribution(
-        self,
-        target_treatment_arms: np.ndarray,
-        locations: np.ndarray,
-        confoundings: np.ndarray,
-        treatment_arms: np.ndarray,
-        outcomes: np.array,
-    ) -> np.ndarray:
-        """Compute the cumulative distribution values."""
-        raise NotImplementedError()
-
-
-class SimpleDistributionEstimator(DistributionFunctionMixin):
-    """A class for computing the empirical distribution function and the distributional parameters
-    based on the distribution function.
-    """
-
-    def __init__(self):
-        """Initializes the SimpleDistributionEstimator.
-
-        Returns:
-            SimpleDistributionEstimator: An instance of the estimator.
-        """
-        super().__init__()
-
     def fit(
         self, confoundings: np.ndarray, treatment_arms: np.ndarray, outcomes: np.ndarray
-    ) -> "SimpleDistributionEstimator":
-        """Train the SimpleDistributionEstimator.
+    ) -> "DistributionEstimatorBase":
+        """Train the DistributionEstimatorBase.
 
         Args:
             confoundings (np.ndarray): Pre-treatment covariates.
@@ -359,7 +323,7 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
             outcomes (np.ndarray): Scalar-valued observed outcome.
 
         Returns:
-            SimpleDistributionEstimator: The fitted estimator.
+            DistributionEstimatorBase: The fitted estimator.
         """
         if confoundings.shape[0] != treatment_arms.shape[0]:
             raise ValueError(
@@ -380,7 +344,7 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
 
         Args:
             treatment_arms (np.ndarray): The index of the treatment arm.
-            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
 
         Returns:
             np.ndarray: Estimated cumulative distribution values for the input.
@@ -390,6 +354,13 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
                 "This estimator has not been trained yet. Please call fit first"
             )
 
+        unincluded_arms = set(treatment_arms) - set(self.treatment_arms)
+
+        if len(unincluded_arms) > 0:
+            raise ValueError(
+                f"This treatment_arms argument contains arms not included in the training data: {unincluded_arms}"
+            )
+
         return self._compute_cumulative_distribution(
             treatment_arms,
             locations,
@@ -397,6 +368,31 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
             self.treatment_arms,
             self.outcomes,
         )[0]
+
+    def _compute_cumulative_distribution(
+        self,
+        target_treatment_arms: np.ndarray,
+        locations: np.ndarray,
+        confoundings: np.ndarray,
+        treatment_arms: np.ndarray,
+        outcomes: np.array,
+    ) -> np.ndarray:
+        """Compute the cumulative distribution values."""
+        raise NotImplementedError()
+
+
+class SimpleDistributionEstimator(DistributionEstimatorBase):
+    """A class for computing the empirical distribution function and the distributional parameters
+    based on the distribution function.
+    """
+
+    def __init__(self):
+        """Initializes the SimpleDistributionEstimator.
+
+        Returns:
+            SimpleDistributionEstimator: An instance of the estimator.
+        """
+        super().__init__()
 
     def _compute_cumulative_distribution(
         self,
@@ -432,12 +428,12 @@ class SimpleDistributionEstimator(DistributionFunctionMixin):
         cumulative_distribution = np.zeros(locations.shape)
         for i, (outcome, arm) in enumerate(zip(locations, target_treatment_arms)):
             cumulative_distribution[i] = (
-                find_le(d_outcome[arm], outcome) + 1
+                np.searchsorted(d_outcome[arm], outcome, side="right")
             ) / d_outcome[arm].shape[0]
         return cumulative_distribution, np.zeros((n_obs, n_loc))
 
 
-class AdjustedDistributionEstimator(DistributionFunctionMixin):
+class AdjustedDistributionEstimator(DistributionEstimatorBase):
     """A class is for estimating the adjusted distribution function and computing the Distributional parameters based on the trained conditional estimator."""
 
     def __init__(self, base_model, folds=3):
@@ -450,59 +446,15 @@ class AdjustedDistributionEstimator(DistributionFunctionMixin):
         Returns:
             AdjustedDistributionEstimator: An instance of the estimator.
         """
+        if (not hasattr(base_model, "predict")) and (
+            not hasattr(base_model, "predict_proba")
+        ):
+            raise ValueError(
+                "Base model should implement either predict_proba or predict"
+            )
         self.base_model = base_model
         self.folds = folds
         super().__init__()
-
-    def fit(
-        self, confoundings: np.ndarray, treatment_arms: np.ndarray, outcomes: np.ndarray
-    ) -> "AdjustedDistributionEstimator":
-        """Train the AdjustedDistributionEstimator.
-
-        Args:
-            confoundings (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
-
-        Returns:
-            AdjustedDistributionEstimator: The fitted estimator.
-        """
-        if confoundings.shape[0] != treatment_arms.shape[0]:
-            raise ValueError(
-                "The shape of confounding and treatment_arm should be same"
-            )
-
-        if confoundings.shape[0] != outcomes.shape[0]:
-            raise ValueError("The shape of confounding and outcome should be same")
-
-        self.confoundings = confoundings
-        self.treatment_arms = treatment_arms
-        self.outcomes = outcomes
-
-        return self
-
-    def predict(self, treatment_arms: np.ndarray, locations: np.ndarray) -> np.ndarray:
-        """Compute cumulative distribution values.
-
-        Args:
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
-
-        Returns:
-            np.ndarray: Estimated cumulative distribution values for the input.
-        """
-        if self.outcomes is None:
-            raise ValueError(
-                "This estimator has not been trained yet. Please call fit first"
-            )
-
-        return self._compute_cumulative_distribution(
-            treatment_arms,
-            locations,
-            self.confoundings,
-            self.treatment_arms,
-            self.outcomes,
-        )[0]
 
     def _compute_cumulative_distribution(
         self,
@@ -548,13 +500,19 @@ class AdjustedDistributionEstimator(DistributionFunctionMixin):
                     continue
                 model = deepcopy(self.base_model)
                 model.fit(confounding_train, binominal_train)
-                subset_prediction[subset_mask] = model.predict_proba(confounding_fit)[
-                    :, 1
-                ]
-                superset_prediction[superset_mask, i] = model.predict_proba(
-                    confoundings[superset_mask]
-                )[:, 1]
+                subset_prediction[subset_mask] = self._compute_model_prediction(
+                    model, confounding_fit
+                )
+                superset_prediction[superset_mask, i] = self._compute_model_prediction(
+                    model, confoundings[superset_mask]
+                )
             cumulative_distribution[i] = (
                 cdf - subset_prediction.mean() + superset_prediction[:, i].mean()
             )
         return cumulative_distribution, superset_prediction
+
+    def _compute_model_prediction(self, model, confoundings: np.ndarray) -> np.ndarray:
+        if hasattr(model, "predict_proba"):
+            return model.predict_proba(confoundings)[:, 1]
+        else:
+            return model.predict(confoundings)
