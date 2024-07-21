@@ -34,12 +34,13 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">compute_confidence_intervals</span><span class="p">,</span> <span class="n">find_le</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">compute_confidence_intervals</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SimpleDistributionEstimator&quot;</span><span class="p">,</span> <span class="s2">&quot;AdjustedDistributionEstimator&quot;</span><span class="p">]</span>
 
 
-<span class="k">class</span> <span class="nc">DistributionFunctionMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">DistributionEstimatorBase</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A mixin including several convenience functions to compute and display distribution functions.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -343,7 +344,34 @@
 
         <span class="k">return</span> <span class="n">result</span>
 
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DistributionEstimatorBase&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Train the DistributionEstimatorBase.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            confoundings (np.ndarray): Pre-treatment covariates.</span>
+<span class="sd">            treatment_arms (np.ndarray): The index of the treatment arm.</span>
+<span class="sd">            outcomes (np.ndarray): Scalar-valued observed outcome.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DistributionEstimatorBase: The fitted estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">confoundings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">treatment_arms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The shape of confounding and treatment_arm should be same&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">confoundings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The shape of confounding and outcome should be same&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span> <span class="o">=</span> <span class="n">confoundings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span> <span class="o">=</span> <span class="n">treatment_arms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="n">outcomes</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute cumulative distribution values.</span>
 
 <span class="sd">        Args:</span>
@@ -353,7 +381,25 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            np.ndarray: Estimated cumulative distribution values for the input.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;This estimator has not been trained yet. Please call fit first&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">unincluded_arms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">treatment_arms</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unincluded_arms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;This treatment_arms argument contains arms not included in the training data: </span><span class="si">{</span><span class="n">unincluded_arms</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
+            <span class="n">treatment_arms</span><span class="p">,</span>
+            <span class="n">locations</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_compute_cumulative_distribution</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -369,7 +415,7 @@
 
 <div class="viewcode-block" id="SimpleDistributionEstimator">
 <a class="viewcode-back" href="../modules.html#dte_adj.SimpleDistributionEstimator">[docs]</a>
-<span class="k">class</span> <span class="nc">SimpleDistributionEstimator</span><span class="p">(</span><span class="n">DistributionFunctionMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SimpleDistributionEstimator</span><span class="p">(</span><span class="n">DistributionEstimatorBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for computing the empirical distribution function and the distributional parameters</span>
 <span class="sd">    based on the distribution function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -381,62 +427,6 @@
 <span class="sd">            SimpleDistributionEstimator: An instance of the estimator.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-
-<div class="viewcode-block" id="SimpleDistributionEstimator.fit">
-<a class="viewcode-back" href="../modules.html#dte_adj.SimpleDistributionEstimator.fit">[docs]</a>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SimpleDistributionEstimator&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Train the SimpleDistributionEstimator.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            confoundings (np.ndarray): Pre-treatment covariates.</span>
-<span class="sd">            treatment_arms (np.ndarray): The index of the treatment arm.</span>
-<span class="sd">            outcomes (np.ndarray): Scalar-valued observed outcome.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            SimpleDistributionEstimator: The fitted estimator.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">confoundings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">treatment_arms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;The shape of confounding and treatment_arm should be same&quot;</span>
-            <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">confoundings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The shape of confounding and outcome should be same&quot;</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span> <span class="o">=</span> <span class="n">confoundings</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span> <span class="o">=</span> <span class="n">treatment_arms</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="n">outcomes</span>
-
-        <span class="k">return</span> <span class="bp">self</span></div>
-
-
-<div class="viewcode-block" id="SimpleDistributionEstimator.predict">
-<a class="viewcode-back" href="../modules.html#dte_adj.SimpleDistributionEstimator.predict">[docs]</a>
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute cumulative distribution values.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            treatment_arms (np.ndarray): The index of the treatment arm.</span>
-<span class="sd">            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: Estimated cumulative distribution values for the input.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;This estimator has not been trained yet. Please call fit first&quot;</span>
-            <span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-            <span class="n">treatment_arms</span><span class="p">,</span>
-            <span class="n">locations</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span>
-        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
-
 
     <span class="k">def</span> <span class="nf">_compute_cumulative_distribution</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -472,7 +462,7 @@
         <span class="n">cumulative_distribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">locations</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">outcome</span><span class="p">,</span> <span class="n">arm</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">target_treatment_arms</span><span class="p">)):</span>
             <span class="n">cumulative_distribution</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">find_le</span><span class="p">(</span><span class="n">d_outcome</span><span class="p">[</span><span class="n">arm</span><span class="p">],</span> <span class="n">outcome</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">d_outcome</span><span class="p">[</span><span class="n">arm</span><span class="p">],</span> <span class="n">outcome</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
             <span class="p">)</span> <span class="o">/</span> <span class="n">d_outcome</span><span class="p">[</span><span class="n">arm</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">cumulative_distribution</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_obs</span><span class="p">,</span> <span class="n">n_loc</span><span class="p">))</span></div>
 
@@ -480,7 +470,7 @@
 
 <div class="viewcode-block" id="AdjustedDistributionEstimator">
 <a class="viewcode-back" href="../modules.html#dte_adj.AdjustedDistributionEstimator">[docs]</a>
-<span class="k">class</span> <span class="nc">AdjustedDistributionEstimator</span><span class="p">(</span><span class="n">DistributionFunctionMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">AdjustedDistributionEstimator</span><span class="p">(</span><span class="n">DistributionEstimatorBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class is for estimating the adjusted distribution function and computing the Distributional parameters based on the trained conditional estimator.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_model</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
@@ -493,65 +483,15 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            AdjustedDistributionEstimator: An instance of the estimator.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="s2">&quot;predict&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Base model should implement either predict_proba or predict&quot;</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_model</span> <span class="o">=</span> <span class="n">base_model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">=</span> <span class="n">folds</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-
-<div class="viewcode-block" id="AdjustedDistributionEstimator.fit">
-<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedDistributionEstimator.fit">[docs]</a>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AdjustedDistributionEstimator&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Train the AdjustedDistributionEstimator.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            confoundings (np.ndarray): Pre-treatment covariates.</span>
-<span class="sd">            treatment_arms (np.ndarray): The index of the treatment arm.</span>
-<span class="sd">            outcomes (np.ndarray): Scalar-valued observed outcome.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            AdjustedDistributionEstimator: The fitted estimator.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">confoundings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">treatment_arms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;The shape of confounding and treatment_arm should be same&quot;</span>
-            <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">confoundings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The shape of confounding and outcome should be same&quot;</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span> <span class="o">=</span> <span class="n">confoundings</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span> <span class="o">=</span> <span class="n">treatment_arms</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="n">outcomes</span>
-
-        <span class="k">return</span> <span class="bp">self</span></div>
-
-
-<div class="viewcode-block" id="AdjustedDistributionEstimator.predict">
-<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedDistributionEstimator.predict">[docs]</a>
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute cumulative distribution values.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            treatment_arms (np.ndarray): The index of the treatment arm.</span>
-<span class="sd">            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: Estimated cumulative distribution values for the input.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;This estimator has not been trained yet. Please call fit first&quot;</span>
-            <span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-            <span class="n">treatment_arms</span><span class="p">,</span>
-            <span class="n">locations</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span>
-        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
-
 
     <span class="k">def</span> <span class="nf">_compute_cumulative_distribution</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -597,16 +537,22 @@
                     <span class="k">continue</span>
                 <span class="n">model</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_model</span><span class="p">)</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">confounding_train</span><span class="p">,</span> <span class="n">binominal_train</span><span class="p">)</span>
-                <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">confounding_fit</span><span class="p">)[</span>
-                    <span class="p">:,</span> <span class="mi">1</span>
-                <span class="p">]</span>
-                <span class="n">superset_prediction</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span>
-                    <span class="n">confoundings</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">]</span>
-                <span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
+                    <span class="n">model</span><span class="p">,</span> <span class="n">confounding_fit</span>
+                <span class="p">)</span>
+                <span class="n">superset_prediction</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
+                    <span class="n">model</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">]</span>
+                <span class="p">)</span>
             <span class="n">cumulative_distribution</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">cdf</span> <span class="o">-</span> <span class="n">subset_prediction</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">+</span> <span class="n">superset_prediction</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
             <span class="p">)</span>
-        <span class="k">return</span> <span class="n">cumulative_distribution</span><span class="p">,</span> <span class="n">superset_prediction</span></div>
+        <span class="k">return</span> <span class="n">cumulative_distribution</span><span class="p">,</span> <span class="n">superset_prediction</span>
+
+    <span class="k">def</span> <span class="nf">_compute_model_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">confoundings</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">confoundings</span><span class="p">)</span></div>
 
 </pre></div>
 
