@@ -154,10 +154,9 @@ class TestDistributionEstimatorBase(unittest.TestCase):
         # Arrange
         treatment_arms_test = np.array([0, 1])
         locations_test = np.array([3, 6])
-        expected_output = np.array([0.4, 0])
 
         # Act
-        output = self.estimator.predict(treatment_arms_test, locations_test)
+        self.estimator.predict(treatment_arms_test, locations_test)
 
         # Assert
         self.estimator.compute_cumulative_distribution.assert_called_once()
