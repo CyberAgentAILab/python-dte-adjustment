@@ -133,7 +133,7 @@ class TestDistributionEstimatorBase(unittest.TestCase):
             np.array_equal(self.estimator.treatment_arms, self.treatment_arms)
         )
         self.assertTrue(np.array_equal(self.estimator.outcomes, self.outcomes))
-      
+
     def test_fit_invalid_shapes(self):
         # Arrange
         confoundings_invalid = np.array([[1, 2], [3, 4]])
@@ -149,7 +149,7 @@ class TestDistributionEstimatorBase(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.estimator.fit(self.confoundings, self.treatment_arms, outcomes_invalid)
-    
+
     def test_predict_success(self):
         # Arrange
         treatment_arms_test = np.array([0, 1])
@@ -174,7 +174,7 @@ class TestDistributionEstimatorBase(unittest.TestCase):
         self.assertEqual(
             str(cm.exception),
             "This estimator has not been trained yet. Please call fit first",
-        )    
+        )
 
     def test_predict_fail_invalid_arm(self):
         # Arrange

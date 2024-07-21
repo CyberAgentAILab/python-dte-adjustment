@@ -311,7 +311,7 @@ class DistributionEstimatorBase(ABC):
             )
 
         return result
-    
+
     def fit(
         self, confoundings: np.ndarray, treatment_arms: np.ndarray, outcomes: np.ndarray
     ) -> "DistributionEstimatorBase":
@@ -446,8 +446,12 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
         Returns:
             AdjustedDistributionEstimator: An instance of the estimator.
         """
-        if (not hasattr(base_model, 'predict')) and (not hasattr(base_model, 'predict_proba')):
-            raise ValueError('base_model should implement either predict_proba or predict')
+        if (not hasattr(base_model, "predict")) and (
+            not hasattr(base_model, "predict_proba")
+        ):
+            raise ValueError(
+                "Base model should implement either predict_proba or predict"
+            )
         self.base_model = base_model
         self.folds = folds
         super().__init__()
@@ -496,13 +500,19 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
                     continue
                 model = deepcopy(self.base_model)
                 model.fit(confounding_train, binominal_train)
-                subset_prediction[subset_mask] = model.predict_proba(confounding_fit)[
-                    :, 1
-                ]
-                superset_prediction[superset_mask, i] = model.predict_proba(
-                    confoundings[superset_mask]
-                )[:, 1]
+                subset_prediction[subset_mask] = self._compute_model_prediction(
+                    model, confounding_fit
+                )
+                superset_prediction[superset_mask, i] = self._compute_model_prediction(
+                    model, confoundings[superset_mask]
+                )
             cumulative_distribution[i] = (
                 cdf - subset_prediction.mean() + superset_prediction[:, i].mean()
             )
         return cumulative_distribution, superset_prediction
+
+    def _compute_model_prediction(self, model, confoundings: np.ndarray) -> np.ndarray:
+        if hasattr(model, "predict_proba"):
+            return model.predict_proba(confoundings)[:, 1]
+        else:
+            return model.predict(confoundings)
