@@ -14,7 +14,7 @@ ruff = "~=0.4.9"
 sphinx = "~=7.3.7"
 
 [requires]
-python_version = "3.11"
+python_version = "3"
 
 [scripts]
 format = "ruff format"
