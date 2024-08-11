@@ -55,6 +55,8 @@ Then, let's build an empirical cumulative distribution function (CDF).
 .. code-block:: python
 
   import dte_adj
+  from dte_adj.plot import plot
+  
   estimator = dte_adj.SimpleDistributionEstimator()
   estimator.fit(X, D, Y)
   cdf = estimator.predict(D, Y)
