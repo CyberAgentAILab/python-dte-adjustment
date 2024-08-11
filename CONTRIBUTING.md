@@ -4,7 +4,7 @@ Thank you for considering contributing to this project! Here are some guidelines
 
 ## How can I contribute to this project?
 ### Reporting Bugs
-If you find a bug, please report it by opening an issue in the issue tracker. Provide as much detail as possible to help us understand and reproduce the issue:
+If you find a bug, please report it by opening an issue in the Github issue tracker. Provide as much detail as possible to help us understand and reproduce the issue:
 - A clear and descriptive title.
 - A detailed description of the problem.
 - Steps to reproduce the issue.
@@ -28,7 +28,7 @@ Pull requests are welcome! If you plan to make significant changes, please open 
 - Open a pull request in the original repository.
 
 ## Development
-Here are the basic commands you can use to develop this package.
+Important commands and major dependencies are managed in Pipenv. Here are the basic commands you can use to develop this package.
 
 ### Install Pipenv
 If you don't have `pipenv` installed, you can install it using `pip`:
