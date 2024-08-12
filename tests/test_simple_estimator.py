@@ -13,12 +13,12 @@ class TestSimpleEstimator(unittest.TestCase):
 
     def test_predict(self):
         # Arrange
-        treatment_arms_test = np.array([0, 1])
+        treatment_arm_test = 0
         locations_test = np.array([3, 6])
-        expected_output = np.array([0.4, 0])
+        expected_output = np.array([0.4, 0.7])
 
         # Act
-        output = self.estimator.predict(treatment_arms_test, locations_test)
+        output = self.estimator.predict(treatment_arm_test, locations_test)
 
         # Assert
         np.testing.assert_array_almost_equal(output, expected_output, decimal=2)

@@ -139,8 +139,8 @@ class DistributionEstimatorBase(ABC):
 
         qte_var = qtes.var(axis=0)
 
-        qte_lower = qte + norm.ppf(alpha / 2) / np.sqrt(qte_var)
-        qte_upper = qte + norm.ppf(1 - alpha / 2) / np.sqrt(qte_var)
+        qte_lower = qte + norm.ppf(alpha / 2) * np.sqrt(qte_var)
+        qte_upper = qte + norm.ppf(1 - alpha / 2) * np.sqrt(qte_var)
 
         return qte, qte_lower, qte_upper
 
@@ -155,14 +155,14 @@ class DistributionEstimatorBase(ABC):
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute expected DTEs."""
         treatment_cdf, treatment_cdf_mat = self._compute_cumulative_distribution(
-            np.full(locations.shape, target_treatment_arm),
+            target_treatment_arm,
             locations,
             self.confoundings,
             self.treatment_arms,
             self.outcomes,
         )
         control_cdf, control_cdf_mat = self._compute_cumulative_distribution(
-            np.full(locations.shape, control_treatment_arm),
+            control_treatment_arm,
             locations,
             self.confoundings,
             self.treatment_arms,
@@ -207,7 +207,7 @@ class DistributionEstimatorBase(ABC):
         """Compute expected PTEs."""
         treatment_cumulative_pre, treatment_cdf_mat_pre = (
             self._compute_cumulative_distribution(
-                np.full(locations.shape, target_treatment_arm),
+                target_treatment_arm,
                 locations,
                 self.confoundings,
                 self.treatment_arms,
@@ -216,7 +216,7 @@ class DistributionEstimatorBase(ABC):
         )
         treatment_cumulative_post, treatment_cdf_mat_post = (
             self._compute_cumulative_distribution(
-                np.full(locations.shape, target_treatment_arm),
+                target_treatment_arm,
                 locations + width,
                 self.confoundings,
                 self.treatment_arms,
@@ -226,7 +226,7 @@ class DistributionEstimatorBase(ABC):
         treatment_pdf = treatment_cumulative_post - treatment_cumulative_pre
         control_cumulative_pre, control_cdf_mat_pre = (
             self._compute_cumulative_distribution(
-                np.full(locations.shape, control_treatment_arm),
+                control_treatment_arm,
                 locations,
                 self.confoundings,
                 self.treatment_arms,
@@ -235,7 +235,7 @@ class DistributionEstimatorBase(ABC):
         )
         control_cumulative_post, control_cdf_mat_post = (
             self._compute_cumulative_distribution(
-                np.full(locations.shape, control_treatment_arm),
+                control_treatment_arm,
                 locations + width,
                 self.confoundings,
                 self.treatment_arms,
@@ -291,7 +291,7 @@ class DistributionEstimatorBase(ABC):
             while low <= high:
                 mid = (low + high) // 2
                 val, _ = self._compute_cumulative_distribution(
-                    np.full((1), arm),
+                    arm,
                     np.full((1), locations[mid]),
                     confoundings,
                     treatment_arms,
@@ -339,11 +339,11 @@ class DistributionEstimatorBase(ABC):
 
         return self
 
-    def predict(self, treatment_arms: np.ndarray, locations: np.ndarray) -> np.ndarray:
+    def predict(self, treatment_arm: int, locations: np.ndarray) -> np.ndarray:
         """Compute cumulative distribution values.
 
         Args:
-            treatment_arms (np.ndarray): The index of the treatment arm.
+            treatment_arm (int): The index of the treatment arm.
             outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
 
         Returns:
@@ -354,15 +354,13 @@ class DistributionEstimatorBase(ABC):
                 "This estimator has not been trained yet. Please call fit first"
             )
 
-        unincluded_arms = set(treatment_arms) - set(self.treatment_arms)
-
-        if len(unincluded_arms) > 0:
+        if treatment_arm not in self.treatment_arms:
             raise ValueError(
-                f"This treatment_arms argument contains arms not included in the training data: {unincluded_arms}"
+                f"This target treatment arm was not included in the training data: {treatment_arm}"
             )
 
         return self._compute_cumulative_distribution(
-            treatment_arms,
+            treatment_arm,
             locations,
             self.confoundings,
             self.treatment_arms,
@@ -371,7 +369,7 @@ class DistributionEstimatorBase(ABC):
 
     def _compute_cumulative_distribution(
         self,
-        target_treatment_arms: np.ndarray,
+        target_treatment_arm: int,
         locations: np.ndarray,
         confoundings: np.ndarray,
         treatment_arms: np.ndarray,
@@ -396,7 +394,7 @@ class SimpleDistributionEstimator(DistributionEstimatorBase):
 
     def _compute_cumulative_distribution(
         self,
-        target_treatment_arms: np.ndarray,
+        target_treatment_arm: int,
         locations: np.ndarray,
         confoundings: np.ndarray,
         treatment_arms: np.ndarray,
@@ -405,7 +403,7 @@ class SimpleDistributionEstimator(DistributionEstimatorBase):
         """Compute the cumulative distribution values.
 
         Args:
-            target_treatment_arms (np.ndarray): The index of the treatment arm.
+            target_treatment_arm (int): The index of the treatment arm.
             locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
             confoundings: (np.ndarray): An array of confounding variables in the observed data.
             treatment_arms (np.ndarray): An array of treatment arms in the observed data.
@@ -426,10 +424,10 @@ class SimpleDistributionEstimator(DistributionEstimatorBase):
             d_confounding[arm] = selected_confounding[sorted_indices]
             d_outcome[arm] = selected_outcome[sorted_indices]
         cumulative_distribution = np.zeros(locations.shape)
-        for i, (outcome, arm) in enumerate(zip(locations, target_treatment_arms)):
+        for i, outcome in enumerate(locations):
             cumulative_distribution[i] = (
-                np.searchsorted(d_outcome[arm], outcome, side="right")
-            ) / d_outcome[arm].shape[0]
+                np.searchsorted(d_outcome[target_treatment_arm], outcome, side="right")
+            ) / len(d_outcome[target_treatment_arm])
         return cumulative_distribution, np.zeros((n_obs, n_loc))
 
 
@@ -460,7 +458,7 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
 
     def _compute_cumulative_distribution(
         self,
-        target_treatment_arms: np.ndarray,
+        target_treatment_arm: int,
         locations: np.ndarray,
         confoundings: np.ndarray,
         treatment_arms: np.ndarray,
@@ -469,7 +467,7 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
         """Compute the cumulative distribution values.
 
         Args:
-            target_treatment_arms (np.ndarray): The index of the treatment arm.
+            target_treatment_arm (int): The index of the treatment arm.
             locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
             confoundings: (np.ndarray): An array of confounding variables in the observed data.
             treatment_arm (np.ndarray): An array of treatment arms in the observed data.
@@ -482,8 +480,7 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
         n_loc = locations.shape[0]
         cumulative_distribution = np.zeros(n_loc)
         superset_prediction = np.zeros((n_records, n_loc))
-        arm = target_treatment_arms[0]
-        treatment_mask = treatment_arms == arm
+        treatment_mask = treatment_arms == target_treatment_arm
         if self.is_multi_task:
             confounding_in_arm = confoundings[treatment_mask]
             n_records_in_arm = len(confounding_in_arm)
@@ -512,7 +509,7 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
                 cdf - subset_prediction.mean(axis=0) + superset_prediction.mean(axis=0)
             )  # (n_loc)
         else:
-            for i, (location, arm) in enumerate(zip(locations, target_treatment_arms)):
+            for i, location in enumerate(locations):
                 confounding_in_arm = confoundings[treatment_mask]
                 outcome_in_arm = outcomes[treatment_mask]
                 subset_prediction = np.zeros(outcome_in_arm.shape[0])
@@ -525,7 +522,7 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
                     confounding_train = confoundings[~subset_mask]
                     confounding_fit = confoundings[subset_mask]
                     binominal_train = binominal[~subset_mask]
-                    if np.unique(binominal_train).shape[0] == 1:
+                    if len(np.unique(binominal_train)) == 1:
                         subset_prediction[subset_mask_inner] = binominal_train[0]
                         superset_prediction[superset_mask, i] = binominal_train[0]
                         continue
