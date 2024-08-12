@@ -436,12 +436,13 @@ class SimpleDistributionEstimator(DistributionEstimatorBase):
 class AdjustedDistributionEstimator(DistributionEstimatorBase):
     """A class is for estimating the adjusted distribution function and computing the Distributional parameters based on the trained conditional estimator."""
 
-    def __init__(self, base_model, folds=3):
+    def __init__(self, base_model, folds=3, is_multi_task=False):
         """Initializes the AdjustedDistributionEstimator.
 
         Args:
             base_model (scikit-learn estimator): The base model implementing used for conditional distribution function estimators. The model should implement fit(data, targets) and predict_proba(data).
             folds (int): The number of folds for cross-fitting.
+            is_multi_task(bool): Whether to use multi-task learning. If True, your base model needs to support multi-task prediction (n_samples, n_features) -> (n_samples, n_targets).
 
         Returns:
             AdjustedDistributionEstimator: An instance of the estimator.
@@ -454,6 +455,7 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
             )
         self.base_model = base_model
         self.folds = folds
+        self.is_multi_task = is_multi_task
         super().__init__()
 
     def _compute_cumulative_distribution(
@@ -476,43 +478,76 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
         Returns:
             np.ndarray: Estimated cumulative distribution values.
         """
-        n_obs = outcomes.shape[0]
+        n_records = outcomes.shape[0]
         n_loc = locations.shape[0]
-        cumulative_distribution = np.zeros(locations.shape)
-        superset_prediction = np.zeros((n_obs, n_loc))
-        for i, (location, arm) in enumerate(zip(locations, target_treatment_arms)):
-            confounding_in_arm = confoundings[treatment_arms == arm]
-            outcome_in_arm = outcomes[treatment_arms == arm]
-            subset_prediction = np.zeros(outcome_in_arm.shape[0])
-            binominal = (outcome_in_arm <= location) * 1
-            cdf = binominal.mean()
+        cumulative_distribution = np.zeros(n_loc)
+        superset_prediction = np.zeros((n_records, n_loc))
+        arm = target_treatment_arms[0]
+        treatment_mask = treatment_arms == arm
+        if self.is_multi_task:
+            confounding_in_arm = confoundings[treatment_mask]
+            n_records_in_arm = len(confounding_in_arm)
+            outcome_in_arm = outcomes[treatment_mask]  # (n_records)
+            subset_prediction = np.zeros(
+                (n_records_in_arm, n_loc)
+            )  # (n_records_in_arm, n_loc)
+            binominal = (outcomes.reshape(-1, 1) <= locations) * 1  # (n_records, n_loc)
+            cdf = binominal[treatment_mask].mean(axis=0)  # (n_loc)
             for fold in range(self.folds):
-                subset_mask = (
-                    np.arange(confounding_in_arm.shape[0]) % self.folds == fold
-                )
-                confounding_train = confounding_in_arm[~subset_mask]
-                confounding_fit = confounding_in_arm[subset_mask]
+                superset_mask = np.arange(n_records) % self.folds == fold
+                subset_mask = superset_mask & treatment_mask
+                subset_mask_inner = superset_mask[treatment_mask]
+                confounding_train = confoundings[~subset_mask]
+                confounding_fit = confoundings[subset_mask]
                 binominal_train = binominal[~subset_mask]
-                superset_mask = np.arange(self.outcomes.shape[0]) % self.folds == fold
-                if np.unique(binominal_train).shape[0] == 1:
-                    subset_prediction[subset_mask] = binominal_train[0]
-                    superset_prediction[superset_mask, i] = binominal_train[0]
-                    continue
                 model = deepcopy(self.base_model)
                 model.fit(confounding_train, binominal_train)
-                subset_prediction[subset_mask] = self._compute_model_prediction(
+                subset_prediction[subset_mask_inner] = self._compute_model_prediction(
                     model, confounding_fit
                 )
-                superset_prediction[superset_mask, i] = self._compute_model_prediction(
+                superset_prediction[superset_mask] = self._compute_model_prediction(
                     model, confoundings[superset_mask]
                 )
-            cumulative_distribution[i] = (
-                cdf - subset_prediction.mean() + superset_prediction[:, i].mean()
-            )
+            cumulative_distribution = (
+                cdf - subset_prediction.mean(axis=0) + superset_prediction.mean(axis=0)
+            )  # (n_loc)
+        else:
+            for i, (location, arm) in enumerate(zip(locations, target_treatment_arms)):
+                confounding_in_arm = confoundings[treatment_mask]
+                outcome_in_arm = outcomes[treatment_mask]
+                subset_prediction = np.zeros(outcome_in_arm.shape[0])
+                binominal = (outcomes <= location) * 1  # (n_records)
+                cdf = binominal[treatment_mask].mean()
+                for fold in range(self.folds):
+                    superset_mask = np.arange(n_records) % self.folds == fold
+                    subset_mask = superset_mask & treatment_mask
+                    subset_mask_inner = superset_mask[treatment_mask]
+                    confounding_train = confoundings[~subset_mask]
+                    confounding_fit = confoundings[subset_mask]
+                    binominal_train = binominal[~subset_mask]
+                    if np.unique(binominal_train).shape[0] == 1:
+                        subset_prediction[subset_mask_inner] = binominal_train[0]
+                        superset_prediction[superset_mask, i] = binominal_train[0]
+                        continue
+                    model = deepcopy(self.base_model)
+                    model.fit(confounding_train, binominal_train)
+                    subset_prediction[subset_mask_inner] = (
+                        self._compute_model_prediction(model, confounding_fit)
+                    )
+                    superset_prediction[superset_mask, i] = (
+                        self._compute_model_prediction(
+                            model, confoundings[superset_mask]
+                        )
+                    )
+                cumulative_distribution[i] = (
+                    cdf - subset_prediction.mean() + superset_prediction[:, i].mean()
+                )
         return cumulative_distribution, superset_prediction
 
     def _compute_model_prediction(self, model, confoundings: np.ndarray) -> np.ndarray:
         if hasattr(model, "predict_proba"):
+            if self.is_multi_task:
+                return model.predict_proba(confoundings)
             return model.predict_proba(confoundings)[:, 1]
         else:
             return model.predict(confoundings)
