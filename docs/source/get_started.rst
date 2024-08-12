@@ -154,3 +154,12 @@ To compute QTE, we use "predict_qte" method. The confidence band is computed by 
    :height: 300px
    :width: 450px
    :align: center
+
+You can use any model with "predict_proba" or "predict" method to adjust the distribution function estimation. For example, the following code use XGBoost classifier to estimate the conditional distribution.
+
+.. code-block:: python
+
+  import xgboost as xgb
+  estimator = dte_adj.AdjustedDistributionEstimator(xgb.XGBClassifier(), folds=3)
+  estimator.fit(X, D, Y)
+  cdf = estimator.predict(1, locations)
