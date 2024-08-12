@@ -8,7 +8,7 @@ class TestAdjustedEstimator(unittest.TestCase):
     def setUp(self):
         base_model = MagicMock()
         base_model.predict_proba.side_effect = lambda x, y: x
-        self.estimator = AdjustedDistributionEstimator(base_model, folds=1)
+        self.estimator = AdjustedDistributionEstimator(base_model, folds=2)
         self.confoundings = np.zeros((20, 5))
         self.treatment_arms = np.hstack([np.zeros(10), np.ones(10)])
         self.outcomes = np.arange(20)
@@ -60,13 +60,13 @@ class TestAdjustedEstimator(unittest.TestCase):
         # Arrange
         mock_model = self.estimator.base_model
         mock_model.predict_proba.side_effect = lambda x: np.ones((x.shape[0], 2)) * 0.5
-        target_treatment_arms = np.zeros(10)
+        target_treatment_arm = 0
         locations = np.arange(10)
 
         # Act
         cumulative_distribution, superset_prediction = (
             self.estimator._compute_cumulative_distribution(
-                target_treatment_arms,
+                target_treatment_arm,
                 locations,
                 self.confoundings,
                 self.treatment_arms,
@@ -82,5 +82,5 @@ class TestAdjustedEstimator(unittest.TestCase):
             self.assertAlmostEqual(cumulative_distribution[i], (i + 1) / 10, places=2)
 
         for i in range(20):
-            for j in range(10):
+            for j in range(1, 10):
                 self.assertAlmostEqual(superset_prediction[i, j], 0.5, places=2)

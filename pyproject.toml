@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dte_adj"
-version = "0.1.2"
+version = "0.1.3"
 description = "This is a Python library for a research paper 'Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction'"
 readme = "README.md"
 requires-python = ">=3.10"

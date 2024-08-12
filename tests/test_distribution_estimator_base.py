@@ -123,7 +123,7 @@ class TestDistributionEstimatorBase(unittest.TestCase):
         # Assert
         np.testing.assert_array_almost_equal(qte, expected_qte)
         np.testing.assert_array_almost_equal(lower_bound.shape, quantiles.shape)
-        np.testing.assert_array_almost_equal(lower_bound.shape, quantiles.shape)
+        np.testing.assert_array_almost_equal(upper_bound.shape, quantiles.shape)
         self.estimator.compute_cumulative_distribution.assert_called()
 
     def test_fit_success(self):
@@ -152,24 +152,24 @@ class TestDistributionEstimatorBase(unittest.TestCase):
 
     def test_predict_success(self):
         # Arrange
-        treatment_arms_test = np.array([0, 1])
+        treatment_arm_test = 0
         locations_test = np.array([3, 6])
 
         # Act
-        self.estimator.predict(treatment_arms_test, locations_test)
+        self.estimator.predict(treatment_arm_test, locations_test)
 
         # Assert
         self.estimator.compute_cumulative_distribution.assert_called_once()
 
     def test_predict_fail_before_fit(self):
         # Arrange
-        treatment_arms_test = np.array([0, 1])
+        treatment_arm_test = 0
         locations_test = np.array([3, 6])
         subject = MockDistributionEstimator()
 
         # Act, Assert
         with self.assertRaises(ValueError) as cm:
-            subject.predict(treatment_arms_test, locations_test)
+            subject.predict(treatment_arm_test, locations_test)
         self.assertEqual(
             str(cm.exception),
             "This estimator has not been trained yet. Please call fit first",
@@ -177,13 +177,13 @@ class TestDistributionEstimatorBase(unittest.TestCase):
 
     def test_predict_fail_invalid_arm(self):
         # Arrange
-        treatment_arms_invalid = np.array([2])
+        treatment_arm_invalid = 2
         locations_test = np.array([3, 6])
 
         # Act, Assert
         with self.assertRaises(ValueError) as cm:
-            self.estimator.predict(treatment_arms_invalid, locations_test)
+            self.estimator.predict(treatment_arm_invalid, locations_test)
         self.assertEqual(
             str(cm.exception),
-            "This treatment_arms argument contains arms not included in the training data: {2}",
+            "This target treatment arm was not included in the training data: 2",
         )
