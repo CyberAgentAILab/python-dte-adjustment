@@ -86,12 +86,12 @@
 
 <span class="n">estimator</span> <span class="o">=</span> <span class="n">dte_adj</span><span class="o">.</span><span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
 <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
-<span class="n">cdf</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">cdf</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">locations</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Distributional treatment effect (DTE) can be computed easily in the following code.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
-<span class="n">dte</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span><span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span> <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;simple&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dte</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span><span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span> <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;simple&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>A convenience function is available to visualize distribution effects. This method can be used for other distribution parameters including Probability Treatment Effect (PTE) and Quantile Treatment Effect (QTE).</p>
@@ -106,7 +106,7 @@ In the following example, we use Logistic Regression. Please make sure that your
 <span class="n">logit</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
 <span class="n">estimator</span> <span class="o">=</span> <span class="n">dte_adj</span><span class="o">.</span><span class="n">AdjustedDistributionEstimator</span><span class="p">(</span><span class="n">logit</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
-<span class="n">cdf</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+<span class="n">cdf</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">locations</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>DTE can be computed and visualized in the following code.</p>
@@ -145,6 +145,13 @@ In the following example, we use Logistic Regression. Please make sure that your
 </div>
 <a class="reference internal image-reference" href="_images/qte.png"><img alt="QTE of adjusted estimator" class="align-center" src="_images/qte.png" style="width: 450px; height: 300px;" />
 </a>
+<p>You can use any model with “predict_proba” or “predict” method to adjust the distribution function estimation. For example, the following code use XGBoost classifier to estimate the conditional distribution.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">xgboost</span> <span class="k">as</span> <span class="nn">xgb</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">dte_adj</span><span class="o">.</span><span class="n">AdjustedDistributionEstimator</span><span class="p">(</span><span class="n">xgb</span><span class="o">.</span><span class="n">XGBClassifier</span><span class="p">(),</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+<span class="n">cdf</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">locations</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 
 

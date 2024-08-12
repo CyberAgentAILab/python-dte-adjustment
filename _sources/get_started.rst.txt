@@ -59,13 +59,13 @@ Then, let's build an empirical cumulative distribution function (CDF).
   
   estimator = dte_adj.SimpleDistributionEstimator()
   estimator.fit(X, D, Y)
-  cdf = estimator.predict(D, Y)
+  locations = np.linspace(Y.min(), Y.max(), 20)
+  cdf = estimator.predict(1, locations)
 
 Distributional treatment effect (DTE) can be computed easily in the following code.
 
 .. code-block:: python
 
-  locations = np.linspace(Y.min(), Y.max(), 20)
   dte, lower_bound, upper_bound = estimator.predict_dte(target_treatment_arm=1, control_treatment_arm=0, locations=locations, variance_type="simple")
 
 A convenience function is available to visualize distribution effects. This method can be used for other distribution parameters including Probability Treatment Effect (PTE) and Quantile Treatment Effect (QTE).
@@ -89,7 +89,7 @@ In the following example, we use Logistic Regression. Please make sure that your
   logit = LogisticRegression()
   estimator = dte_adj.AdjustedDistributionEstimator(logit, folds=3)
   estimator.fit(X, D, Y)
-  cdf = estimator.predict(D, Y)
+  cdf = estimator.predict(1, locations)
 
 DTE can be computed and visualized in the following code.
 
@@ -156,3 +156,12 @@ To compute QTE, we use "predict_qte" method. The confidence band is computed by 
    :height: 300px
    :width: 450px
    :align: center
+
+You can use any model with "predict_proba" or "predict" method to adjust the distribution function estimation. For example, the following code use XGBoost classifier to estimate the conditional distribution.
+
+.. code-block:: python
+
+  import xgboost as xgb
+  estimator = dte_adj.AdjustedDistributionEstimator(xgb.XGBClassifier(), folds=3)
+  estimator.fit(X, D, Y)
+  cdf = estimator.predict(1, locations)

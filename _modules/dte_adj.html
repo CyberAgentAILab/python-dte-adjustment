@@ -171,8 +171,8 @@
 
         <span class="n">qte_var</span> <span class="o">=</span> <span class="n">qtes</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="n">qte_lower</span> <span class="o">=</span> <span class="n">qte</span> <span class="o">+</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">qte_var</span><span class="p">)</span>
-        <span class="n">qte_upper</span> <span class="o">=</span> <span class="n">qte</span> <span class="o">+</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">qte_var</span><span class="p">)</span>
+        <span class="n">qte_lower</span> <span class="o">=</span> <span class="n">qte</span> <span class="o">+</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">qte_var</span><span class="p">)</span>
+        <span class="n">qte_upper</span> <span class="o">=</span> <span class="n">qte</span> <span class="o">+</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">qte_var</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">qte</span><span class="p">,</span> <span class="n">qte_lower</span><span class="p">,</span> <span class="n">qte_upper</span>
 
@@ -187,14 +187,14 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute expected DTEs.&quot;&quot;&quot;</span>
         <span class="n">treatment_cdf</span><span class="p">,</span> <span class="n">treatment_cdf_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">locations</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_treatment_arm</span><span class="p">),</span>
+            <span class="n">target_treatment_arm</span><span class="p">,</span>
             <span class="n">locations</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">control_cdf</span><span class="p">,</span> <span class="n">control_cdf_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">locations</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">),</span>
+            <span class="n">control_treatment_arm</span><span class="p">,</span>
             <span class="n">locations</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
@@ -239,7 +239,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute expected PTEs.&quot;&quot;&quot;</span>
         <span class="n">treatment_cumulative_pre</span><span class="p">,</span> <span class="n">treatment_cdf_mat_pre</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">locations</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_treatment_arm</span><span class="p">),</span>
+                <span class="n">target_treatment_arm</span><span class="p">,</span>
                 <span class="n">locations</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
@@ -248,7 +248,7 @@
         <span class="p">)</span>
         <span class="n">treatment_cumulative_post</span><span class="p">,</span> <span class="n">treatment_cdf_mat_post</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">locations</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_treatment_arm</span><span class="p">),</span>
+                <span class="n">target_treatment_arm</span><span class="p">,</span>
                 <span class="n">locations</span> <span class="o">+</span> <span class="n">width</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
@@ -258,7 +258,7 @@
         <span class="n">treatment_pdf</span> <span class="o">=</span> <span class="n">treatment_cumulative_post</span> <span class="o">-</span> <span class="n">treatment_cumulative_pre</span>
         <span class="n">control_cumulative_pre</span><span class="p">,</span> <span class="n">control_cdf_mat_pre</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">locations</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">),</span>
+                <span class="n">control_treatment_arm</span><span class="p">,</span>
                 <span class="n">locations</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
@@ -267,7 +267,7 @@
         <span class="p">)</span>
         <span class="n">control_cumulative_post</span><span class="p">,</span> <span class="n">control_cdf_mat_post</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">locations</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">),</span>
+                <span class="n">control_treatment_arm</span><span class="p">,</span>
                 <span class="n">locations</span> <span class="o">+</span> <span class="n">width</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
@@ -323,7 +323,7 @@
             <span class="k">while</span> <span class="n">low</span> <span class="o">&lt;=</span> <span class="n">high</span><span class="p">:</span>
                 <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">low</span> <span class="o">+</span> <span class="n">high</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
                 <span class="n">val</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">),</span> <span class="n">arm</span><span class="p">),</span>
+                    <span class="n">arm</span><span class="p">,</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">),</span> <span class="n">locations</span><span class="p">[</span><span class="n">mid</span><span class="p">]),</span>
                     <span class="n">confoundings</span><span class="p">,</span>
                     <span class="n">treatment_arms</span><span class="p">,</span>
@@ -371,11 +371,11 @@
 
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute cumulative distribution values.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            treatment_arms (np.ndarray): The index of the treatment arm.</span>
+<span class="sd">            treatment_arm (int): The index of the treatment arm.</span>
 <span class="sd">            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
 
 <span class="sd">        Returns:</span>
@@ -386,15 +386,13 @@
                 <span class="s2">&quot;This estimator has not been trained yet. Please call fit first&quot;</span>
             <span class="p">)</span>
 
-        <span class="n">unincluded_arms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">treatment_arms</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unincluded_arms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">treatment_arm</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;This treatment_arms argument contains arms not included in the training data: </span><span class="si">{</span><span class="n">unincluded_arms</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;This target treatment arm was not included in the training data: </span><span class="si">{</span><span class="n">treatment_arm</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-            <span class="n">treatment_arms</span><span class="p">,</span>
+            <span class="n">treatment_arm</span><span class="p">,</span>
             <span class="n">locations</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">confoundings</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
@@ -403,7 +401,7 @@
 
     <span class="k">def</span> <span class="nf">_compute_cumulative_distribution</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">target_treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">confoundings</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -430,7 +428,7 @@
 
     <span class="k">def</span> <span class="nf">_compute_cumulative_distribution</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">target_treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">confoundings</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -439,7 +437,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the cumulative distribution values.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            target_treatment_arms (np.ndarray): The index of the treatment arm.</span>
+<span class="sd">            target_treatment_arm (int): The index of the treatment arm.</span>
 <span class="sd">            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
 <span class="sd">            confoundings: (np.ndarray): An array of confounding variables in the observed data.</span>
 <span class="sd">            treatment_arms (np.ndarray): An array of treatment arms in the observed data.</span>
@@ -460,10 +458,10 @@
             <span class="n">d_confounding</span><span class="p">[</span><span class="n">arm</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_confounding</span><span class="p">[</span><span class="n">sorted_indices</span><span class="p">]</span>
             <span class="n">d_outcome</span><span class="p">[</span><span class="n">arm</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_outcome</span><span class="p">[</span><span class="n">sorted_indices</span><span class="p">]</span>
         <span class="n">cumulative_distribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">locations</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">outcome</span><span class="p">,</span> <span class="n">arm</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">target_treatment_arms</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">outcome</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">locations</span><span class="p">):</span>
             <span class="n">cumulative_distribution</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">d_outcome</span><span class="p">[</span><span class="n">arm</span><span class="p">],</span> <span class="n">outcome</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
-            <span class="p">)</span> <span class="o">/</span> <span class="n">d_outcome</span><span class="p">[</span><span class="n">arm</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">d_outcome</span><span class="p">[</span><span class="n">target_treatment_arm</span><span class="p">],</span> <span class="n">outcome</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+            <span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">d_outcome</span><span class="p">[</span><span class="n">target_treatment_arm</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">cumulative_distribution</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_obs</span><span class="p">,</span> <span class="n">n_loc</span><span class="p">))</span></div>
 
 
@@ -473,12 +471,13 @@
 <span class="k">class</span> <span class="nc">AdjustedDistributionEstimator</span><span class="p">(</span><span class="n">DistributionEstimatorBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class is for estimating the adjusted distribution function and computing the Distributional parameters based on the trained conditional estimator.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_model</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_model</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">is_multi_task</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the AdjustedDistributionEstimator.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            base_model (scikit-learn estimator): The base model implementing used for conditional distribution function estimators. The model should implement fit(data, targets) and predict_proba(data).</span>
 <span class="sd">            folds (int): The number of folds for cross-fitting.</span>
+<span class="sd">            is_multi_task(bool): Whether to use multi-task learning. If True, your base model needs to support multi-task prediction (n_samples, n_features) -&gt; (n_samples, n_targets).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            AdjustedDistributionEstimator: An instance of the estimator.</span>
@@ -491,11 +490,12 @@
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_model</span> <span class="o">=</span> <span class="n">base_model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">=</span> <span class="n">folds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_multi_task</span> <span class="o">=</span> <span class="n">is_multi_task</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_compute_cumulative_distribution</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">target_treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">confoundings</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -504,7 +504,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the cumulative distribution values.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            target_treatment_arms (np.ndarray): The index of the treatment arm.</span>
+<span class="sd">            target_treatment_arm (int): The index of the treatment arm.</span>
 <span class="sd">            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
 <span class="sd">            confoundings: (np.ndarray): An array of confounding variables in the observed data.</span>
 <span class="sd">            treatment_arm (np.ndarray): An array of treatment arms in the observed data.</span>
@@ -513,43 +513,75 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            np.ndarray: Estimated cumulative distribution values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">n_obs</span> <span class="o">=</span> <span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">n_records</span> <span class="o">=</span> <span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">n_loc</span> <span class="o">=</span> <span class="n">locations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">cumulative_distribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">locations</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="n">superset_prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_obs</span><span class="p">,</span> <span class="n">n_loc</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">arm</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">target_treatment_arms</span><span class="p">)):</span>
-            <span class="n">confounding_in_arm</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">treatment_arms</span> <span class="o">==</span> <span class="n">arm</span><span class="p">]</span>
-            <span class="n">outcome_in_arm</span> <span class="o">=</span> <span class="n">outcomes</span><span class="p">[</span><span class="n">treatment_arms</span> <span class="o">==</span> <span class="n">arm</span><span class="p">]</span>
-            <span class="n">subset_prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">outcome_in_arm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">binominal</span> <span class="o">=</span> <span class="p">(</span><span class="n">outcome_in_arm</span> <span class="o">&lt;=</span> <span class="n">location</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span>
-            <span class="n">cdf</span> <span class="o">=</span> <span class="n">binominal</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">cumulative_distribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_loc</span><span class="p">)</span>
+        <span class="n">superset_prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_records</span><span class="p">,</span> <span class="n">n_loc</span><span class="p">))</span>
+        <span class="n">treatment_mask</span> <span class="o">=</span> <span class="n">treatment_arms</span> <span class="o">==</span> <span class="n">target_treatment_arm</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_multi_task</span><span class="p">:</span>
+            <span class="n">confounding_in_arm</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
+            <span class="n">n_records_in_arm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">confounding_in_arm</span><span class="p">)</span>
+            <span class="n">outcome_in_arm</span> <span class="o">=</span> <span class="n">outcomes</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>  <span class="c1"># (n_records)</span>
+            <span class="n">subset_prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">n_records_in_arm</span><span class="p">,</span> <span class="n">n_loc</span><span class="p">)</span>
+            <span class="p">)</span>  <span class="c1"># (n_records_in_arm, n_loc)</span>
+            <span class="n">binominal</span> <span class="o">=</span> <span class="p">(</span><span class="n">outcomes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">locations</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span>  <span class="c1"># (n_records, n_loc)</span>
+            <span class="n">cdf</span> <span class="o">=</span> <span class="n">binominal</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># (n_loc)</span>
             <span class="k">for</span> <span class="n">fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">folds</span><span class="p">):</span>
-                <span class="n">subset_mask</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">confounding_in_arm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">==</span> <span class="n">fold</span>
-                <span class="p">)</span>
-                <span class="n">confounding_train</span> <span class="o">=</span> <span class="n">confounding_in_arm</span><span class="p">[</span><span class="o">~</span><span class="n">subset_mask</span><span class="p">]</span>
-                <span class="n">confounding_fit</span> <span class="o">=</span> <span class="n">confounding_in_arm</span><span class="p">[</span><span class="n">subset_mask</span><span class="p">]</span>
+                <span class="n">superset_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_records</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">==</span> <span class="n">fold</span>
+                <span class="n">subset_mask</span> <span class="o">=</span> <span class="n">superset_mask</span> <span class="o">&amp;</span> <span class="n">treatment_mask</span>
+                <span class="n">subset_mask_inner</span> <span class="o">=</span> <span class="n">superset_mask</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
+                <span class="n">confounding_train</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="o">~</span><span class="n">subset_mask</span><span class="p">]</span>
+                <span class="n">confounding_fit</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">subset_mask</span><span class="p">]</span>
                 <span class="n">binominal_train</span> <span class="o">=</span> <span class="n">binominal</span><span class="p">[</span><span class="o">~</span><span class="n">subset_mask</span><span class="p">]</span>
-                <span class="n">superset_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">==</span> <span class="n">fold</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">binominal_train</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">binominal_train</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="n">superset_prediction</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">binominal_train</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="k">continue</span>
                 <span class="n">model</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_model</span><span class="p">)</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">confounding_train</span><span class="p">,</span> <span class="n">binominal_train</span><span class="p">)</span>
-                <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
+                <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_mask_inner</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
                     <span class="n">model</span><span class="p">,</span> <span class="n">confounding_fit</span>
                 <span class="p">)</span>
-                <span class="n">superset_prediction</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
+                <span class="n">superset_prediction</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
                     <span class="n">model</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">]</span>
                 <span class="p">)</span>
-            <span class="n">cumulative_distribution</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">cdf</span> <span class="o">-</span> <span class="n">subset_prediction</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">+</span> <span class="n">superset_prediction</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-            <span class="p">)</span>
+            <span class="n">cumulative_distribution</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">cdf</span> <span class="o">-</span> <span class="n">subset_prediction</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">superset_prediction</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="p">)</span>  <span class="c1"># (n_loc)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">location</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">locations</span><span class="p">):</span>
+                <span class="n">confounding_in_arm</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
+                <span class="n">outcome_in_arm</span> <span class="o">=</span> <span class="n">outcomes</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
+                <span class="n">subset_prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">outcome_in_arm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">binominal</span> <span class="o">=</span> <span class="p">(</span><span class="n">outcomes</span> <span class="o">&lt;=</span> <span class="n">location</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span>  <span class="c1"># (n_records)</span>
+                <span class="n">cdf</span> <span class="o">=</span> <span class="n">binominal</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">folds</span><span class="p">):</span>
+                    <span class="n">superset_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_records</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">==</span> <span class="n">fold</span>
+                    <span class="n">subset_mask</span> <span class="o">=</span> <span class="n">superset_mask</span> <span class="o">&amp;</span> <span class="n">treatment_mask</span>
+                    <span class="n">subset_mask_inner</span> <span class="o">=</span> <span class="n">superset_mask</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
+                    <span class="n">confounding_train</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="o">~</span><span class="n">subset_mask</span><span class="p">]</span>
+                    <span class="n">confounding_fit</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">subset_mask</span><span class="p">]</span>
+                    <span class="n">binominal_train</span> <span class="o">=</span> <span class="n">binominal</span><span class="p">[</span><span class="o">~</span><span class="n">subset_mask</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">binominal_train</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_mask_inner</span><span class="p">]</span> <span class="o">=</span> <span class="n">binominal_train</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">superset_prediction</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">binominal_train</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="k">continue</span>
+                    <span class="n">model</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_model</span><span class="p">)</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">confounding_train</span><span class="p">,</span> <span class="n">binominal_train</span><span class="p">)</span>
+                    <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_mask_inner</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">confounding_fit</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="n">superset_prediction</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
+                            <span class="n">model</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">]</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="n">cumulative_distribution</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">cdf</span> <span class="o">-</span> <span class="n">subset_prediction</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">+</span> <span class="n">superset_prediction</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="p">)</span>
         <span class="k">return</span> <span class="n">cumulative_distribution</span><span class="p">,</span> <span class="n">superset_prediction</span>
 
     <span class="k">def</span> <span class="nf">_compute_model_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_multi_task</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">confoundings</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">confoundings</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">confoundings</span><span class="p">)</span></div>
