@@ -481,7 +481,6 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
         cumulative_distribution = np.zeros(n_loc)
         superset_prediction = np.zeros((n_records, n_loc))
         treatment_mask = treatment_arms == target_treatment_arm
-        if self.is_multi_task:
         confounding_in_arm = confoundings[treatment_mask]
         n_records_in_arm = len(confounding_in_arm)
         if self.is_multi_task:
@@ -521,7 +520,6 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
                     subset_train_mask = (~superset_mask) & treatment_mask
                     subset_test_mask_inner = superset_mask[treatment_mask]
                     confounding_train = confoundings[subset_train_mask]
-                    confounding_subset_test = confoundings[subset_test_mask]
                     binominal_train = binominal[subset_train_mask]
                     if len(np.unique(binominal_train)) == 1:
                         subset_prediction[subset_test_mask_inner] = binominal_train[0]

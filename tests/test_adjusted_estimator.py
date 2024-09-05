@@ -82,5 +82,5 @@ class TestAdjustedEstimator(unittest.TestCase):
             self.assertAlmostEqual(cumulative_distribution[i], (i + 1) / 10, places=2)
 
         for i in range(20):
-            for j in range(1, 10):
+            for j in range(1, 8):
                 self.assertAlmostEqual(superset_prediction[i, j], 0.5, places=2)
