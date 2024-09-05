@@ -482,9 +482,9 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
         superset_prediction = np.zeros((n_records, n_loc))
         treatment_mask = treatment_arms == target_treatment_arm
         if self.is_multi_task:
-            confounding_in_arm = confoundings[treatment_mask]
-            n_records_in_arm = len(confounding_in_arm)
-            outcome_in_arm = outcomes[treatment_mask]  # (n_records)
+        confounding_in_arm = confoundings[treatment_mask]
+        n_records_in_arm = len(confounding_in_arm)
+        if self.is_multi_task:
             subset_prediction = np.zeros(
                 (n_records_in_arm, n_loc)
             )  # (n_records_in_arm, n_loc)
@@ -492,15 +492,17 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
             cdf = binominal[treatment_mask].mean(axis=0)  # (n_loc)
             for fold in range(self.folds):
                 superset_mask = np.arange(n_records) % self.folds == fold
-                subset_mask = superset_mask & treatment_mask
-                subset_mask_inner = superset_mask[treatment_mask]
-                confounding_train = confoundings[~subset_mask]
-                confounding_fit = confoundings[subset_mask]
-                binominal_train = binominal[~subset_mask]
+                subset_test_mask = superset_mask & treatment_mask
+                subset_train_mask = (~superset_mask) & treatment_mask
+                subset_test_mask_inner = superset_mask[treatment_mask]
+                confounding_train = confoundings[subset_train_mask]
+                binominal_train = binominal[subset_train_mask]
                 model = deepcopy(self.base_model)
                 model.fit(confounding_train, binominal_train)
-                subset_prediction[subset_mask_inner] = self._compute_model_prediction(
-                    model, confounding_fit
+                subset_prediction[subset_test_mask_inner] = (
+                    self._compute_model_prediction(
+                        model, confoundings[subset_test_mask]
+                    )
                 )
                 superset_prediction[superset_mask] = self._compute_model_prediction(
                     model, confoundings[superset_mask]
@@ -510,26 +512,27 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
             )  # (n_loc)
         else:
             for i, location in enumerate(locations):
-                confounding_in_arm = confoundings[treatment_mask]
-                outcome_in_arm = outcomes[treatment_mask]
-                subset_prediction = np.zeros(outcome_in_arm.shape[0])
+                subset_prediction = np.zeros(n_records_in_arm)
                 binominal = (outcomes <= location) * 1  # (n_records)
                 cdf = binominal[treatment_mask].mean()
                 for fold in range(self.folds):
                     superset_mask = np.arange(n_records) % self.folds == fold
-                    subset_mask = superset_mask & treatment_mask
-                    subset_mask_inner = superset_mask[treatment_mask]
-                    confounding_train = confoundings[~subset_mask]
-                    confounding_fit = confoundings[subset_mask]
-                    binominal_train = binominal[~subset_mask]
+                    subset_test_mask = superset_mask & treatment_mask
+                    subset_train_mask = (~superset_mask) & treatment_mask
+                    subset_test_mask_inner = superset_mask[treatment_mask]
+                    confounding_train = confoundings[subset_train_mask]
+                    confounding_subset_test = confoundings[subset_test_mask]
+                    binominal_train = binominal[subset_train_mask]
                     if len(np.unique(binominal_train)) == 1:
-                        subset_prediction[subset_mask_inner] = binominal_train[0]
+                        subset_prediction[subset_test_mask_inner] = binominal_train[0]
                         superset_prediction[superset_mask, i] = binominal_train[0]
                         continue
                     model = deepcopy(self.base_model)
                     model.fit(confounding_train, binominal_train)
-                    subset_prediction[subset_mask_inner] = (
-                        self._compute_model_prediction(model, confounding_fit)
+                    subset_prediction[subset_test_mask_inner] = (
+                        self._compute_model_prediction(
+                            model, confoundings[subset_test_mask]
+                        )
                     )
                     superset_prediction[superset_mask, i] = (
                         self._compute_model_prediction(
@@ -544,7 +547,13 @@ class AdjustedDistributionEstimator(DistributionEstimatorBase):
     def _compute_model_prediction(self, model, confoundings: np.ndarray) -> np.ndarray:
         if hasattr(model, "predict_proba"):
             if self.is_multi_task:
+                # suppose the shape of prediction is (n_records, n_locations)
                 return model.predict_proba(confoundings)
-            return model.predict_proba(confoundings)[:, 1]
+            probabilities = model.predict_proba(confoundings)
+            if probabilities.ndim == 1:
+                # when the shape of prediction is (n_records)
+                return probabilities
+            # when the shape of prediction is (n_records, 2)
+            return probabilities[:, 1]
         else:
             return model.predict(confoundings)
