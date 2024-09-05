@@ -518,10 +518,9 @@
         <span class="n">cumulative_distribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_loc</span><span class="p">)</span>
         <span class="n">superset_prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_records</span><span class="p">,</span> <span class="n">n_loc</span><span class="p">))</span>
         <span class="n">treatment_mask</span> <span class="o">=</span> <span class="n">treatment_arms</span> <span class="o">==</span> <span class="n">target_treatment_arm</span>
+        <span class="n">confounding_in_arm</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
+        <span class="n">n_records_in_arm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">confounding_in_arm</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_multi_task</span><span class="p">:</span>
-            <span class="n">confounding_in_arm</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
-            <span class="n">n_records_in_arm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">confounding_in_arm</span><span class="p">)</span>
-            <span class="n">outcome_in_arm</span> <span class="o">=</span> <span class="n">outcomes</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>  <span class="c1"># (n_records)</span>
             <span class="n">subset_prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
                 <span class="p">(</span><span class="n">n_records_in_arm</span><span class="p">,</span> <span class="n">n_loc</span><span class="p">)</span>
             <span class="p">)</span>  <span class="c1"># (n_records_in_arm, n_loc)</span>
@@ -529,15 +528,17 @@
             <span class="n">cdf</span> <span class="o">=</span> <span class="n">binominal</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># (n_loc)</span>
             <span class="k">for</span> <span class="n">fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">folds</span><span class="p">):</span>
                 <span class="n">superset_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_records</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">==</span> <span class="n">fold</span>
-                <span class="n">subset_mask</span> <span class="o">=</span> <span class="n">superset_mask</span> <span class="o">&amp;</span> <span class="n">treatment_mask</span>
-                <span class="n">subset_mask_inner</span> <span class="o">=</span> <span class="n">superset_mask</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
-                <span class="n">confounding_train</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="o">~</span><span class="n">subset_mask</span><span class="p">]</span>
-                <span class="n">confounding_fit</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">subset_mask</span><span class="p">]</span>
-                <span class="n">binominal_train</span> <span class="o">=</span> <span class="n">binominal</span><span class="p">[</span><span class="o">~</span><span class="n">subset_mask</span><span class="p">]</span>
+                <span class="n">subset_test_mask</span> <span class="o">=</span> <span class="n">superset_mask</span> <span class="o">&amp;</span> <span class="n">treatment_mask</span>
+                <span class="n">subset_train_mask</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">superset_mask</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">treatment_mask</span>
+                <span class="n">subset_test_mask_inner</span> <span class="o">=</span> <span class="n">superset_mask</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
+                <span class="n">confounding_train</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">subset_train_mask</span><span class="p">]</span>
+                <span class="n">binominal_train</span> <span class="o">=</span> <span class="n">binominal</span><span class="p">[</span><span class="n">subset_train_mask</span><span class="p">]</span>
                 <span class="n">model</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_model</span><span class="p">)</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">confounding_train</span><span class="p">,</span> <span class="n">binominal_train</span><span class="p">)</span>
-                <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_mask_inner</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
-                    <span class="n">model</span><span class="p">,</span> <span class="n">confounding_fit</span>
+                <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_test_mask_inner</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
+                        <span class="n">model</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">subset_test_mask</span><span class="p">]</span>
+                    <span class="p">)</span>
                 <span class="p">)</span>
                 <span class="n">superset_prediction</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
                     <span class="n">model</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">]</span>
@@ -547,26 +548,26 @@
             <span class="p">)</span>  <span class="c1"># (n_loc)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">location</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">locations</span><span class="p">):</span>
-                <span class="n">confounding_in_arm</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
-                <span class="n">outcome_in_arm</span> <span class="o">=</span> <span class="n">outcomes</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
-                <span class="n">subset_prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">outcome_in_arm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">subset_prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_records_in_arm</span><span class="p">)</span>
                 <span class="n">binominal</span> <span class="o">=</span> <span class="p">(</span><span class="n">outcomes</span> <span class="o">&lt;=</span> <span class="n">location</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span>  <span class="c1"># (n_records)</span>
                 <span class="n">cdf</span> <span class="o">=</span> <span class="n">binominal</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
                 <span class="k">for</span> <span class="n">fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">folds</span><span class="p">):</span>
                     <span class="n">superset_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_records</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">==</span> <span class="n">fold</span>
-                    <span class="n">subset_mask</span> <span class="o">=</span> <span class="n">superset_mask</span> <span class="o">&amp;</span> <span class="n">treatment_mask</span>
-                    <span class="n">subset_mask_inner</span> <span class="o">=</span> <span class="n">superset_mask</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
-                    <span class="n">confounding_train</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="o">~</span><span class="n">subset_mask</span><span class="p">]</span>
-                    <span class="n">confounding_fit</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">subset_mask</span><span class="p">]</span>
-                    <span class="n">binominal_train</span> <span class="o">=</span> <span class="n">binominal</span><span class="p">[</span><span class="o">~</span><span class="n">subset_mask</span><span class="p">]</span>
+                    <span class="n">subset_test_mask</span> <span class="o">=</span> <span class="n">superset_mask</span> <span class="o">&amp;</span> <span class="n">treatment_mask</span>
+                    <span class="n">subset_train_mask</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">superset_mask</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">treatment_mask</span>
+                    <span class="n">subset_test_mask_inner</span> <span class="o">=</span> <span class="n">superset_mask</span><span class="p">[</span><span class="n">treatment_mask</span><span class="p">]</span>
+                    <span class="n">confounding_train</span> <span class="o">=</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">subset_train_mask</span><span class="p">]</span>
+                    <span class="n">binominal_train</span> <span class="o">=</span> <span class="n">binominal</span><span class="p">[</span><span class="n">subset_train_mask</span><span class="p">]</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">binominal_train</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_mask_inner</span><span class="p">]</span> <span class="o">=</span> <span class="n">binominal_train</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_test_mask_inner</span><span class="p">]</span> <span class="o">=</span> <span class="n">binominal_train</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                         <span class="n">superset_prediction</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">binominal_train</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                         <span class="k">continue</span>
                     <span class="n">model</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_model</span><span class="p">)</span>
                     <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">confounding_train</span><span class="p">,</span> <span class="n">binominal_train</span><span class="p">)</span>
-                    <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_mask_inner</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">confounding_fit</span><span class="p">)</span>
+                    <span class="n">subset_prediction</span><span class="p">[</span><span class="n">subset_test_mask_inner</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
+                            <span class="n">model</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">[</span><span class="n">subset_test_mask</span><span class="p">]</span>
+                        <span class="p">)</span>
                     <span class="p">)</span>
                     <span class="n">superset_prediction</span><span class="p">[</span><span class="n">superset_mask</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_model_prediction</span><span class="p">(</span>
@@ -581,8 +582,14 @@
     <span class="k">def</span> <span class="nf">_compute_model_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">confoundings</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_multi_task</span><span class="p">:</span>
+                <span class="c1"># suppose the shape of prediction is (n_records, n_locations)</span>
                 <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">confoundings</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">confoundings</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">probabilities</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">confoundings</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">probabilities</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># when the shape of prediction is (n_records)</span>
+                <span class="k">return</span> <span class="n">probabilities</span>
+            <span class="c1"># when the shape of prediction is (n_records, 2)</span>
+            <span class="k">return</span> <span class="n">probabilities</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">confoundings</span><span class="p">)</span></div>
 
