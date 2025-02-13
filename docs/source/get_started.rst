@@ -81,7 +81,7 @@ A convenience function is available to visualize distribution effects. This meth
    :align: center
 
 To initialize the adjusted distribution function, the base model for conditional distribution function needs to be passed.
-In the following example, we use Logistic Regression. Please make sure that your base model implements `fit` and `predict_proba` methods.
+In the following example, we use Logistic Regression. Please make sure that your base model implements ``fit`` and ``predict_proba`` methods.
 
 .. code-block:: python
 
@@ -117,7 +117,7 @@ Confidence bands can be computed in different ways. In the following code, we us
    :width: 450px
    :align: center
 
-Also, an uniform confidence band is used when "uniform" is specified for the "variance_type" argument.
+Also, an uniform confidence band is used when ``uniform`` is specified for the ``variance_type`` argument.
 
 .. code-block:: python
 
@@ -130,7 +130,7 @@ Also, an uniform confidence band is used when "uniform" is specified for the "va
    :width: 450px
    :align: center
 
-To compute PTE, we can use "predict_pte" method.
+To compute PTE, we can use ``predict_pte`` method.
 
 .. code-block:: python
 
@@ -143,7 +143,7 @@ To compute PTE, we can use "predict_pte" method.
    :width: 450px
    :align: center
 
-To compute QTE, we use "predict_qte" method. The confidence band is computed by bootstrap method.
+To compute QTE, we use ``predict_qte`` method. The confidence band is computed by bootstrap method.
 
 .. code-block:: python
 
@@ -157,7 +157,8 @@ To compute QTE, we use "predict_qte" method. The confidence band is computed by 
    :width: 450px
    :align: center
 
-You can use any model with "predict_proba" or "predict" method to adjust the distribution function estimation. For example, the following code use XGBoost classifier to estimate the conditional distribution.
+You can use any model with ``predict_proba`` or ``predict`` method to adjust the distribution function estimation. 
+For example, the following code use XGBoost classifier to estimate the conditional distribution.
 
 .. code-block:: python
 
@@ -165,3 +166,14 @@ You can use any model with "predict_proba" or "predict" method to adjust the dis
   estimator = dte_adj.AdjustedDistributionEstimator(xgb.XGBClassifier(), folds=3)
   estimator.fit(X, D, Y)
   cdf = estimator.predict(1, locations)
+
+``predict_dte`` and ``predict_pte`` methods provide an option to train a model for multiple locations simultaneously.
+To enable the feature, pass ``is_multi_task=True``.
+
+.. code-block:: python
+
+  from sklearn.linear_model import LinearRegression
+  model = LinearRegression()
+  estimator = dte_adj.AdjustedDistributionEstimator(model, folds=3)
+  estimator.fit(X, D, Y)
+  dte, lower_bound, upper_bound = estimator.predict_dte(target_treatment_arm=1, control_treatment_arm=0, is_multi_task=True, locations=locations, variance_type="moment")
