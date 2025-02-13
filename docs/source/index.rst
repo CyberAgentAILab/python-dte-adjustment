@@ -1,7 +1,8 @@
 dte_adj
 =======
 
-This a Python package for building the regression adjusted distribution function estimator proposed in "Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction".
+`dte_adj` is a Python package for estimating distribution treatment effects. 
+It provides APIs for conducting regression adjustment to estimate precise distribution functions as well as convenient utils.
 
 .. toctree::
    :maxdepth: 1
