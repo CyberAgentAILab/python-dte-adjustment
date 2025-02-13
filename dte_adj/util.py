@@ -70,7 +70,7 @@ def compute_confidence_intervals(
             omega / num_obs
         )
         return vec_dte_lower_moment, vec_dte_upper_moment
-    elif variance_type == "uniform":
+    elif variance_type in ["uniform", "multiplier"]:
         tstats = np.zeros((n_bootstrap, len(vec_loc)))
         boot_draw = np.zeros((n_bootstrap, len(vec_loc)))
 
@@ -83,13 +83,25 @@ def compute_confidence_intervals(
                 1 / num_obs * np.sum(xi[:, np.newaxis] * influence_function, axis=0)
             )
 
-        tstats = np.abs(boot_draw)[:, :-1] / np.sqrt(omega[:-1] / num_obs)
-        max_tstats = np.max(tstats, axis=1)
-        quantile_max_tstats = np.quantile(max_tstats, 1 - alpha)
+        if variance_type == "uniform":
+            tstats = np.abs(boot_draw)[:, :-1] / np.sqrt(omega[:-1] / num_obs)
+            max_tstats = np.max(tstats, axis=1)
+            quantile_max_tstats = np.quantile(max_tstats, 1 - alpha)
 
-        vec_dte_lower_boot = vec_dte - quantile_max_tstats * np.sqrt(omega / num_obs)
-        vec_dte_upper_boot = vec_dte + quantile_max_tstats * np.sqrt(omega / num_obs)
-        return vec_dte_lower_boot, vec_dte_upper_boot
+            se = (
+                np.quantile(boot_draw, 0.75, axis=0)
+                - np.quantile(boot_draw, 0.25, axis=0)
+            ) / (norm.ppf(0.75) - norm.ppf(0.25))
+
+            vec_dte_lower_boot = vec_dte - quantile_max_tstats * se
+            vec_dte_upper_boot = vec_dte + quantile_max_tstats * se
+            return vec_dte_lower_boot, vec_dte_upper_boot
+        else:
+            se = np.std(boot_draw, axis=0)
+
+            vec_dte_lower_boot = vec_dte + se * norm.ppf(alpha / 2)
+            vec_dte_upper_boot = vec_dte + se * norm.ppf(1 - alpha / 2)
+            return vec_dte_lower_boot, vec_dte_upper_boot
     elif variance_type == "simple":
         w_target = num_obs / num_target
         w_control = num_obs / num_control
