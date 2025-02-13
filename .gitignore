@@ -165,3 +165,7 @@ cython_debug/
 
 # Mac OS
 .DS_Store
+
+# Used for experiments
+*.csv
+experiments
