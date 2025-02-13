@@ -6,7 +6,7 @@ This package can be installed either through PyPI or source code.
 Requirement
 ~~~~~~~~~~~
 
-You need to use Python version 3.6 or higher to use this package.
+You need to use Python version 3.10 or higher to use this package.
 
 
 Install from PyPI
