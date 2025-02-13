@@ -137,7 +137,7 @@ To compute PTE, we can use "predict_pte" method.
   pte, lower_bound, upper_bound = estimator.predict_pte(target_treatment_arm=1, control_treatment_arm=0, width=1, locations=locations, variance_type="simple")
   plot(locations, pte, lower_bound, upper_bound, chart_type="bar", title="PTE of adjusted estimator with simple confidence band")
 
-.. image:: _static/pte_simple.png
+.. image:: _static/pte_empirical.png
    :alt: PTE of adjusted estimator with simple confidence band
    :height: 300px
    :width: 450px

@@ -9,7 +9,8 @@ def plot(
     means: np.ndarray,
     lower_bounds: np.ndarray,
     upper_bounds: np.ndarray,
-    chart_type="line",
+    chart_type: str = "line",
+    color: str = "green",
     ax: Optional[axis.Axis] = None,
     title: Optional[str] = None,
     xlabel: Optional[str] = None,
@@ -23,6 +24,7 @@ def plot(
         lower_bounds (np.Array): Lower bound for the distributional parameters.
         upper_bounds (np.Array): Upper bound for the distributional parameters.
         chart_type (str): Chart type of the plotting. Available values are line or bar.
+        color (str): The color of lines or bars.
         ax (matplotlib.axes.Axes, optional): Target axes instance. If None, a new figure and axes will be created.
         title (str, optional): Axes title.
         xlabel (str, optional): X-axis title label.
@@ -35,12 +37,12 @@ def plot(
         fig, ax = plt.subplots()
 
     if chart_type == "line":
-        ax.plot(X, means, label="Values", color="blue")
+        ax.plot(X, means, label="Values", color=color)
         ax.fill_between(
             X,
             lower_bounds,
             upper_bounds,
-            color="gray",
+            color=color,
             alpha=0.3,
             label="Confidence Interval",
         )
@@ -53,6 +55,8 @@ def plot(
                 np.maximum(upper_bounds - means, 0),
             ],
             capsize=5,
+            color=color,
+            width=(X.max() - X.min()) / len(X),
         )
     else:
         raise ValueError(f"Chart type {chart_type} is not supported")

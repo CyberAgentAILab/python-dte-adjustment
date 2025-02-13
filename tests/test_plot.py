@@ -41,7 +41,7 @@ class TestPlot(unittest.TestCase):
         self.assertTrue(np.array_equal(x_fill, x_values_arg))
         self.assertTrue(np.array_equal(lower_fill, lower_bands))
         self.assertTrue(np.array_equal(upper_fill, upper_bands))
-        self.assertEqual(fill_between_kwargs["color"], "gray")
+        self.assertEqual(fill_between_kwargs["color"], "green")
         self.assertAlmostEqual(fill_between_kwargs["alpha"], 0.3)
         self.assertEqual(fill_between_kwargs["label"], "Confidence Interval")
         mock_ax.set_title.assert_called_once_with("Test Title")
