@@ -25,10 +25,10 @@ def compute_confidence_intervals(
         vec_d (np.ndarray): Treatment indicator vector.
         vec_loc (np.ndarray): Locations where the distribution parameters are estimated.
         mat_y_u (np.ndarray): Indicator function for 1{Y⩽y}. Shape is n_obs * n_loc.
-        vec_prediction_target (np.ndarray): Estimated values from the conditional model for the treatment group.
-        vec_prediction_control (np.ndarray): Estimated values from the conditional model for the control group.
-        mat_entire_predictions_target (np.ndarray): Prediction of the conditional distribution estimator for target group.
-        mat_entire_predictions_control (np.ndarray): Prediction of the conditional distribution estimator for control group.
+        vec_prediction_target (np.ndarray): Unconditional estimated distributional effects for the treatment group.
+        vec_prediction_control (np.ndarray): Unconditional estimated distributional effects for the control group.
+        mat_entire_predictions_target (np.ndarray): Conditional stimated distributional effects for target group.
+        mat_entire_predictions_control (np.ndarray): Conditional stimated distributional effects for control group.
         ind_target (int): Index of the target treatment indicator.
         ind_control (int): Index of the control treatment indicator.
         alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
@@ -41,26 +41,14 @@ def compute_confidence_intervals(
             - np.ndarray: upper bound.
     """
     num_obs = vec_y.shape[0]
-    n_loc = vec_loc.shape[0]
-    mat_d = np.tile(vec_d, (n_loc, 1)).T
     vec_dte = vec_prediction_target - vec_prediction_control
-    mat_dte = np.tile(vec_dte, (num_obs, 1))
 
     num_target = (vec_d == ind_target).sum()
     num_control = (vec_d == ind_control).sum()
+
     influence_function = (
-        num_obs
-        / num_target
-        * (mat_d == ind_target)
-        * (mat_y_u - mat_entire_predictions_target)
-        + mat_entire_predictions_target
-        - num_obs
-        / num_control
-        * (mat_d == ind_control)
-        * (mat_y_u - mat_entire_predictions_control)
-        - mat_entire_predictions_control
-        - mat_dte
-    )
+        mat_entire_predictions_target - mat_entire_predictions_target.mean(axis=0)
+    ) - (mat_entire_predictions_control - mat_entire_predictions_control.mean(axis=0))
 
     omega = (influence_function**2).mean(axis=0)
 

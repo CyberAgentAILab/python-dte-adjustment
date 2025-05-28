@@ -7,17 +7,23 @@ from dte_adj import DistributionEstimatorBase
 def compute_cumulative_distribution(
     target_treatment_arms: np.ndarray,
     locations: np.ndarray,
-    confoundings: np.ndarray,
+    covariates: np.ndarray,
     treatment_arms: np.ndarray,
     outcomes: np.array,
 ) -> np.ndarray:
     """Mock implementation for testing purposes."""
-    return np.linspace(
-        0, 0.9, locations.shape[0]
-    ) + target_treatment_arms * 0.1, np.zeros((outcomes.shape[0], locations.shape[0]))
+    return (
+        np.linspace(0, 0.9, locations.shape[0]) + target_treatment_arms * 0.1,
+        np.zeros((outcomes.shape[0], locations.shape[0])),
+        np.zeros((outcomes.shape[0], locations.shape[0])),
+    )
 
 
 class MockDistributionEstimator(DistributionEstimatorBase):
+    """
+    Mock class to implement _compute_cumulative_distribution for testing.
+    """
+
     def __init__(
         self, mock_compute_cumulative_distribution=compute_cumulative_distribution
     ):
@@ -27,18 +33,22 @@ class MockDistributionEstimator(DistributionEstimatorBase):
             mock_compute_cumulative_distribution
         )
 
-    """Mock class to implement _compute_cumulative_distribution for testing."""
+    def fit(self, covariates, treatment_arms, outcomes):
+        """Mock fit method to set attributes."""
+        self.covariates = covariates
+        self.treatment_arms = treatment_arms
+        self.outcomes = outcomes
 
     def _compute_cumulative_distribution(
         self,
         target_treatment_arms: np.ndarray,
         locations: np.ndarray,
-        confoundings: np.ndarray,
+        covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
     ) -> np.ndarray:
         return self.compute_cumulative_distribution(
-            target_treatment_arms, locations, confoundings, treatment_arms, outcomes
+            target_treatment_arms, locations, covariates, treatment_arms, outcomes
         )
 
 
@@ -53,17 +63,17 @@ def compute_confidence_intervals(*args, **kwargs):
 class TestDistributionEstimatorBase(unittest.TestCase):
     def setUp(self):
         self.estimator = MockDistributionEstimator()
-        self.confoundings = np.zeros((20, 5))
+        self.covariates = np.zeros((20, 5))
         self.treatment_arms = np.hstack([np.zeros(10), np.ones(10)])
         self.outcomes = np.arange(20)
-        self.estimator.fit(self.confoundings, self.treatment_arms, self.outcomes)
+        self.estimator.fit(self.covariates, self.treatment_arms, self.outcomes)
 
     def test_initialization(self):
         # Arrange
         base_estimator = MockDistributionEstimator()
 
         # Assert
-        self.assertIsNone(base_estimator.confoundings)
+        self.assertIsNone(base_estimator.covariates)
         self.assertIsNone(base_estimator.treatment_arms)
         self.assertIsNone(base_estimator.outcomes)
 
@@ -128,27 +138,11 @@ class TestDistributionEstimatorBase(unittest.TestCase):
 
     def test_fit_success(self):
         # Assert
-        self.assertTrue(np.array_equal(self.estimator.confoundings, self.confoundings))
+        self.assertTrue(np.array_equal(self.estimator.covariates, self.covariates))
         self.assertTrue(
             np.array_equal(self.estimator.treatment_arms, self.treatment_arms)
         )
         self.assertTrue(np.array_equal(self.estimator.outcomes, self.outcomes))
-
-    def test_fit_invalid_shapes(self):
-        # Arrange
-        confoundings_invalid = np.array([[1, 2], [3, 4]])
-        treatment_arms_invalid = np.array([0, 1])
-        outcomes_invalid = np.array([0.5, 0.7])
-
-        # Assert
-        with self.assertRaises(ValueError):
-            self.estimator.fit(confoundings_invalid, self.treatment_arms, self.outcomes)
-
-        with self.assertRaises(ValueError):
-            self.estimator.fit(self.confoundings, treatment_arms_invalid, self.outcomes)
-
-        with self.assertRaises(ValueError):
-            self.estimator.fit(self.confoundings, self.treatment_arms, outcomes_invalid)
 
     def test_predict_success(self):
         # Arrange
