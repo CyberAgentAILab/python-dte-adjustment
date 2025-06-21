@@ -163,14 +163,14 @@ class DistributionEstimatorBase(ABC):
         n_bootstrap: int,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute expected DTEs."""
-        treatment_cdf, _, treatment_cdf_mat = self._compute_cumulative_distribution(
+        treatment_cdf, treatment_cdf_mat, _ = self._compute_cumulative_distribution(
             target_treatment_arm,
             locations,
             self.covariates,
             self.treatment_arms,
             self.outcomes,
         )
-        control_cdf, _, control_cdf_mat = self._compute_cumulative_distribution(
+        control_cdf, control_cdf_mat, _ = self._compute_cumulative_distribution(
             control_treatment_arm,
             locations,
             self.covariates,
@@ -622,11 +622,6 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
             binominal = (outcomes.reshape(-1, 1) <= locations) * 1  # (n_records, n_loc)
             for fold in range(self.folds):
                 fold_mask = (folds != fold) & treatment_mask
-                covariates_train = covariates[fold_mask]
-                binominal_train = binominal[fold_mask]
-                if len(np.unique(binominal_train)) > 1:
-                    self.model = deepcopy(self.base_model)
-                    self.model.fit(covariates_train, binominal_train)
                 for s in s_list:
                     s_mask = strata == s
                     weight = (s_mask & treatment_mask).sum() / s_mask.sum()
@@ -634,6 +629,9 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                     subset_train_mask = (folds != fold) & s_mask & treatment_mask
                     covariates_train = covariates[subset_train_mask]
                     binominal_train = binominal[subset_train_mask]
+                    if len(np.unique(binominal_train)) > 1:
+                        self.model = deepcopy(self.base_model)
+                        self.model.fit(covariates_train, binominal_train)
 
                     pred = self._compute_model_prediction(
                         self.model, covariates[superset_mask]
@@ -652,8 +650,9 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                     fold_mask = (folds != fold) & treatment_mask
                     covariates_train = covariates[fold_mask]
                     binominal_train = binominal[fold_mask]
-                    self.model = deepcopy(self.base_model)
+                    # Pool the records across strata and train the model
                     if len(np.unique(binominal_train)) > 1:
+                        self.model = deepcopy(self.base_model)
                         self.model.fit(covariates_train, binominal_train)
                     for s in s_list:
                         s_mask = strata == s
@@ -662,7 +661,12 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                         subset_train_mask = (folds != fold) & s_mask & treatment_mask
                         covariates_train = covariates[subset_train_mask]
                         binominal_train = binominal[subset_train_mask]
-                        if len(np.unique(binominal_train)) == 1:
+                        # TODO: revisit the logic here
+                        if len(np.unique(binominal_train)) > 1:
+                            # self.model = deepcopy(self.base_model)
+                            # self.model.fit(covariates_train, binominal_train)
+                            pass
+                        else:
                             pred = binominal_train[0]
                             superset_prediction[superset_mask, i] = pred
                             prediction[superset_mask, i] = (
