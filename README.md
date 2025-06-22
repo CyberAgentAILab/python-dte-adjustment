@@ -9,7 +9,7 @@
     pip install dte_adj
     ```
 
-2. **Install from Source**
+2. **Install from source**
 
     ```sh
     git clone https://github.com/CyberAgentAILab/python-dte-adjustment

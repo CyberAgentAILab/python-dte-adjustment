@@ -417,7 +417,7 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
-    ) -> np.ndarray:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute the cumulative distribution values.
 
@@ -429,47 +429,37 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
             outcomes (np.ndarray): An array of outcomes in the observed data
 
         Returns:
-            np.ndarray: Estimated cumulative distribution values.
+            Tuple of numpy arrays:
+                - np.ndarray: Unconditional cumulative distribution values.
+                - np.ndarray: Adjusted cumulative distribution for each observation.
+                - np.ndarray: Conditional cumulative distribution for each observation.
         """
         n_records = outcomes.shape[0]
         n_loc = locations.shape[0]
-        superset_prediction = np.zeros((n_records, n_loc))
         prediction = np.zeros((n_records, n_loc))
         treatment_mask = treatment_arms == target_treatment_arm
 
         strata = self.strata
         s_list = np.unique(strata)
-        s_dict = {}
+        w_s = {}
         for s in s_list:
             s_mask = strata == s
-            s_dict[s] = (s_mask & treatment_mask).sum() / s_mask.sum()
+            w_s[s] = (s_mask & treatment_mask).sum() / s_mask.sum()
         n_obs = outcomes.shape[0]
         n_loc = locations.shape[0]
         for i, outcome in enumerate(locations):
             for j in range(n_obs):
                 s = strata[j]
-                prediction[j, i] = (
-                    (outcomes[j] <= outcome) / s_dict[s] * treatment_mask[j]
-                )
+                prediction[j, i] = (outcomes[j] <= outcome) / w_s[s] * treatment_mask[j]
 
-        pred = {}
-        for j in range(n_obs):
-            s = strata[j]
-            s_mask = s == strata
-            if s in pred:
-                superset_prediction[j] = pred[s]
-            else:
-                superset_prediction[j] = prediction[s_mask].mean(axis=0)
-                pred[s] = superset_prediction[j]
+        unconditional_pred = {s: prediction[s == strata].mean(axis=0) for s in s_list}
+        conditional_prediction = np.array([unconditional_pred[s] for s in strata])
+        weights = np.array([w_s[s] for s in strata])[:, np.newaxis]
+        prediction = (
+            (outcomes[:, np.newaxis] <= locations) - conditional_prediction
+        ) / weights * treatment_mask[:, np.newaxis] + conditional_prediction
 
-        for i, outcome in enumerate(locations):
-            for j in range(n_obs):
-                s = strata[j]
-                prediction[j, i] = (
-                    (outcomes[j] <= outcome) - superset_prediction[j, i]
-                ) / s_dict[s] * treatment_mask[j] + superset_prediction[j, i]
-
-        return prediction.mean(axis=0), prediction, superset_prediction
+        return prediction.mean(axis=0), prediction, conditional_prediction
 
     def _compute_interval_probability(
         self,
@@ -478,57 +468,52 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
-    ) -> np.ndarray:
-        """Compute the cumulative distribution values.
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Compute the interval probabilities.
 
         Args:
             target_treatment_arm (int): The index of the treatment arm.
-            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            locations (np.ndarray): Scalar values to be used for computing the interval probabilities.
             covariates: (np.ndarray): An array of covariates variables in the observed data.
             treatment_arm (np.ndarray): An array of treatment arms in the observed data.
             outcomes (np.ndarray): An array of outcomes in the observed data
 
         Returns:
-            np.ndarray: Estimated cumulative distribution values.
+            Tuple of numpy arrays:
+                - np.ndarray: Estimated unconditional interval probabilities.
+                - np.ndarray: Adjusted for each observation.
+                - np.ndarray: Conditional for each observation.
         """
         n_records = outcomes.shape[0]
         n_loc = locations.shape[0]
-        superset_prediction = np.zeros((n_records, n_loc))
         prediction = np.zeros((n_records, n_loc))
         treatment_mask = treatment_arms == target_treatment_arm
 
         strata = self.strata
         s_list = np.unique(strata)
-        s_dict = {}
+        w_s = {}
         for s in s_list:
             s_mask = strata == s
-            s_dict[s] = (s_mask & treatment_mask).sum() / s_mask.sum()
+            w_s[s] = (s_mask & treatment_mask).sum() / s_mask.sum()
         n_obs = outcomes.shape[0]
         n_loc = locations.shape[0]
         for i, outcome in enumerate(locations):
             for j in range(n_obs):
                 s = strata[j]
-                prediction[j, i] = (
-                    (outcomes[j] <= outcome) / s_dict[s] * treatment_mask[j]
-                )
+                prediction[j, i] = (outcomes[j] <= outcome) / w_s[s] * treatment_mask[j]
 
-        for j in range(n_obs):
-            s = strata[j]
-            s_mask = s == strata
-            superset_prediction[j] = prediction[s_mask].mean(axis=0)
+        unconditional_pred = {s: prediction[s == strata].mean(axis=0) for s in s_list}
+        conditional_prediction = np.array([unconditional_pred[s] for s in strata])
+        weights = np.array([w_s[s] for s in strata])[:, np.newaxis]
+        prediction = (
+            (outcomes[:, np.newaxis] <= locations) - conditional_prediction
+        ) / weights * treatment_mask[:, np.newaxis] + conditional_prediction
 
-        for i, outcome in enumerate(locations):
-            for j in range(n_obs):
-                s = strata[j]
-                prediction[j, i] = (
-                    (outcomes[j] <= outcome) - superset_prediction[j, i]
-                ) / s_dict[s] * treatment_mask[j] + superset_prediction[j, i]
-        return prediction.mean(axis=0), superset_prediction
         cdf = prediction.mean(axis=0)
         return (
             cdf[1:] - cdf[:-1],
             prediction[:, 1:] - prediction[:, :-1],
-            superset_prediction[:, 1:] - superset_prediction[:, :-1],
+            conditional_prediction[:, 1:] - conditional_prediction[:, :-1],
         )
 
 
@@ -596,7 +581,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
-    ) -> np.ndarray:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute the cumulative distribution values.
 
@@ -608,7 +593,10 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
             outcomes (np.ndarray): An array of outcomes in the observed data
 
         Returns:
-            Tuple[np.ndarray, np.ndarray, np.ndarray]: Estimated cumulative distribution values, prediction for each observation, and superset prediction for each observation.
+            Tuple of numpy arrays:
+                - np.ndarray: Unconditional cumulative distribution values.
+                - np.ndarray: Adjusted cumulative distribution for each observation.
+                - np.ndarray: Conditional cumulative distribution for each observation.
         """
         n_records = outcomes.shape[0]
         n_loc = locations.shape[0]
@@ -619,7 +607,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         strata = self.strata
         s_list = np.unique(strata)
         if self.is_multi_task:
-            binominal = (outcomes.reshape(-1, 1) <= locations) * 1  # (n_records, n_loc)
+            binomial = (outcomes.reshape(-1, 1) <= locations) * 1  # (n_records, n_loc)
             for fold in range(self.folds):
                 fold_mask = (folds != fold) & treatment_mask
                 for s in s_list:
@@ -628,10 +616,10 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                     superset_mask = (folds == fold) & s_mask
                     subset_train_mask = (folds != fold) & s_mask & treatment_mask
                     covariates_train = covariates[subset_train_mask]
-                    binominal_train = binominal[subset_train_mask]
-                    if len(np.unique(binominal_train)) > 1:
+                    binomial_train = binomial[subset_train_mask]
+                    if len(np.unique(binomial_train)) > 1:
                         self.model = deepcopy(self.base_model)
-                        self.model.fit(covariates_train, binominal_train)
+                        self.model.fit(covariates_train, binomial_train)
 
                     pred = self._compute_model_prediction(
                         self.model, covariates[superset_mask]
@@ -639,40 +627,40 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                     prediction[superset_mask] = (
                         pred
                         + treatment_mask[superset_mask].reshape(-1, 1)
-                        * (binominal[superset_mask] - pred)
+                        * (binomial[superset_mask] - pred)
                         / weight
                     )
                     superset_prediction[superset_mask] = pred
         else:
             for i, location in enumerate(locations):
-                binominal = (outcomes <= location) * 1  # (n_records)
+                binomial = (outcomes <= location) * 1  # (n_records)
                 for fold in range(self.folds):
                     fold_mask = (folds != fold) & treatment_mask
                     covariates_train = covariates[fold_mask]
-                    binominal_train = binominal[fold_mask]
+                    binomial_train = binomial[fold_mask]
                     # Pool the records across strata and train the model
-                    if len(np.unique(binominal_train)) > 1:
+                    if len(np.unique(binomial_train)) > 1:
                         self.model = deepcopy(self.base_model)
-                        self.model.fit(covariates_train, binominal_train)
+                        self.model.fit(covariates_train, binomial_train)
                     for s in s_list:
                         s_mask = strata == s
                         weight = (s_mask & treatment_mask).sum() / s_mask.sum()
                         superset_mask = (folds == fold) & s_mask
                         subset_train_mask = (folds != fold) & s_mask & treatment_mask
                         covariates_train = covariates[subset_train_mask]
-                        binominal_train = binominal[subset_train_mask]
+                        binomial_train = binomial[subset_train_mask]
                         # TODO: revisit the logic here
-                        if len(np.unique(binominal_train)) > 1:
+                        if len(np.unique(binomial_train)) > 1:
                             # self.model = deepcopy(self.base_model)
-                            # self.model.fit(covariates_train, binominal_train)
+                            # self.model.fit(covariates_train, binomial_train)
                             pass
                         else:
-                            pred = binominal_train[0]
+                            pred = binomial_train[0]
                             superset_prediction[superset_mask, i] = pred
                             prediction[superset_mask, i] = (
                                 pred
                                 + treatment_mask[superset_mask]
-                                * (binominal[superset_mask] - pred)
+                                * (binomial[superset_mask] - pred)
                                 / weight
                             )
                             continue
@@ -682,7 +670,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                         prediction[superset_mask, i] = (
                             pred
                             + treatment_mask[superset_mask]
-                            * (binominal[superset_mask] - pred)
+                            * (binomial[superset_mask] - pred)
                             / weight
                         )
                         superset_prediction[superset_mask, i] = pred
@@ -696,9 +684,9 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
-    ) -> np.ndarray:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
-        Compute the cumulative distribution values.
+        Compute the interval probabilities.
 
         Args:
             target_treatment_arm (int): The index of the treatment arm.
@@ -708,7 +696,10 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
             outcomes (np.ndarray): An array of outcomes in the observed data
 
         Returns:
-            np.ndarray: Estimated cumulative distribution values.
+            Tuple of numpy arrays:
+                - np.ndarray: Unconditional interval probabilities.
+                - np.ndarray: Adjusted interval probabilities for each observation.
+                - np.ndarray: Conditional interval probabilities for each observation.
         """
         n_records = outcomes.shape[0]
         n_loc = locations.shape[0]
@@ -720,28 +711,28 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         s_list = np.unique(strata)
         binominals = (outcomes[:, np.newaxis] <= locations) * 1  # (n_records, n_loc)
         for i in range(len(locations) - 1):
-            binominal = binominals[:, i + 1] - binominals[:, i]
+            binomial = binominals[:, i + 1] - binominals[:, i]
             for fold in range(self.folds):
                 fold_mask = (folds != fold) & treatment_mask
                 covariates_train = covariates[fold_mask]
-                binominal_train = binominal[fold_mask]
-                if len(np.unique(binominal_train)) > 1:
+                binomial_train = binomial[fold_mask]
+                if len(np.unique(binomial_train)) > 1:
                     self.model = deepcopy(self.base_model)
-                    self.model.fit(covariates_train, binominal_train)
+                    self.model.fit(covariates_train, binomial_train)
                 for s in s_list:
                     s_mask = strata == s
                     wight = (s_mask & treatment_mask).sum() / s_mask.sum()
                     superset_mask = (folds == fold) & s_mask
                     subset_train_mask = (folds != fold) & s_mask & treatment_mask
                     covariates_train = covariates[subset_train_mask]
-                    binominal_train = binominal[subset_train_mask]
-                    if len(np.unique(binominal_train)) == 1:
-                        pred = binominal_train[0]
+                    binomial_train = binomial[subset_train_mask]
+                    if len(np.unique(binomial_train)) == 1:
+                        pred = binomial_train[0]
                         superset_prediction[superset_mask, i] = pred
                         prediction[superset_mask, i] = (
                             pred
                             + treatment_mask[superset_mask]
-                            * (binominal[superset_mask] - pred)
+                            * (binomial[superset_mask] - pred)
                             / wight
                         )
                         continue
@@ -751,7 +742,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                     prediction[superset_mask, i] = (
                         pred
                         + treatment_mask[superset_mask]
-                        * (binominal[superset_mask] - pred)
+                        * (binomial[superset_mask] - pred)
                         / wight
                     )
                     superset_prediction[superset_mask, i] = pred
