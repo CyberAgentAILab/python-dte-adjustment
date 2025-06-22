@@ -65,7 +65,10 @@ class TestAdjustedEstimator(unittest.TestCase):
         locations = np.arange(10)
 
         # Act
-        with patch("numpy.random.randint", return_value=np.array([0] * 10 + [1] * 10)):
+        with patch(
+            "numpy.random.randint",
+            return_value=np.array([0] * 5 + [1] * 5 + [0] * 5 + [1] * 5),
+        ):
             cumulative_distribution, _, superset_prediction = (
                 self.estimator._compute_cumulative_distribution(
                     target_treatment_arm,
@@ -80,9 +83,33 @@ class TestAdjustedEstimator(unittest.TestCase):
         self.assertEqual(cumulative_distribution.shape, (10,))
         self.assertEqual(superset_prediction.shape, (20, 10))
 
-        for i in range(9):
+        for i in range(10):
             self.assertAlmostEqual(cumulative_distribution[i], (i + 1) / 10, places=2)
 
-        for i in range(20):
-            for j in range(9):
-                self.assertAlmostEqual(superset_prediction[i, j], 0.5, places=2)
+        expected_result = np.array(
+            [
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 1.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 1.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 1.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 1.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 1.0],
+                [0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                [0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                [0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                [0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                [0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 1.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 1.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 1.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 1.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 1.0],
+                [0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                [0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                [0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                [0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                [0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+            ]
+        )
+        np.testing.assert_array_almost_equal(
+            superset_prediction, expected_result, decimal=2
+        )

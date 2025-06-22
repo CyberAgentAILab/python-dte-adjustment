@@ -27,8 +27,8 @@ def compute_confidence_intervals(
         mat_y_u (np.ndarray): Indicator function for 1{Y⩽y}. Shape is n_obs * n_loc.
         vec_prediction_target (np.ndarray): Unconditional estimated distributional effects for the treatment group.
         vec_prediction_control (np.ndarray): Unconditional estimated distributional effects for the control group.
-        mat_entire_predictions_target (np.ndarray): Conditional stimated distributional effects for target group.
-        mat_entire_predictions_control (np.ndarray): Conditional stimated distributional effects for control group.
+        mat_entire_predictions_target (np.ndarray): Conditional stimated distributional effects for each observation.
+        mat_entire_predictions_control (np.ndarray): Conditional stimated distributional effects for each observation.
         ind_target (int): Index of the target treatment indicator.
         ind_control (int): Index of the control treatment indicator.
         alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
