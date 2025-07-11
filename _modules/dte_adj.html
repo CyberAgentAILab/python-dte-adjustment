@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dte_adj &#8212; dte_adj 0.1.5 documentation</title>
+    <title>dte_adj &#8212; dte_adj 0.1.6 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
-    <script src="../_static/documentation_options.js?v=59fadc99"></script>
+    <script src="../_static/documentation_options.js?v=6e0256f3"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -35,13 +35,15 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">norm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_confidence_intervals</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_confidence_intervals</span><span class="p">,</span> <span class="n">compute_ldte</span><span class="p">,</span> <span class="n">compute_lpte</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;SimpleDistributionEstimator&quot;</span><span class="p">,</span>
     <span class="s2">&quot;AdjustedDistributionEstimator&quot;</span><span class="p">,</span>
     <span class="s2">&quot;SimpleStratifiedDistributionEstimator&quot;</span><span class="p">,</span>
     <span class="s2">&quot;AdjustedStratifiedDistributionEstimator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SimpleLocalDistributionEstimator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AdjustedLocalDistributionEstimator&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -889,6 +891,219 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">covariates</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="bp">self</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SimpleLocalDistributionEstimator">
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleLocalDistributionEstimator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SimpleLocalDistributionEstimator</span><span class="p">(</span><span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for computing local distribution treatment effects (LDTE) using simple empirical estimation.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the SimpleLocalDistributionEstimator.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SimpleLocalDistributionEstimator: An instance of the estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SimpleLocalDistributionEstimator.fit">
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleLocalDistributionEstimator.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">treatment_indicator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">strata</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SimpleLocalDistributionEstimator&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Train the SimpleLocalDistributionEstimator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            covariates (np.ndarray): Pre-treatment covariates.</span>
+<span class="sd">            treatment_arms (np.ndarray): Treatment assignment variable (Z).</span>
+<span class="sd">            treatment_indicator (np.ndarray): Treatment indicator variable (D).</span>
+<span class="sd">            outcomes (np.ndarray): Scalar-valued observed outcome.</span>
+<span class="sd">            strata (np.ndarray): Stratum indicators.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SimpleLocalDistributionEstimator: The fitted estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">covariates</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_indicator</span> <span class="o">=</span> <span class="n">treatment_indicator</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SimpleLocalDistributionEstimator.predict_ldte">
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleLocalDistributionEstimator.predict_ldte">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_ldte</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute Local Distribution Treatment Effects (LDTE).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
+<span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
+<span class="sd">            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
+<span class="sd">            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
+<span class="sd">                - Expected LDTEs</span>
+<span class="sd">                - Lower bounds</span>
+<span class="sd">                - Upper bounds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">compute_ldte</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">target_treatment_arm</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">,</span> <span class="n">locations</span><span class="p">,</span> <span class="n">alpha</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimpleLocalDistributionEstimator.predict_lpte">
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleLocalDistributionEstimator.predict_lpte">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_lpte</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute Local Probability Treatment Effects (LPTE).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
+<span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
+<span class="sd">            locations (np.ndarray): Scalar values to be used for computing the interval probabilities.</span>
+<span class="sd">            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
+<span class="sd">                - Expected LPTEs</span>
+<span class="sd">                - Lower bounds</span>
+<span class="sd">                - Upper bounds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">compute_lpte</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">target_treatment_arm</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">,</span> <span class="n">locations</span><span class="p">,</span> <span class="n">alpha</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AdjustedLocalDistributionEstimator">
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedLocalDistributionEstimator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AdjustedLocalDistributionEstimator</span><span class="p">(</span><span class="n">AdjustedStratifiedDistributionEstimator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for computing local distribution treatment effects (LDTE) using adjusted estimation with ML models.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">is_multi_task</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the AdjustedLocalDistributionEstimator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base_model (scikit-learn estimator): The base model implementing used for conditional distribution function estimators.</span>
+<span class="sd">            folds (int): The number of folds for cross-fitting.</span>
+<span class="sd">            is_multi_task(bool): Whether to use multi-task learning.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            AdjustedLocalDistributionEstimator: An instance of the estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">folds</span><span class="p">,</span> <span class="n">is_multi_task</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AdjustedLocalDistributionEstimator.fit">
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedLocalDistributionEstimator.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">treatment_indicator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">strata</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AdjustedLocalDistributionEstimator&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Train the AdjustedLocalDistributionEstimator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            covariates (np.ndarray): Pre-treatment covariates.</span>
+<span class="sd">            treatment_arms (np.ndarray): Treatment assignment variable (Z).</span>
+<span class="sd">            treatment_indicator (np.ndarray): Treatment indicator variable (D).</span>
+<span class="sd">            outcomes (np.ndarray): Scalar-valued observed outcome.</span>
+<span class="sd">            strata (np.ndarray): Stratum indicators.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            AdjustedLocalDistributionEstimator: The fitted estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">covariates</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_indicator</span> <span class="o">=</span> <span class="n">treatment_indicator</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="AdjustedLocalDistributionEstimator.predict_ldte">
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedLocalDistributionEstimator.predict_ldte">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_ldte</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute Local Distribution Treatment Effects (LDTE).</span>
+<span class="sd">        Currently, this API only supports analytical confidence interval.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
+<span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
+<span class="sd">            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
+<span class="sd">            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
+<span class="sd">                - Expected LDTEs</span>
+<span class="sd">                - Lower bounds</span>
+<span class="sd">                - Upper bounds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">compute_ldte</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">target_treatment_arm</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">,</span> <span class="n">locations</span><span class="p">,</span> <span class="n">alpha</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AdjustedLocalDistributionEstimator.predict_lpte">
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedLocalDistributionEstimator.predict_lpte">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_lpte</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute Local Probability Treatment Effects (LPTE).</span>
+<span class="sd">        Currently, this API only supports analytical confidence interval.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
+<span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
+<span class="sd">            locations (np.ndarray): Scalar values to be used for computing the interval probabilities.</span>
+<span class="sd">            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
+<span class="sd">                - Expected LPTEs</span>
+<span class="sd">                - Lower bounds</span>
+<span class="sd">                - Upper bounds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">compute_lpte</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">target_treatment_arm</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="p">,</span> <span class="n">locations</span><span class="p">,</span> <span class="n">alpha</span>
+        <span class="p">)</span></div>
 </div>
 
 </pre></div>

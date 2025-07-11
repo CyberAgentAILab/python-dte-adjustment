@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Modules &#8212; dte_adj 0.1.5 documentation</title>
+    <title>Modules &#8212; dte_adj 0.1.6 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
-    <script src="_static/documentation_options.js?v=59fadc99"></script>
+    <script src="_static/documentation_options.js?v=6e0256f3"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -149,6 +149,213 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedDistributionEstimator.predict_qte">
 <span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedDistributionEstimator.predict_qte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute QTE based on the estimator for the distribution function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
+<li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
+<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>Expected QTEs</p></li>
+<li><p>Upper bounds</p></li>
+<li><p>Lower bounds</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dte_adj.</span></span><span class="sig-name descname"><span class="pre">AdjustedLocalDistributionEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_multi_task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dte_adj.html#AdjustedLocalDistributionEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dte_adj.AdjustedStratifiedDistributionEstimator" title="dte_adj.AdjustedStratifiedDistributionEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AdjustedStratifiedDistributionEstimator</span></code></a></p>
+<p>A class for computing local distribution treatment effects (LDTE) using adjusted estimation with ML models.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dte_adj.AdjustedLocalDistributionEstimator" title="dte_adj.AdjustedLocalDistributionEstimator"><span class="pre">AdjustedLocalDistributionEstimator</span></a></span></span><a class="reference internal" href="_modules/dte_adj.html#AdjustedLocalDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Train the AdjustedLocalDistributionEstimator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>covariates</strong> (<em>np.ndarray</em>) – Pre-treatment covariates.</p></li>
+<li><p><strong>treatment_arms</strong> (<em>np.ndarray</em>) – Treatment assignment variable (Z).</p></li>
+<li><p><strong>treatment_indicator</strong> (<em>np.ndarray</em>) – Treatment indicator variable (D).</p></li>
+<li><p><strong>outcomes</strong> (<em>np.ndarray</em>) – Scalar-valued observed outcome.</p></li>
+<li><p><strong>strata</strong> (<em>np.ndarray</em>) – Stratum indicators.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted estimator.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#dte_adj.AdjustedLocalDistributionEstimator" title="dte_adj.AdjustedLocalDistributionEstimator">AdjustedLocalDistributionEstimator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Compute cumulative distribution values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>treatment_arm</strong> (<em>int</em>) – The index of the treatment arm.</p></li>
+<li><p><strong>outcomes</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Estimated cumulative distribution values for the input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.predict_dte">
+<span class="sig-name descname"><span class="pre">predict_dte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict_dte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute DTE based on the estimator for the distribution function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
+<li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>Expected DTEs</p></li>
+<li><p>Upper bounds</p></li>
+<li><p>Lower bounds</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.predict_ldte">
+<span class="sig-name descname"><span class="pre">predict_ldte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#AdjustedLocalDistributionEstimator.predict_ldte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict_ldte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute Local Distribution Treatment Effects (LDTE).
+Currently, this API only supports analytical confidence interval.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
+<li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>Expected LDTEs</p></li>
+<li><p>Lower bounds</p></li>
+<li><p>Upper bounds</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.predict_lpte">
+<span class="sig-name descname"><span class="pre">predict_lpte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#AdjustedLocalDistributionEstimator.predict_lpte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict_lpte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute Local Probability Treatment Effects (LPTE).
+Currently, this API only supports analytical confidence interval.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
+<li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the interval probabilities.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>Expected LPTEs</p></li>
+<li><p>Lower bounds</p></li>
+<li><p>Upper bounds</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.predict_pte">
+<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute PTE based on the estimator for the distribution function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
+<li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+<li><p><strong>width</strong> (<em>float</em>) – The width of each outcome interval.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>Expected PTEs</p></li>
+<li><p>Upper bounds</p></li>
+<li><p>Lower bounds</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.predict_qte">
+<span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict_qte" title="Link to this definition">¶</a></dt>
 <dd><p>Compute QTE based on the estimator for the distribution function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -436,6 +643,211 @@ based on the distribution function.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleDistributionEstimator.predict_qte">
 <span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleDistributionEstimator.predict_qte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute QTE based on the estimator for the distribution function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
+<li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
+<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>Expected QTEs</p></li>
+<li><p>Upper bounds</p></li>
+<li><p>Lower bounds</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dte_adj.</span></span><span class="sig-name descname"><span class="pre">SimpleLocalDistributionEstimator</span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleLocalDistributionEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dte_adj.SimpleStratifiedDistributionEstimator" title="dte_adj.SimpleStratifiedDistributionEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleStratifiedDistributionEstimator</span></code></a></p>
+<p>A class for computing local distribution treatment effects (LDTE) using simple empirical estimation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dte_adj.SimpleLocalDistributionEstimator" title="dte_adj.SimpleLocalDistributionEstimator"><span class="pre">SimpleLocalDistributionEstimator</span></a></span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleLocalDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Train the SimpleLocalDistributionEstimator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>covariates</strong> (<em>np.ndarray</em>) – Pre-treatment covariates.</p></li>
+<li><p><strong>treatment_arms</strong> (<em>np.ndarray</em>) – Treatment assignment variable (Z).</p></li>
+<li><p><strong>treatment_indicator</strong> (<em>np.ndarray</em>) – Treatment indicator variable (D).</p></li>
+<li><p><strong>outcomes</strong> (<em>np.ndarray</em>) – Scalar-valued observed outcome.</p></li>
+<li><p><strong>strata</strong> (<em>np.ndarray</em>) – Stratum indicators.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted estimator.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#dte_adj.SimpleLocalDistributionEstimator" title="dte_adj.SimpleLocalDistributionEstimator">SimpleLocalDistributionEstimator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Compute cumulative distribution values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>treatment_arm</strong> (<em>int</em>) – The index of the treatment arm.</p></li>
+<li><p><strong>outcomes</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Estimated cumulative distribution values for the input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.predict_dte">
+<span class="sig-name descname"><span class="pre">predict_dte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict_dte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute DTE based on the estimator for the distribution function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
+<li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>Expected DTEs</p></li>
+<li><p>Upper bounds</p></li>
+<li><p>Lower bounds</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.predict_ldte">
+<span class="sig-name descname"><span class="pre">predict_ldte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleLocalDistributionEstimator.predict_ldte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict_ldte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute Local Distribution Treatment Effects (LDTE).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
+<li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>Expected LDTEs</p></li>
+<li><p>Lower bounds</p></li>
+<li><p>Upper bounds</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.predict_lpte">
+<span class="sig-name descname"><span class="pre">predict_lpte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleLocalDistributionEstimator.predict_lpte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict_lpte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute Local Probability Treatment Effects (LPTE).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
+<li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the interval probabilities.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>Expected LPTEs</p></li>
+<li><p>Lower bounds</p></li>
+<li><p>Upper bounds</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.predict_pte">
+<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute PTE based on the estimator for the distribution function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
+<li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
+<li><p><strong>width</strong> (<em>float</em>) – The width of each outcome interval.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>Expected PTEs</p></li>
+<li><p>Upper bounds</p></li>
+<li><p>Lower bounds</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.predict_qte">
+<span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict_qte" title="Link to this definition">¶</a></dt>
 <dd><p>Compute QTE based on the estimator for the distribution function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
