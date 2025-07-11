@@ -60,6 +60,7 @@ class MockDistributionEstimator(DistributionEstimatorBase):
         self.covariates = covariates
         self.treatment_arms = treatment_arms
         self.outcomes = outcomes
+        self.strata = np.zeros(len(covariates))  # Mock strata for QTE testing
 
     def _compute_cumulative_distribution(
         self,
