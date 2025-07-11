@@ -41,7 +41,32 @@
 <dt class="sig sig-object py" id="dte_adj.AdjustedDistributionEstimator">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dte_adj.</span></span><span class="sig-name descname"><span class="pre">AdjustedDistributionEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_multi_task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dte_adj.html#AdjustedDistributionEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedDistributionEstimator" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dte_adj.AdjustedStratifiedDistributionEstimator" title="dte_adj.AdjustedStratifiedDistributionEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AdjustedStratifiedDistributionEstimator</span></code></a></p>
-<p>A class is for estimating the adjusted distribution function and computing the Distributional parameters based on the trained conditional estimator.</p>
+<p>A class for computing distribution treatment effects using machine learning adjustment.</p>
+<p>This estimator uses cross-fitting with ML models to adjust for confounding when computing
+Distribution Treatment Effects (DTE), Probability Treatment Effects (PTE), and
+Quantile Treatment Effects (QTE). It provides more precise estimates when treatment
+assignment depends on observed covariates.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdjustedDistributionEstimator</span>
+
+<span class="c1"># Generate confounded data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">treatment_prob</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])))</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">treatment_prob</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit adjusted estimator</span>
+<span class="n">base_model</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">AdjustedDistributionEstimator</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Compute adjusted treatment effects</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">dte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">locations</span><span class="p">,</span> <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedDistributionEstimator.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dte_adj.AdjustedDistributionEstimator" title="dte_adj.AdjustedDistributionEstimator"><span class="pre">AdjustedDistributionEstimator</span></a></span></span><a class="reference internal" href="_modules/dte_adj.html#AdjustedDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedDistributionEstimator.fit" title="Link to this definition">¶</a></dt>
@@ -86,7 +111,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedDistributionEstimator.predict_dte">
 <span class="sig-name descname"><span class="pre">predict_dte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedDistributionEstimator.predict_dte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute DTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Distribution Treatment Effects (DTE) based on the estimator for the distribution function.</p>
+<p>The DTE measures the difference in cumulative distribution functions between treatment groups
+at specified locations. It quantifies how treatment affects the probability of observing
+outcomes below each threshold.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -94,16 +122,17 @@
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
 <li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected DTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected DTEs (np.ndarray): Treatment effect estimates at each location</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -113,29 +142,61 @@
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Compute DTE</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">dte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DTE shape: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should match locations.shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average DTE: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedDistributionEstimator.predict_pte">
-<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute PTE based on the estimator for the distribution function.</p>
+<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute Probability Treatment Effects (PTE) based on the estimator for the distribution function.</p>
+<p>The PTE measures the difference in probability mass between treatment groups for intervals
+defined by consecutive location pairs. It quantifies how treatment affects the probability
+of observing outcomes within specific ranges.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
-<li><p><strong>width</strong> (<em>float</em>) – The width of each outcome interval.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values defining interval boundaries for probability computation.
+For each interval (locations[i], locations[i+1]], the PTE is computed.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected PTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected PTEs (np.ndarray): Treatment effect estimates for each interval,
+shape (len(locations)-1,)</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -145,6 +206,34 @@
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Define interval boundaries</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]</span>
+
+<span class="c1"># Compute PTE</span>
+<span class="n">pte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PTE shape: </span><span class="si">{</span><span class="n">pte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should be (4,) for 4 intervals</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interval effects: </span><span class="si">{</span><span class="n">pte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -184,7 +273,12 @@
 <dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dte_adj.</span></span><span class="sig-name descname"><span class="pre">AdjustedLocalDistributionEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_multi_task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dte_adj.html#AdjustedLocalDistributionEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dte_adj.AdjustedStratifiedDistributionEstimator" title="dte_adj.AdjustedStratifiedDistributionEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AdjustedStratifiedDistributionEstimator</span></code></a></p>
-<p>A class for computing local distribution treatment effects (LDTE) using adjusted estimation with ML models.</p>
+<p>A class for computing Local Distribution Treatment Effects (LDTE) and Local Probability
+Treatment Effects (LPTE) using ML-adjusted estimation.</p>
+<p>This estimator combines local treatment effect estimation with machine learning adjustment,
+providing treatment effects that are both locally robust to treatment assignment heterogeneity
+and adjusted for confounding through observed covariates. It uses cross-fitting for
+more precise estimates in complex treatment assignment scenarios.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dte_adj.AdjustedLocalDistributionEstimator" title="dte_adj.AdjustedLocalDistributionEstimator"><span class="pre">AdjustedLocalDistributionEstimator</span></a></span></span><a class="reference internal" href="_modules/dte_adj.html#AdjustedLocalDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.fit" title="Link to this definition">¶</a></dt>
@@ -231,7 +325,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.predict_dte">
 <span class="sig-name descname"><span class="pre">predict_dte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict_dte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute DTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Distribution Treatment Effects (DTE) based on the estimator for the distribution function.</p>
+<p>The DTE measures the difference in cumulative distribution functions between treatment groups
+at specified locations. It quantifies how treatment affects the probability of observing
+outcomes below each threshold.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -239,16 +336,17 @@
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
 <li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected DTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected DTEs (np.ndarray): Treatment effect estimates at each location</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -258,12 +356,40 @@
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Compute DTE</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">dte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DTE shape: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should match locations.shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average DTE: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.predict_ldte">
 <span class="sig-name descname"><span class="pre">predict_ldte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#AdjustedLocalDistributionEstimator.predict_ldte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict_ldte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute Local Distribution Treatment Effects (LDTE).
+<dd><p>Compute Local Distribution Treatment Effects (LDTE) with ML-adjusted estimation.
+LDTE measures the difference in cumulative distribution functions between treatment groups
+weighted by treatment propensity within each stratum, using ML models for adjustment.
 Currently, this API only supports analytical confidence interval.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -277,9 +403,9 @@ Currently, this API only supports analytical confidence interval.</p>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected LDTEs</p></li>
-<li><p>Lower bounds</p></li>
-<li><p>Upper bounds</p></li>
+<li><p>Expected LDTEs (np.ndarray): ML-adjusted local treatment effect estimates</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -289,28 +415,63 @@ Currently, this API only supports analytical confidence interval.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdjustedLocalDistributionEstimator</span>
+
+<span class="c1"># Generate sample data with complex treatment assignment</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="c1"># Treatment depends on covariates and strata</span>
+<span class="n">treatment_prob</span> <span class="o">=</span> <span class="mf">0.2</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.2</span> <span class="o">*</span> <span class="n">strata</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">treatment_prob</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit adjusted local estimator</span>
+<span class="n">base_model</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">AdjustedLocalDistributionEstimator</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+
+<span class="c1"># Compute LDTE</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">15</span><span class="p">)</span>
+<span class="n">ldte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_ldte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ML-adjusted LDTE shape: </span><span class="si">{</span><span class="n">ldte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average LDTE: </span><span class="si">{</span><span class="n">ldte</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.predict_lpte">
 <span class="sig-name descname"><span class="pre">predict_lpte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#AdjustedLocalDistributionEstimator.predict_lpte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict_lpte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute Local Probability Treatment Effects (LPTE).
+<dd><p>Compute Local Probability Treatment Effects (LPTE) with ML-adjusted estimation.
+LPTE measures the difference in probability mass between treatment groups for intervals
+weighted by treatment propensity within each stratum, using ML models for adjustment.
 Currently, this API only supports analytical confidence interval.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the interval probabilities.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values defining interval boundaries for probability computation.
+For each interval (locations[i], locations[i+1]], the LPTE is computed.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected LPTEs</p></li>
-<li><p>Lower bounds</p></li>
-<li><p>Upper bounds</p></li>
+<li><p>Expected LPTEs (np.ndarray): ML-adjusted local treatment effect estimates,
+shape (len(locations)-1,)</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -320,29 +481,67 @@ Currently, this API only supports analytical confidence interval.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientBoostingClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdjustedLocalDistributionEstimator</span>
+
+<span class="c1"># Generate sample data with confounding</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="c1"># Complex treatment assignment mechanism</span>
+<span class="n">logit_score</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">strata</span>
+<span class="n">treatment_prob</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">logit_score</span><span class="p">))</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">treatment_prob</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit adjusted estimator with gradient boosting</span>
+<span class="n">base_model</span> <span class="o">=</span> <span class="n">GradientBoostingClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">AdjustedLocalDistributionEstimator</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+
+<span class="c1"># Define intervals and compute LPTE</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>  <span class="c1"># 4 intervals</span>
+<span class="n">lpte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_lpte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ML-adjusted LPTE shape: </span><span class="si">{</span><span class="n">lpte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should be (4,)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interval effects: </span><span class="si">{</span><span class="n">lpte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.predict_pte">
-<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute PTE based on the estimator for the distribution function.</p>
+<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute Probability Treatment Effects (PTE) based on the estimator for the distribution function.</p>
+<p>The PTE measures the difference in probability mass between treatment groups for intervals
+defined by consecutive location pairs. It quantifies how treatment affects the probability
+of observing outcomes within specific ranges.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
-<li><p><strong>width</strong> (<em>float</em>) – The width of each outcome interval.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values defining interval boundaries for probability computation.
+For each interval (locations[i], locations[i+1]], the PTE is computed.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected PTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected PTEs (np.ndarray): Treatment effect estimates for each interval,
+shape (len(locations)-1,)</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -352,6 +551,34 @@ Currently, this API only supports analytical confidence interval.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Define interval boundaries</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]</span>
+
+<span class="c1"># Compute PTE</span>
+<span class="n">pte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PTE shape: </span><span class="si">{</span><span class="n">pte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should be (4,) for 4 intervals</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interval effects: </span><span class="si">{</span><span class="n">pte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -436,7 +663,10 @@ Currently, this API only supports analytical confidence interval.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedStratifiedDistributionEstimator.predict_dte">
 <span class="sig-name descname"><span class="pre">predict_dte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedStratifiedDistributionEstimator.predict_dte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute DTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Distribution Treatment Effects (DTE) based on the estimator for the distribution function.</p>
+<p>The DTE measures the difference in cumulative distribution functions between treatment groups
+at specified locations. It quantifies how treatment affects the probability of observing
+outcomes below each threshold.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -444,16 +674,17 @@ Currently, this API only supports analytical confidence interval.</p>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
 <li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected DTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected DTEs (np.ndarray): Treatment effect estimates at each location</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -463,29 +694,61 @@ Currently, this API only supports analytical confidence interval.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Compute DTE</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">dte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DTE shape: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should match locations.shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average DTE: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedStratifiedDistributionEstimator.predict_pte">
-<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedStratifiedDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute PTE based on the estimator for the distribution function.</p>
+<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedStratifiedDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute Probability Treatment Effects (PTE) based on the estimator for the distribution function.</p>
+<p>The PTE measures the difference in probability mass between treatment groups for intervals
+defined by consecutive location pairs. It quantifies how treatment affects the probability
+of observing outcomes within specific ranges.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
-<li><p><strong>width</strong> (<em>float</em>) – The width of each outcome interval.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values defining interval boundaries for probability computation.
+For each interval (locations[i], locations[i+1]], the PTE is computed.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected PTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected PTEs (np.ndarray): Treatment effect estimates for each interval,
+shape (len(locations)-1,)</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -495,6 +758,34 @@ Currently, this API only supports analytical confidence interval.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Define interval boundaries</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]</span>
+
+<span class="c1"># Compute PTE</span>
+<span class="n">pte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PTE shape: </span><span class="si">{</span><span class="n">pte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should be (4,) for 4 intervals</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interval effects: </span><span class="si">{</span><span class="n">pte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -534,8 +825,31 @@ Currently, this API only supports analytical confidence interval.</p>
 <dt class="sig sig-object py" id="dte_adj.SimpleDistributionEstimator">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dte_adj.</span></span><span class="sig-name descname"><span class="pre">SimpleDistributionEstimator</span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleDistributionEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleDistributionEstimator" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dte_adj.SimpleStratifiedDistributionEstimator" title="dte_adj.SimpleStratifiedDistributionEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleStratifiedDistributionEstimator</span></code></a></p>
-<p>A class for computing the empirical distribution function and the distributional parameters
-based on the distribution function.</p>
+<p>A class for computing the empirical distribution function and distributional treatment effects
+using simple (unadjusted) estimation methods.</p>
+<p>This estimator computes Distribution Treatment Effects (DTE), Probability Treatment Effects (PTE),
+and Quantile Treatment Effects (QTE) without using machine learning models for adjustment.
+It provides a baseline approach suitable when treatment assignment is random or when
+covariate adjustment is not needed.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Random treatment</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit simple estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Compute treatment effects</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">dte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">locations</span><span class="p">)</span>
+<span class="n">pte</span><span class="p">,</span> <span class="n">pte_lower</span><span class="p">,</span> <span class="n">pte_upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">locations</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleDistributionEstimator.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dte_adj.SimpleDistributionEstimator" title="dte_adj.SimpleDistributionEstimator"><span class="pre">SimpleDistributionEstimator</span></a></span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleDistributionEstimator.fit" title="Link to this definition">¶</a></dt>
@@ -580,7 +894,10 @@ based on the distribution function.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleDistributionEstimator.predict_dte">
 <span class="sig-name descname"><span class="pre">predict_dte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleDistributionEstimator.predict_dte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute DTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Distribution Treatment Effects (DTE) based on the estimator for the distribution function.</p>
+<p>The DTE measures the difference in cumulative distribution functions between treatment groups
+at specified locations. It quantifies how treatment affects the probability of observing
+outcomes below each threshold.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -588,16 +905,17 @@ based on the distribution function.</p>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
 <li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected DTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected DTEs (np.ndarray): Treatment effect estimates at each location</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -607,29 +925,61 @@ based on the distribution function.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Compute DTE</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">dte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DTE shape: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should match locations.shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average DTE: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleDistributionEstimator.predict_pte">
-<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute PTE based on the estimator for the distribution function.</p>
+<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute Probability Treatment Effects (PTE) based on the estimator for the distribution function.</p>
+<p>The PTE measures the difference in probability mass between treatment groups for intervals
+defined by consecutive location pairs. It quantifies how treatment affects the probability
+of observing outcomes within specific ranges.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
-<li><p><strong>width</strong> (<em>float</em>) – The width of each outcome interval.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values defining interval boundaries for probability computation.
+For each interval (locations[i], locations[i+1]], the PTE is computed.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected PTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected PTEs (np.ndarray): Treatment effect estimates for each interval,
+shape (len(locations)-1,)</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -639,6 +989,34 @@ based on the distribution function.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Define interval boundaries</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]</span>
+
+<span class="c1"># Compute PTE</span>
+<span class="n">pte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PTE shape: </span><span class="si">{</span><span class="n">pte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should be (4,) for 4 intervals</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interval effects: </span><span class="si">{</span><span class="n">pte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -678,7 +1056,11 @@ based on the distribution function.</p>
 <dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dte_adj.</span></span><span class="sig-name descname"><span class="pre">SimpleLocalDistributionEstimator</span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleLocalDistributionEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dte_adj.SimpleStratifiedDistributionEstimator" title="dte_adj.SimpleStratifiedDistributionEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleStratifiedDistributionEstimator</span></code></a></p>
-<p>A class for computing local distribution treatment effects (LDTE) using simple empirical estimation.</p>
+<p>A class for computing Local Distribution Treatment Effects (LDTE) and Local Probability
+Treatment Effects (LPTE) using simple empirical estimation.</p>
+<p>This estimator computes treatment effects that are weighted by treatment propensity
+within each stratum, providing estimates that are locally robust to treatment assignment
+heterogeneity across strata. It uses empirical methods without ML adjustment.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dte_adj.SimpleLocalDistributionEstimator" title="dte_adj.SimpleLocalDistributionEstimator"><span class="pre">SimpleLocalDistributionEstimator</span></a></span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleLocalDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.fit" title="Link to this definition">¶</a></dt>
@@ -725,7 +1107,10 @@ based on the distribution function.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.predict_dte">
 <span class="sig-name descname"><span class="pre">predict_dte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict_dte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute DTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Distribution Treatment Effects (DTE) based on the estimator for the distribution function.</p>
+<p>The DTE measures the difference in cumulative distribution functions between treatment groups
+at specified locations. It quantifies how treatment affects the probability of observing
+outcomes below each threshold.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -733,16 +1118,17 @@ based on the distribution function.</p>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
 <li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected DTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected DTEs (np.ndarray): Treatment effect estimates at each location</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -752,12 +1138,41 @@ based on the distribution function.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Compute DTE</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">dte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DTE shape: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should match locations.shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average DTE: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.predict_ldte">
 <span class="sig-name descname"><span class="pre">predict_ldte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleLocalDistributionEstimator.predict_ldte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict_ldte" title="Link to this definition">¶</a></dt>
 <dd><p>Compute Local Distribution Treatment Effects (LDTE).</p>
+<p>LDTE measures the difference in cumulative distribution functions between treatment groups
+weighted by treatment propensity within each stratum. This provides estimates that are
+locally robust to treatment assignment heterogeneity across strata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -770,9 +1185,9 @@ based on the distribution function.</p>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected LDTEs</p></li>
-<li><p>Lower bounds</p></li>
-<li><p>Upper bounds</p></li>
+<li><p>Expected LDTEs (np.ndarray): Local treatment effect estimates at each location</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -782,27 +1197,61 @@ based on the distribution function.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdjustedLocalDistributionEstimator</span>
+
+<span class="c1"># Generate sample data with strata</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Binary strata</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.3</span> <span class="o">+</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">strata</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Treatment depends on strata</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit local estimator</span>
+<span class="n">base_model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">AdjustedLocalDistributionEstimator</span><span class="p">(</span><span class="n">base_model</span><span class="p">)</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>  <span class="c1"># treatment_arms = treatment_indicator for binary case</span>
+
+<span class="c1"># Compute LDTE</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">ldte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_ldte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LDTE shape: </span><span class="si">{</span><span class="n">ldte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should match locations.shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average LDTE: </span><span class="si">{</span><span class="n">ldte</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.predict_lpte">
 <span class="sig-name descname"><span class="pre">predict_lpte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dte_adj.html#SimpleLocalDistributionEstimator.predict_lpte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict_lpte" title="Link to this definition">¶</a></dt>
 <dd><p>Compute Local Probability Treatment Effects (LPTE).</p>
+<p>LPTE measures the difference in probability mass between treatment groups for intervals
+weighted by treatment propensity within each stratum. This provides interval-based
+treatment effect estimates that are locally robust to treatment assignment heterogeneity.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the interval probabilities.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values defining interval boundaries for probability computation.
+For each interval (locations[i], locations[i+1]], the LPTE is computed.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected LPTEs</p></li>
-<li><p>Lower bounds</p></li>
-<li><p>Upper bounds</p></li>
+<li><p>Expected LPTEs (np.ndarray): Local treatment effect estimates for each interval,
+shape (len(locations)-1,)</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -812,29 +1261,65 @@ based on the distribution function.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleLocalDistributionEstimator</span>
+
+<span class="c1"># Generate sample data with strata</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Multiple strata</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.2</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="p">(</span><span class="n">strata</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">strata</span> <span class="o">==</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit simple local estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleLocalDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+
+<span class="c1"># Define interval boundaries</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># Creates 4 intervals</span>
+
+<span class="c1"># Compute LPTE</span>
+<span class="n">lpte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_lpte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LPTE shape: </span><span class="si">{</span><span class="n">lpte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should be (4,) for 4 intervals</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interval effects: </span><span class="si">{</span><span class="n">lpte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.predict_pte">
-<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute PTE based on the estimator for the distribution function.</p>
+<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute Probability Treatment Effects (PTE) based on the estimator for the distribution function.</p>
+<p>The PTE measures the difference in probability mass between treatment groups for intervals
+defined by consecutive location pairs. It quantifies how treatment affects the probability
+of observing outcomes within specific ranges.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
-<li><p><strong>width</strong> (<em>float</em>) – The width of each outcome interval.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values defining interval boundaries for probability computation.
+For each interval (locations[i], locations[i+1]], the PTE is computed.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected PTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected PTEs (np.ndarray): Treatment effect estimates for each interval,
+shape (len(locations)-1,)</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -844,6 +1329,34 @@ based on the distribution function.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Define interval boundaries</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]</span>
+
+<span class="c1"># Compute PTE</span>
+<span class="n">pte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PTE shape: </span><span class="si">{</span><span class="n">pte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should be (4,) for 4 intervals</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interval effects: </span><span class="si">{</span><span class="n">pte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -928,7 +1441,10 @@ based on the distribution function.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleStratifiedDistributionEstimator.predict_dte">
 <span class="sig-name descname"><span class="pre">predict_dte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleStratifiedDistributionEstimator.predict_dte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute DTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Distribution Treatment Effects (DTE) based on the estimator for the distribution function.</p>
+<p>The DTE measures the difference in cumulative distribution functions between treatment groups
+at specified locations. It quantifies how treatment affects the probability of observing
+outcomes below each threshold.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -936,16 +1452,17 @@ based on the distribution function.</p>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
 <li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected DTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected DTEs (np.ndarray): Treatment effect estimates at each location</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -955,29 +1472,61 @@ based on the distribution function.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Compute DTE</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">dte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DTE shape: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should match locations.shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average DTE: </span><span class="si">{</span><span class="n">dte</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleStratifiedDistributionEstimator.predict_pte">
-<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleStratifiedDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute PTE based on the estimator for the distribution function.</p>
+<span class="sig-name descname"><span class="pre">predict_pte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'moment'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleStratifiedDistributionEstimator.predict_pte" title="Link to this definition">¶</a></dt>
+<dd><p>Compute Probability Treatment Effects (PTE) based on the estimator for the distribution function.</p>
+<p>The PTE measures the difference in probability mass between treatment groups for intervals
+defined by consecutive location pairs. It quantifies how treatment affects the probability
+of observing outcomes within specific ranges.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values to be used for computing the cumulative distribution.</p></li>
-<li><p><strong>width</strong> (<em>float</em>) – The width of each outcome interval.</p></li>
+<li><p><strong>locations</strong> (<em>np.ndarray</em>) – Scalar values defining interval boundaries for probability computation.
+For each interval (locations[i], locations[i+1]], the PTE is computed.</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
-<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals. Available values are moment, simple, and uniform.</p></li>
+<li><p><strong>variance_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Variance type to be used to compute confidence intervals.
+Available values are “moment”, “simple”, and “uniform”. Defaults to “moment”.</p></li>
+<li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected PTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected PTEs (np.ndarray): Treatment effect estimates for each interval,
+shape (len(locations)-1,)</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -987,6 +1536,34 @@ based on the distribution function.</p>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
+
+<span class="c1"># Generate sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Define interval boundaries</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]</span>
+
+<span class="c1"># Compute PTE</span>
+<span class="n">pte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PTE shape: </span><span class="si">{</span><span class="n">pte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should be (4,) for 4 intervals</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interval effects: </span><span class="si">{</span><span class="n">pte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
