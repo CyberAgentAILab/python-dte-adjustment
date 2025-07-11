@@ -176,20 +176,52 @@ class DistributionEstimatorBase(ABC):
         n_bootstrap=500,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
-        Compute QTE based on the estimator for the distribution function.
+        Compute Quantile Treatment Effects (QTE) based on the estimator for the distribution function.
+
+        The QTE measures the difference in quantiles between treatment groups, providing insights
+        into how treatment affects different parts of the outcome distribution. For stratified
+        estimators, the computation properly accounts for strata.
 
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
             control_treatment_arm (int): The index of the treatment arm of the control group.
-            quantiles (np.ndarray, optional): Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].
+            quantiles (np.ndarray, optional): Quantiles used for QTE. Defaults to [0.1, 0.2, ..., 0.9].
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
             n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
-                - Expected QTEs
-                - Upper bounds
-                - Lower bounds
+                - Expected QTEs (np.ndarray): Treatment effect estimates at each quantile
+                - Lower bounds (np.ndarray): Lower confidence interval bounds
+                - Upper bounds (np.ndarray): Upper confidence interval bounds
+
+        Example:
+            .. code-block:: python
+
+                import numpy as np
+                from dte_adj import SimpleStratifiedDistributionEstimator
+                
+                # Generate stratified sample data
+                X = np.random.randn(1000, 5)
+                strata = np.random.choice([0, 1, 2], size=1000)
+                D = np.random.binomial(1, 0.5, 1000)
+                Y = X[:, 0] + 2 * D + 0.5 * strata + np.random.randn(1000)
+                
+                # Fit stratified estimator
+                estimator = SimpleStratifiedDistributionEstimator()
+                estimator.fit(X, D, Y, strata)
+                
+                # Compute QTE at specific quantiles
+                quantiles = np.array([0.25, 0.5, 0.75])  # 25th, 50th, 75th percentiles
+                qte, lower, upper = estimator.predict_qte(
+                    target_treatment_arm=1,
+                    control_treatment_arm=0,
+                    quantiles=quantiles,
+                    n_bootstrap=100
+                )
+                
+                print(f"QTE at quantiles {quantiles}: {qte}")
+                print(f"Median effect (50th percentile): {qte[1]:.3f}")
         """
         qte = self._compute_qtes(
             target_treatment_arm,
@@ -198,6 +230,7 @@ class DistributionEstimatorBase(ABC):
             self.covariates,
             self.treatment_arms,
             self.outcomes,
+            self.strata,
         )
         n_obs = len(self.outcomes)
         indexes = np.arange(n_obs)
@@ -205,6 +238,7 @@ class DistributionEstimatorBase(ABC):
         qtes = np.zeros((n_bootstrap, qte.shape[0]))
         for b in range(n_bootstrap):
             bootstrap_indexes = np.random.choice(indexes, size=n_obs, replace=True)
+                
             qtes[b] = self._compute_qtes(
                 target_treatment_arm,
                 control_treatment_arm,
@@ -212,6 +246,7 @@ class DistributionEstimatorBase(ABC):
                 self.covariates[bootstrap_indexes],
                 self.treatment_arms[bootstrap_indexes],
                 self.outcomes[bootstrap_indexes],
+                self.strata[bootstrap_indexes],
             )
 
         qte_var = qtes.var(axis=0)
@@ -333,7 +368,8 @@ class DistributionEstimatorBase(ABC):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        strata: np.ndarray,
+    ) -> np.ndarray:
         """Compute expected QTEs."""
         locations = np.sort(outcomes)
 
@@ -342,6 +378,10 @@ class DistributionEstimatorBase(ABC):
             result = -1
             while low <= high:
                 mid = (low + high) // 2
+                # Temporarily store original strata and use the provided strata
+                original_strata = self.strata
+                self.strata = strata
+                
                 val, _, _ = self._compute_cumulative_distribution(
                     arm,
                     np.full((1), locations[mid]),
@@ -349,6 +389,10 @@ class DistributionEstimatorBase(ABC):
                     treatment_arms,
                     outcomes,
                 )
+                
+                # Restore original strata
+                self.strata = original_strata
+                
                 if val[0] <= quantile:
                     result = locations[mid]
                     low = mid + 1
