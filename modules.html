@@ -239,13 +239,16 @@ shape (len(locations)-1,)</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedDistributionEstimator.predict_qte">
 <span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedDistributionEstimator.predict_qte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute QTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Quantile Treatment Effects (QTE) based on the estimator for the distribution function.</p>
+<p>The QTE measures the difference in quantiles between treatment groups, providing insights
+into how treatment affects different parts of the outcome distribution. For stratified
+estimators, the computation properly accounts for strata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].</p></li>
+<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1, 0.2, …, 0.9].</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
@@ -253,9 +256,9 @@ shape (len(locations)-1,)</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected QTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected QTEs (np.ndarray): Treatment effect estimates at each quantile</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -265,6 +268,33 @@ shape (len(locations)-1,)</p></li>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleStratifiedDistributionEstimator</span>
+
+<span class="c1"># Generate stratified sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit stratified estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+
+<span class="c1"># Compute QTE at specific quantiles</span>
+<span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">])</span>  <span class="c1"># 25th, 50th, 75th percentiles</span>
+<span class="n">qte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_qte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">,</span>
+    <span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;QTE at quantiles </span><span class="si">{</span><span class="n">quantiles</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">qte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median effect (50th percentile): </span><span class="si">{</span><span class="n">qte</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -584,13 +614,16 @@ shape (len(locations)-1,)</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedLocalDistributionEstimator.predict_qte">
 <span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedLocalDistributionEstimator.predict_qte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute QTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Quantile Treatment Effects (QTE) based on the estimator for the distribution function.</p>
+<p>The QTE measures the difference in quantiles between treatment groups, providing insights
+into how treatment affects different parts of the outcome distribution. For stratified
+estimators, the computation properly accounts for strata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].</p></li>
+<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1, 0.2, …, 0.9].</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
@@ -598,9 +631,9 @@ shape (len(locations)-1,)</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected QTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected QTEs (np.ndarray): Treatment effect estimates at each quantile</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -610,6 +643,33 @@ shape (len(locations)-1,)</p></li>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleStratifiedDistributionEstimator</span>
+
+<span class="c1"># Generate stratified sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit stratified estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+
+<span class="c1"># Compute QTE at specific quantiles</span>
+<span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">])</span>  <span class="c1"># 25th, 50th, 75th percentiles</span>
+<span class="n">qte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_qte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">,</span>
+    <span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;QTE at quantiles </span><span class="si">{</span><span class="n">quantiles</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">qte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median effect (50th percentile): </span><span class="si">{</span><span class="n">qte</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -791,13 +851,16 @@ shape (len(locations)-1,)</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.AdjustedStratifiedDistributionEstimator.predict_qte">
 <span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.AdjustedStratifiedDistributionEstimator.predict_qte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute QTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Quantile Treatment Effects (QTE) based on the estimator for the distribution function.</p>
+<p>The QTE measures the difference in quantiles between treatment groups, providing insights
+into how treatment affects different parts of the outcome distribution. For stratified
+estimators, the computation properly accounts for strata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].</p></li>
+<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1, 0.2, …, 0.9].</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
@@ -805,9 +868,9 @@ shape (len(locations)-1,)</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected QTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected QTEs (np.ndarray): Treatment effect estimates at each quantile</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -817,6 +880,33 @@ shape (len(locations)-1,)</p></li>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleStratifiedDistributionEstimator</span>
+
+<span class="c1"># Generate stratified sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit stratified estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+
+<span class="c1"># Compute QTE at specific quantiles</span>
+<span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">])</span>  <span class="c1"># 25th, 50th, 75th percentiles</span>
+<span class="n">qte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_qte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">,</span>
+    <span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;QTE at quantiles </span><span class="si">{</span><span class="n">quantiles</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">qte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median effect (50th percentile): </span><span class="si">{</span><span class="n">qte</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -1022,13 +1112,16 @@ shape (len(locations)-1,)</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleDistributionEstimator.predict_qte">
 <span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleDistributionEstimator.predict_qte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute QTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Quantile Treatment Effects (QTE) based on the estimator for the distribution function.</p>
+<p>The QTE measures the difference in quantiles between treatment groups, providing insights
+into how treatment affects different parts of the outcome distribution. For stratified
+estimators, the computation properly accounts for strata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].</p></li>
+<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1, 0.2, …, 0.9].</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
@@ -1036,9 +1129,9 @@ shape (len(locations)-1,)</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected QTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected QTEs (np.ndarray): Treatment effect estimates at each quantile</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -1048,6 +1141,33 @@ shape (len(locations)-1,)</p></li>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleStratifiedDistributionEstimator</span>
+
+<span class="c1"># Generate stratified sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit stratified estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+
+<span class="c1"># Compute QTE at specific quantiles</span>
+<span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">])</span>  <span class="c1"># 25th, 50th, 75th percentiles</span>
+<span class="n">qte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_qte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">,</span>
+    <span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;QTE at quantiles </span><span class="si">{</span><span class="n">quantiles</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">qte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median effect (50th percentile): </span><span class="si">{</span><span class="n">qte</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -1362,13 +1482,16 @@ shape (len(locations)-1,)</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleLocalDistributionEstimator.predict_qte">
 <span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleLocalDistributionEstimator.predict_qte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute QTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Quantile Treatment Effects (QTE) based on the estimator for the distribution function.</p>
+<p>The QTE measures the difference in quantiles between treatment groups, providing insights
+into how treatment affects different parts of the outcome distribution. For stratified
+estimators, the computation properly accounts for strata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].</p></li>
+<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1, 0.2, …, 0.9].</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
@@ -1376,9 +1499,9 @@ shape (len(locations)-1,)</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected QTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected QTEs (np.ndarray): Treatment effect estimates at each quantile</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -1388,6 +1511,33 @@ shape (len(locations)-1,)</p></li>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleStratifiedDistributionEstimator</span>
+
+<span class="c1"># Generate stratified sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit stratified estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+
+<span class="c1"># Compute QTE at specific quantiles</span>
+<span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">])</span>  <span class="c1"># 25th, 50th, 75th percentiles</span>
+<span class="n">qte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_qte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">,</span>
+    <span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;QTE at quantiles </span><span class="si">{</span><span class="n">quantiles</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">qte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median effect (50th percentile): </span><span class="si">{</span><span class="n">qte</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -1569,13 +1719,16 @@ shape (len(locations)-1,)</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="dte_adj.SimpleStratifiedDistributionEstimator.predict_qte">
 <span class="sig-name descname"><span class="pre">predict_qte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_treatment_arm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dte_adj.SimpleStratifiedDistributionEstimator.predict_qte" title="Link to this definition">¶</a></dt>
-<dd><p>Compute QTE based on the estimator for the distribution function.</p>
+<dd><p>Compute Quantile Treatment Effects (QTE) based on the estimator for the distribution function.</p>
+<p>The QTE measures the difference in quantiles between treatment groups, providing insights
+into how treatment affects different parts of the outcome distribution. For stratified
+estimators, the computation properly accounts for strata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the treatment group.</p></li>
 <li><p><strong>control_treatment_arm</strong> (<em>int</em>) – The index of the treatment arm of the control group.</p></li>
-<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1 * i for i in range(1, 10)].</p></li>
+<li><p><strong>quantiles</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Quantiles used for QTE. Defaults to [0.1, 0.2, …, 0.9].</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Significance level of the confidence bound. Defaults to 0.05.</p></li>
 <li><p><strong>n_bootstrap</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bootstrap samples. Defaults to 500.</p></li>
 </ul>
@@ -1583,9 +1736,9 @@ shape (len(locations)-1,)</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>A tuple containing:</dt><dd><ul class="simple">
-<li><p>Expected QTEs</p></li>
-<li><p>Upper bounds</p></li>
-<li><p>Lower bounds</p></li>
+<li><p>Expected QTEs (np.ndarray): Treatment effect estimates at each quantile</p></li>
+<li><p>Lower bounds (np.ndarray): Lower confidence interval bounds</p></li>
+<li><p>Upper bounds (np.ndarray): Upper confidence interval bounds</p></li>
 </ul>
 </dd>
 </dl>
@@ -1595,6 +1748,33 @@ shape (len(locations)-1,)</p></li>
 <dd class="field-odd"><p>Tuple[np.ndarray, np.ndarray, np.ndarray]</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleStratifiedDistributionEstimator</span>
+
+<span class="c1"># Generate stratified sample data</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># Fit stratified estimator</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+
+<span class="c1"># Compute QTE at specific quantiles</span>
+<span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">])</span>  <span class="c1"># 25th, 50th, 75th percentiles</span>
+<span class="n">qte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_qte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">,</span>
+    <span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;QTE at quantiles </span><span class="si">{</span><span class="n">quantiles</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">qte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median effect (50th percentile): </span><span class="si">{</span><span class="n">qte</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
