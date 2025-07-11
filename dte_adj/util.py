@@ -107,3 +107,216 @@ def compute_confidence_intervals(
         return vec_dte_lower_simple, vec_dte_upper_simple
     else:
         raise ValueError(f"Invalid variance type was specified: {variance_type}")
+
+
+def _compute_local_treatment_effects_core(
+    estimator,
+    target_treatment_arm: int,
+    control_treatment_arm: int,
+    locations: np.ndarray,
+    alpha: float,
+    use_intervals: bool = False,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Core computation logic shared between LDTE and LPTE.
+
+    Args:
+        estimator: The fitted estimator instance with required attributes
+        target_treatment_arm (int): The index of the treatment arm of the treatment group.
+        control_treatment_arm (int): The index of the treatment arm of the control group.
+        locations (np.ndarray): Scalar values to be used for computing the distribution.
+        alpha (float): Significance level of the confidence bound.
+        use_intervals (bool): If True, compute interval probabilities (LPTE), else cumulative (LDTE).
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
+            - Expected effects (beta)
+            - Lower bounds
+            - Upper bounds
+    """
+    X = estimator.covariates
+    Z = estimator.treatment_arms
+    D = estimator.treatment_indicator
+    S = estimator.strata
+    Y = estimator.outcomes
+    s_list = np.unique(S)
+
+    # Compute weights
+    weights = {
+        s: np.sum((S == s) & (Z == target_treatment_arm)) / np.sum(S == s)
+        for s in s_list
+    }
+
+    # Compute treatment propensity (probability of treatment)
+    d_t_prediction, d_t_psi, d_t_eta = estimator._compute_cumulative_distribution(
+        target_treatment_arm, np.zeros(1), X, Z, 1 - D
+    )
+    d_c_prediction, d_c_psi, d_c_eta = estimator._compute_cumulative_distribution(
+        control_treatment_arm, np.zeros(1), X, Z, 1 - D
+    )
+
+    # Compute outcome distributions (different for LDTE vs LPTE)
+    if use_intervals:
+        y_t_prediction, y_t_psi, y_t_mu = estimator._compute_interval_probability(
+            target_treatment_arm, locations, X, Z, Y
+        )
+        y_c_prediction, y_c_psi, y_c_mu = estimator._compute_interval_probability(
+            control_treatment_arm, locations, X, Z, Y
+        )
+        output_size = len(locations) - 1
+    else:
+        y_t_prediction, y_t_psi, y_t_mu = estimator._compute_cumulative_distribution(
+            target_treatment_arm, locations, X, Z, Y
+        )
+        y_c_prediction, y_c_psi, y_c_mu = estimator._compute_cumulative_distribution(
+            control_treatment_arm, locations, X, Z, Y
+        )
+        output_size = len(locations)
+
+    psi_b = d_t_psi - d_c_psi
+    beta = (y_t_prediction - y_c_prediction) / (d_t_prediction - d_c_prediction)
+
+    # Compute influence functions
+    xi_t = np.zeros((len(X), output_size))
+    xi_c = np.zeros((len(X), output_size))
+
+    for i in range(len(X)):
+        w_s = weights[S[i]]
+
+        # Compute outcome indicators (different for LDTE vs LPTE)
+        if use_intervals:
+            bi = (Y[i] < locations) * 1
+            bi = bi[1:] - bi[:-1]  # Convert to interval probabilities
+        else:
+            bi = Y[i] <= locations
+
+        xi_t[i] = ((1 - 1 / w_s) * y_t_mu[i] - y_c_mu[i] + bi / w_s) - beta * (
+            (1 - 1 / w_s) * d_t_eta[i] - d_c_eta[i] + D[i] / w_s
+        )
+
+        xi_c[i] = (
+            (1 / (1 - w_s) - 1) * y_c_mu[i] - y_t_mu[i] + bi / (1 - w_s)
+        ) - beta * ((1 / (1 - w_s) - 1) * d_c_eta[i] - d_t_eta[i] + D[i] / (1 - w_s))
+
+    # Center the influence functions
+    t_xi_mean = {
+        s: xi_t[(S == s) & (Z == target_treatment_arm)].mean(axis=0) for s in s_list
+    }
+    c_xi_mean = {
+        s: xi_c[(S == s) & (Z == control_treatment_arm)].mean(axis=0) for s in s_list
+    }
+
+    for i in range(len(X)):
+        xi_t[i] -= t_xi_mean[S[i]]
+        xi_c[i] -= c_xi_mean[S[i]]
+
+    # Compute xi function (different for LDTE vs LPTE)
+    def xi(s):
+        if use_intervals:
+            a = (
+                Y[(S == s) & (Z == target_treatment_arm)].reshape(-1, 1)
+                < locations.reshape(1, -1)
+            ) * 1
+            a = a[:, 1:] - a[:, :-1]  # Convert to intervals
+            b = (
+                Y[(S == s) & (Z == control_treatment_arm)].reshape(-1, 1)
+                < locations.reshape(1, -1)
+            ) * 1
+            b = b[:, 1:] - b[:, :-1]  # Convert to intervals
+        else:
+            a = Y[(S == s) & (Z == target_treatment_arm)].reshape(
+                -1, 1
+            ) < locations.reshape(1, -1)
+            b = Y[(S == s) & (Z == control_treatment_arm)].reshape(
+                -1, 1
+            ) < locations.reshape(1, -1)
+
+        return (
+            a
+            - beta.reshape(1, -1)
+            * D[(S == s) & (Z == target_treatment_arm)].reshape(-1, 1)
+        ).mean(axis=0) - (
+            b
+            - beta.reshape(1, -1)
+            * D[(S == s) & (Z == control_treatment_arm)].reshape(-1, 1)
+        ).mean(axis=0)
+
+    xi_2_dict = {s: xi(s) for s in s_list}
+    xi_2 = np.array([xi_2_dict[s] for s in S])
+    sigma = (
+        Z.reshape(-1, 1) * xi_t**2 + (1 - Z).reshape(-1, 1) * xi_c**2 + xi_2**2
+    ).mean(axis=0) / (psi_b.mean()) ** 2
+
+    # Compute confidence intervals
+    z_alpha = norm.ppf(1 - alpha / 2)
+    se = sigma**0.5 / np.sqrt(len(X))
+    upper_bound = beta + z_alpha * se
+    lower_bound = beta - z_alpha * se
+
+    return beta, lower_bound, upper_bound
+
+
+def compute_ldte(
+    estimator,
+    target_treatment_arm: int,
+    control_treatment_arm: int,
+    locations: np.ndarray,
+    alpha: float = 0.05,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Compute Local Distribution Treatment Effects (LDTE) using the provided formula.
+
+    Args:
+        estimator: The fitted estimator instance with required attributes
+        target_treatment_arm (int): The index of the treatment arm of the treatment group.
+        control_treatment_arm (int): The index of the treatment arm of the control group.
+        locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+        alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
+            - Expected LDTEs (beta)
+            - Lower bounds
+            - Upper bounds
+    """
+    return _compute_local_treatment_effects_core(
+        estimator,
+        target_treatment_arm,
+        control_treatment_arm,
+        locations,
+        alpha,
+        use_intervals=False,
+    )
+
+
+def compute_lpte(
+    estimator,
+    target_treatment_arm: int,
+    control_treatment_arm: int,
+    locations: np.ndarray,
+    alpha: float = 0.05,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Compute Local Probability Treatment Effects (LPTE) using the provided formula.
+
+    Args:
+        estimator: The fitted estimator instance with required attributes
+        target_treatment_arm (int): The index of the treatment arm of the treatment group.
+        control_treatment_arm (int): The index of the treatment arm of the control group.
+        locations (np.ndarray): Scalar values to be used for computing the interval probabilities.
+        alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
+            - Expected LPTEs (beta)
+            - Lower bounds
+            - Upper bounds
+    """
+    return _compute_local_treatment_effects_core(
+        estimator,
+        target_treatment_arm,
+        control_treatment_arm,
+        locations,
+        alpha,
+        use_intervals=True,
+    )
