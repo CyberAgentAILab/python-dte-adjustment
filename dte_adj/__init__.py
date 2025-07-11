@@ -50,7 +50,7 @@ class DistributionEstimatorBase(ABC):
             control_treatment_arm (int): The index of the treatment arm of the control group.
             locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
-            variance_type (str, optional): Variance type to be used to compute confidence intervals. 
+            variance_type (str, optional): Variance type to be used to compute confidence intervals.
                 Available values are "moment", "simple", and "uniform". Defaults to "moment".
             n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.
 
@@ -65,16 +65,16 @@ class DistributionEstimatorBase(ABC):
 
                 import numpy as np
                 from dte_adj import SimpleDistributionEstimator
-                
+
                 # Generate sample data
                 X = np.random.randn(1000, 5)
                 D = np.random.binomial(1, 0.5, 1000)
                 Y = X[:, 0] + 2 * D + np.random.randn(1000)
-                
+
                 # Fit estimator
                 estimator = SimpleDistributionEstimator()
                 estimator.fit(X, D, Y)
-                
+
                 # Compute DTE
                 locations = np.linspace(Y.min(), Y.max(), 20)
                 dte, lower, upper = estimator.predict_dte(
@@ -83,7 +83,7 @@ class DistributionEstimatorBase(ABC):
                     locations=locations,
                     variance_type="moment"
                 )
-                
+
                 print(f"DTE shape: {dte.shape}")  # Should match locations.shape
                 print(f"Average DTE: {dte.mean():.3f}")
         """
@@ -118,13 +118,13 @@ class DistributionEstimatorBase(ABC):
             locations (np.ndarray): Scalar values defining interval boundaries for probability computation.
                 For each interval (locations[i], locations[i+1]], the PTE is computed.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
-            variance_type (str, optional): Variance type to be used to compute confidence intervals. 
+            variance_type (str, optional): Variance type to be used to compute confidence intervals.
                 Available values are "moment", "simple", and "uniform". Defaults to "moment".
             n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
-                - Expected PTEs (np.ndarray): Treatment effect estimates for each interval, 
+                - Expected PTEs (np.ndarray): Treatment effect estimates for each interval,
                   shape (len(locations)-1,)
                 - Lower bounds (np.ndarray): Lower confidence interval bounds
                 - Upper bounds (np.ndarray): Upper confidence interval bounds
@@ -134,19 +134,19 @@ class DistributionEstimatorBase(ABC):
 
                 import numpy as np
                 from dte_adj import SimpleDistributionEstimator
-                
+
                 # Generate sample data
                 X = np.random.randn(1000, 5)
                 D = np.random.binomial(1, 0.5, 1000)
                 Y = X[:, 0] + 2 * D + np.random.randn(1000)
-                
+
                 # Fit estimator
                 estimator = SimpleDistributionEstimator()
                 estimator.fit(X, D, Y)
-                
+
                 # Define interval boundaries
                 locations = np.array([-2, -1, 0, 1, 2])  # Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]
-                
+
                 # Compute PTE
                 pte, lower, upper = estimator.predict_pte(
                     target_treatment_arm=1,
@@ -154,7 +154,7 @@ class DistributionEstimatorBase(ABC):
                     locations=locations,
                     variance_type="moment"
                 )
-                
+
                 print(f"PTE shape: {pte.shape}")  # Should be (4,) for 4 intervals
                 print(f"Interval effects: {pte}")
         """
@@ -809,27 +809,27 @@ class SimpleDistributionEstimator(SimpleStratifiedDistributionEstimator):
     """
     A class for computing the empirical distribution function and distributional treatment effects
     using simple (unadjusted) estimation methods.
-    
+
     This estimator computes Distribution Treatment Effects (DTE), Probability Treatment Effects (PTE),
     and Quantile Treatment Effects (QTE) without using machine learning models for adjustment.
     It provides a baseline approach suitable when treatment assignment is random or when
     covariate adjustment is not needed.
-    
+
     Example:
         .. code-block:: python
 
             import numpy as np
             from dte_adj import SimpleDistributionEstimator
-            
+
             # Generate sample data
             X = np.random.randn(1000, 5)
             D = np.random.binomial(1, 0.5, 1000)  # Random treatment
             Y = X[:, 0] + 2 * D + np.random.randn(1000)
-            
+
             # Fit simple estimator
             estimator = SimpleDistributionEstimator()
             estimator.fit(X, D, Y)
-            
+
             # Compute treatment effects
             locations = np.linspace(Y.min(), Y.max(), 20)
             dte, lower, upper = estimator.predict_dte(1, 0, locations)
@@ -875,30 +875,30 @@ class SimpleDistributionEstimator(SimpleStratifiedDistributionEstimator):
 class AdjustedDistributionEstimator(AdjustedStratifiedDistributionEstimator):
     """
     A class for computing distribution treatment effects using machine learning adjustment.
-    
+
     This estimator uses cross-fitting with ML models to adjust for confounding when computing
     Distribution Treatment Effects (DTE), Probability Treatment Effects (PTE), and
     Quantile Treatment Effects (QTE). It provides more precise estimates when treatment
     assignment depends on observed covariates.
-    
+
     Example:
         .. code-block:: python
 
             import numpy as np
             from sklearn.ensemble import RandomForestClassifier
             from dte_adj import AdjustedDistributionEstimator
-            
+
             # Generate confounded data
             X = np.random.randn(1000, 5)
             treatment_prob = 1 / (1 + np.exp(-(X[:, 0] + X[:, 1])))
             D = np.random.binomial(1, treatment_prob, 1000)
             Y = X.sum(axis=1) + 2 * D + np.random.randn(1000)
-            
+
             # Fit adjusted estimator
             base_model = RandomForestClassifier(n_estimators=100)
             estimator = AdjustedDistributionEstimator(base_model, folds=3)
             estimator.fit(X, D, Y)
-            
+
             # Compute adjusted treatment effects
             locations = np.linspace(Y.min(), Y.max(), 20)
             dte, lower, upper = estimator.predict_dte(1, 0, locations, variance_type="moment")
@@ -934,34 +934,12 @@ class AdjustedDistributionEstimator(AdjustedStratifiedDistributionEstimator):
 
 class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
     """
-    A class for computing Local Distribution Treatment Effects (LDTE) and Local Probability 
+    A class for computing Local Distribution Treatment Effects (LDTE) and Local Probability
     Treatment Effects (LPTE) using simple empirical estimation.
-    
+
     This estimator computes treatment effects that are weighted by treatment propensity
     within each stratum, providing estimates that are locally robust to treatment assignment
     heterogeneity across strata. It uses empirical methods without ML adjustment.
-    
-    Example:
-        .. code-block:: python
-
-            import numpy as np
-            from dte_adj import SimpleLocalDistributionEstimator
-            
-            # Generate stratified data
-            X = np.random.randn(1000, 5)
-            strata = np.random.choice([0, 1, 2], size=1000)
-            # Treatment probability varies by stratum
-            D = np.random.binomial(1, 0.2 + 0.3 * (strata == 1) + 0.4 * (strata == 2), 1000)
-            Y = X[:, 0] + 2 * D + 0.5 * strata + np.random.randn(1000)
-            
-            # Fit local estimator
-            estimator = SimpleLocalDistributionEstimator()
-            estimator.fit(X, D, D, Y, strata)  # treatment_arms = treatment_indicator for binary
-            
-            # Compute local treatment effects
-            locations = np.linspace(Y.min(), Y.max(), 15)
-            ldte, lower, upper = estimator.predict_ldte(1, 0, locations)
-            lpte, lpte_lower, lpte_upper = estimator.predict_lpte(1, 0, locations)
     """
 
     def __init__(self):
@@ -1031,19 +1009,19 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
                 import numpy as np
                 from sklearn.linear_model import LogisticRegression
                 from dte_adj import AdjustedLocalDistributionEstimator
-                
+
                 # Generate sample data with strata
                 np.random.seed(42)
                 X = np.random.randn(1000, 5)
                 strata = np.random.choice([0, 1], size=1000)  # Binary strata
                 D = np.random.binomial(1, 0.3 + 0.4 * strata, 1000)  # Treatment depends on strata
                 Y = X[:, 0] + 2 * D + strata + np.random.randn(1000)
-                
+
                 # Fit local estimator
                 base_model = LogisticRegression()
                 estimator = AdjustedLocalDistributionEstimator(base_model)
                 estimator.fit(X, D, D, Y, strata)  # treatment_arms = treatment_indicator for binary case
-                
+
                 # Compute LDTE
                 locations = np.linspace(Y.min(), Y.max(), 20)
                 ldte, lower, upper = estimator.predict_ldte(
@@ -1051,7 +1029,7 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
                     control_treatment_arm=0,
                     locations=locations
                 )
-                
+
                 print(f"LDTE shape: {ldte.shape}")  # Should match locations.shape
                 print(f"Average LDTE: {ldte.mean():.3f}")
         """
@@ -1093,28 +1071,28 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
                 import numpy as np
                 from sklearn.linear_model import LogisticRegression
                 from dte_adj import SimpleLocalDistributionEstimator
-                
+
                 # Generate sample data with strata
                 np.random.seed(42)
                 X = np.random.randn(1000, 5)
                 strata = np.random.choice([0, 1, 2], size=1000)  # Multiple strata
                 D = np.random.binomial(1, 0.2 + 0.3 * (strata == 1) + 0.4 * (strata == 2), 1000)
                 Y = X[:, 0] + 1.5 * D + 0.5 * strata + np.random.randn(1000)
-                
+
                 # Fit simple local estimator
                 estimator = SimpleLocalDistributionEstimator()
                 estimator.fit(X, D, D, Y, strata)
-                
-                # Define interval boundaries  
+
+                # Define interval boundaries
                 locations = np.array([-2, -1, 0, 1, 2])  # Creates 4 intervals
-                
+
                 # Compute LPTE
                 lpte, lower, upper = estimator.predict_lpte(
                     target_treatment_arm=1,
                     control_treatment_arm=0,
                     locations=locations
                 )
-                
+
                 print(f"LPTE shape: {lpte.shape}")  # Should be (4,) for 4 intervals
                 print(f"Interval effects: {lpte}")
         """
@@ -1125,39 +1103,13 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
 
 class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator):
     """
-    A class for computing Local Distribution Treatment Effects (LDTE) and Local Probability 
+    A class for computing Local Distribution Treatment Effects (LDTE) and Local Probability
     Treatment Effects (LPTE) using ML-adjusted estimation.
-    
+
     This estimator combines local treatment effect estimation with machine learning adjustment,
     providing treatment effects that are both locally robust to treatment assignment heterogeneity
-    and adjusted for confounding through observed covariates. It uses cross-fitting for 
+    and adjusted for confounding through observed covariates. It uses cross-fitting for
     more precise estimates in complex treatment assignment scenarios.
-    
-    Example:
-        .. code-block:: python
-
-            import numpy as np
-            from sklearn.ensemble import GradientBoostingClassifier
-            from dte_adj import AdjustedLocalDistributionEstimator
-            
-            # Generate complex stratified and confounded data
-            X = np.random.randn(1000, 5)
-            strata = np.random.choice([0, 1], size=1000)
-            # Treatment depends on both covariates and strata
-            logit_score = X[:, 0] + 0.5 * X[:, 1] + 2 * strata
-            treatment_prob = 1 / (1 + np.exp(-logit_score))
-            D = np.random.binomial(1, treatment_prob, 1000)
-            Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)
-            
-            # Fit adjusted local estimator
-            base_model = GradientBoostingClassifier(n_estimators=100)
-            estimator = AdjustedLocalDistributionEstimator(base_model, folds=5)
-            estimator.fit(X, D, D, Y, strata)
-            
-            # Compute ML-adjusted local treatment effects
-            locations = np.linspace(Y.min(), Y.max(), 15)
-            ldte, lower, upper = estimator.predict_ldte(1, 0, locations)
-            lpte, lpte_lower, lpte_upper = estimator.predict_lpte(1, 0, locations)
     """
 
     def __init__(self, base_model: Any, folds=3, is_multi_task=False):
@@ -1222,7 +1174,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
                 - Expected LDTEs (np.ndarray): ML-adjusted local treatment effect estimates
-                - Lower bounds (np.ndarray): Lower confidence interval bounds  
+                - Lower bounds (np.ndarray): Lower confidence interval bounds
                 - Upper bounds (np.ndarray): Upper confidence interval bounds
 
         Example:
@@ -1231,7 +1183,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
                 import numpy as np
                 from sklearn.ensemble import RandomForestClassifier
                 from dte_adj import AdjustedLocalDistributionEstimator
-                
+
                 # Generate sample data with complex treatment assignment
                 np.random.seed(42)
                 X = np.random.randn(1000, 5)
@@ -1240,12 +1192,12 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
                 treatment_prob = 0.2 + 0.3 * (X[:, 0] > 0) + 0.2 * strata
                 D = np.random.binomial(1, treatment_prob, 1000)
                 Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)
-                
+
                 # Fit adjusted local estimator
                 base_model = RandomForestClassifier(n_estimators=50, random_state=42)
                 estimator = AdjustedLocalDistributionEstimator(base_model, folds=3)
                 estimator.fit(X, D, D, Y, strata)
-                
+
                 # Compute LDTE
                 locations = np.linspace(Y.min(), Y.max(), 15)
                 ldte, lower, upper = estimator.predict_ldte(
@@ -1253,7 +1205,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
                     control_treatment_arm=0,
                     locations=locations
                 )
-                
+
                 print(f"ML-adjusted LDTE shape: {ldte.shape}")
                 print(f"Average LDTE: {ldte.mean():.3f}")
         """
@@ -1294,7 +1246,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
                 import numpy as np
                 from sklearn.ensemble import GradientBoostingClassifier
                 from dte_adj import AdjustedLocalDistributionEstimator
-                
+
                 # Generate sample data with confounding
                 np.random.seed(42)
                 X = np.random.randn(1000, 5)
@@ -1304,12 +1256,12 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
                 treatment_prob = 1 / (1 + np.exp(-logit_score))
                 D = np.random.binomial(1, treatment_prob, 1000)
                 Y = X.sum(axis=1) + 1.5 * D + 0.3 * strata + np.random.randn(1000)
-                
+
                 # Fit adjusted estimator with gradient boosting
                 base_model = GradientBoostingClassifier(n_estimators=100, random_state=42)
                 estimator = AdjustedLocalDistributionEstimator(base_model, folds=5)
                 estimator.fit(X, D, D, Y, strata)
-                
+
                 # Define intervals and compute LPTE
                 locations = np.array([-3, -1, 0, 1, 3])  # 4 intervals
                 lpte, lower, upper = estimator.predict_lpte(
@@ -1317,7 +1269,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
                     control_treatment_arm=0,
                     locations=locations
                 )
-                
+
                 print(f"ML-adjusted LPTE shape: {lpte.shape}")  # Should be (4,)
                 print(f"Interval effects: {lpte}")
         """
