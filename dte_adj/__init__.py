@@ -982,6 +982,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute Local Distribution Treatment Effects (LDTE).
+        Currently, this API only supports analytical confidence interval.
 
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
@@ -1008,6 +1009,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute Local Probability Treatment Effects (LPTE).
+        Currently, this API only supports analytical confidence interval.
 
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
