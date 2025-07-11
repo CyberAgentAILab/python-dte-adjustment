@@ -3,13 +3,15 @@ from typing import Tuple, Optional, Any
 from scipy.stats import norm
 from copy import deepcopy
 from abc import ABC
-from .util import compute_confidence_intervals
+from .util import compute_confidence_intervals, compute_ldte, compute_lpte
 
 __all__ = [
     "SimpleDistributionEstimator",
     "AdjustedDistributionEstimator",
     "SimpleStratifiedDistributionEstimator",
     "AdjustedStratifiedDistributionEstimator",
+    "SimpleLocalDistributionEstimator",
+    "AdjustedLocalDistributionEstimator",
 ]
 
 
@@ -835,3 +837,192 @@ class AdjustedDistributionEstimator(AdjustedStratifiedDistributionEstimator):
         self.strata = np.zeros(len(self.covariates))
 
         return self
+
+
+class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
+    """A class for computing local distribution treatment effects (LDTE) using simple empirical estimation."""
+
+    def __init__(self):
+        """
+        Initializes the SimpleLocalDistributionEstimator.
+
+        Returns:
+            SimpleLocalDistributionEstimator: An instance of the estimator.
+        """
+        super().__init__()
+
+    def fit(
+        self,
+        covariates: np.ndarray,
+        treatment_arms: np.ndarray,
+        treatment_indicator: np.ndarray,
+        outcomes: np.ndarray,
+        strata: np.ndarray,
+    ) -> "SimpleLocalDistributionEstimator":
+        """
+        Train the SimpleLocalDistributionEstimator.
+
+        Args:
+            covariates (np.ndarray): Pre-treatment covariates.
+            treatment_arms (np.ndarray): Treatment assignment variable (Z).
+            treatment_indicator (np.ndarray): Treatment indicator variable (D).
+            outcomes (np.ndarray): Scalar-valued observed outcome.
+            strata (np.ndarray): Stratum indicators.
+
+        Returns:
+            SimpleLocalDistributionEstimator: The fitted estimator.
+        """
+        super().fit(covariates, treatment_arms, outcomes, strata)
+        self.treatment_indicator = treatment_indicator
+
+        return self
+
+    def predict_ldte(
+        self,
+        target_treatment_arm: int,
+        control_treatment_arm: int,
+        locations: np.ndarray,
+        alpha: float = 0.05,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Compute Local Distribution Treatment Effects (LDTE).
+
+        Args:
+            target_treatment_arm (int): The index of the treatment arm of the treatment group.
+            control_treatment_arm (int): The index of the treatment arm of the control group.
+            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
+                - Expected LDTEs
+                - Lower bounds
+                - Upper bounds
+        """
+        return compute_ldte(
+            self, target_treatment_arm, control_treatment_arm, locations, alpha
+        )
+
+    def predict_lpte(
+        self,
+        target_treatment_arm: int,
+        control_treatment_arm: int,
+        locations: np.ndarray,
+        alpha: float = 0.05,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Compute Local Probability Treatment Effects (LPTE).
+
+        Args:
+            target_treatment_arm (int): The index of the treatment arm of the treatment group.
+            control_treatment_arm (int): The index of the treatment arm of the control group.
+            locations (np.ndarray): Scalar values to be used for computing the interval probabilities.
+            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
+                - Expected LPTEs
+                - Lower bounds
+                - Upper bounds
+        """
+        return compute_lpte(
+            self, target_treatment_arm, control_treatment_arm, locations, alpha
+        )
+
+
+class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator):
+    """A class for computing local distribution treatment effects (LDTE) using adjusted estimation with ML models."""
+
+    def __init__(self, base_model: Any, folds=3, is_multi_task=False):
+        """
+        Initializes the AdjustedLocalDistributionEstimator.
+
+        Args:
+            base_model (scikit-learn estimator): The base model implementing used for conditional distribution function estimators.
+            folds (int): The number of folds for cross-fitting.
+            is_multi_task(bool): Whether to use multi-task learning.
+
+        Returns:
+            AdjustedLocalDistributionEstimator: An instance of the estimator.
+        """
+        super().__init__(base_model, folds, is_multi_task)
+
+    def fit(
+        self,
+        covariates: np.ndarray,
+        treatment_arms: np.ndarray,
+        treatment_indicator: np.ndarray,
+        outcomes: np.ndarray,
+        strata: np.ndarray,
+    ) -> "AdjustedLocalDistributionEstimator":
+        """
+        Train the AdjustedLocalDistributionEstimator.
+
+        Args:
+            covariates (np.ndarray): Pre-treatment covariates.
+            treatment_arms (np.ndarray): Treatment assignment variable (Z).
+            treatment_indicator (np.ndarray): Treatment indicator variable (D).
+            outcomes (np.ndarray): Scalar-valued observed outcome.
+            strata (np.ndarray): Stratum indicators.
+
+        Returns:
+            AdjustedLocalDistributionEstimator: The fitted estimator.
+        """
+        super().fit(covariates, treatment_arms, outcomes, strata)
+        self.treatment_indicator = treatment_indicator
+
+        return self
+
+    def predict_ldte(
+        self,
+        target_treatment_arm: int,
+        control_treatment_arm: int,
+        locations: np.ndarray,
+        alpha: float = 0.05,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Compute Local Distribution Treatment Effects (LDTE).
+        Currently, this API only supports analytical confidence interval.
+
+        Args:
+            target_treatment_arm (int): The index of the treatment arm of the treatment group.
+            control_treatment_arm (int): The index of the treatment arm of the control group.
+            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
+                - Expected LDTEs
+                - Lower bounds
+                - Upper bounds
+        """
+        return compute_ldte(
+            self, target_treatment_arm, control_treatment_arm, locations, alpha
+        )
+
+    def predict_lpte(
+        self,
+        target_treatment_arm: int,
+        control_treatment_arm: int,
+        locations: np.ndarray,
+        alpha: float = 0.05,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Compute Local Probability Treatment Effects (LPTE).
+        Currently, this API only supports analytical confidence interval.
+
+        Args:
+            target_treatment_arm (int): The index of the treatment arm of the treatment group.
+            control_treatment_arm (int): The index of the treatment arm of the control group.
+            locations (np.ndarray): Scalar values to be used for computing the interval probabilities.
+            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
+                - Expected LPTEs
+                - Lower bounds
+                - Upper bounds
+        """
+        return compute_lpte(
+            self, target_treatment_arm, control_treatment_arm, locations, alpha
+        )
