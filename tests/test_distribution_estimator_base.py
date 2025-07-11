@@ -19,18 +19,40 @@ def compute_cumulative_distribution(
     )
 
 
+def compute_interval_probability(
+    target_treatment_arms: np.ndarray,
+    locations: np.ndarray,
+    covariates: np.ndarray,
+    treatment_arms: np.ndarray,
+    outcomes: np.array,
+) -> np.ndarray:
+    """Mock implementation for interval probability testing purposes."""
+    interval_size = locations.shape[0] - 1
+    return (
+        np.full(interval_size, 0.1) + target_treatment_arms * 0.05,
+        np.zeros((outcomes.shape[0], interval_size)),
+        np.zeros((outcomes.shape[0], interval_size)),
+    )
+
+
 class MockDistributionEstimator(DistributionEstimatorBase):
     """
     Mock class to implement _compute_cumulative_distribution for testing.
     """
 
     def __init__(
-        self, mock_compute_cumulative_distribution=compute_cumulative_distribution
+        self,
+        mock_compute_cumulative_distribution=compute_cumulative_distribution,
+        mock_compute_interval_probability=compute_interval_probability,
     ):
         super().__init__()
         self.compute_cumulative_distribution = MagicMock()
         self.compute_cumulative_distribution.side_effect = (
             mock_compute_cumulative_distribution
+        )
+        self.compute_interval_probability = MagicMock()
+        self.compute_interval_probability.side_effect = (
+            mock_compute_interval_probability
         )
 
     def fit(self, covariates, treatment_arms, outcomes):
@@ -48,6 +70,18 @@ class MockDistributionEstimator(DistributionEstimatorBase):
         outcomes: np.array,
     ) -> np.ndarray:
         return self.compute_cumulative_distribution(
+            target_treatment_arms, locations, covariates, treatment_arms, outcomes
+        )
+
+    def _compute_interval_probability(
+        self,
+        target_treatment_arms: np.ndarray,
+        locations: np.ndarray,
+        covariates: np.ndarray,
+        treatment_arms: np.ndarray,
+        outcomes: np.array,
+    ) -> np.ndarray:
+        return self.compute_interval_probability(
             target_treatment_arms, locations, covariates, treatment_arms, outcomes
         )
 
@@ -105,18 +139,19 @@ class TestDistributionEstimatorBase(unittest.TestCase):
         target_treatment_arm = 1
         control_treatment_arm = 0
         locations = np.arange(20)
-        width = 0.1
 
         # Act
         pte, lower_bound, upper_bound = self.estimator.predict_pte(
-            target_treatment_arm, control_treatment_arm, width, locations
+            target_treatment_arm, control_treatment_arm, locations
         )
 
-        # Assert
-        np.testing.assert_array_almost_equal(pte, np.full(locations.shape, 0))
-        np.testing.assert_array_almost_equal(lower_bound, np.full(locations.shape, 0.1))
-        np.testing.assert_array_almost_equal(upper_bound, np.full(locations.shape, 0.9))
-        self.estimator.compute_cumulative_distribution.assert_called()
+        # Assert - expect intervals (length 19, since we have 20 locations)
+        expected_length = len(locations) - 1
+        expected_pte = np.full(expected_length, 0.05)  # From mock: 0.15 - 0.1 = 0.05
+        np.testing.assert_array_almost_equal(pte, expected_pte)
+        np.testing.assert_array_almost_equal(lower_bound, np.full(expected_length, 0.1))
+        np.testing.assert_array_almost_equal(upper_bound, np.full(expected_length, 0.9))
+        self.estimator.compute_interval_probability.assert_called()
 
     def test_predict_qte(self):
         # Arrange

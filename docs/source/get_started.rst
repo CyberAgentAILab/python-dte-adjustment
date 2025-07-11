@@ -81,7 +81,7 @@ A convenience function is available to visualize distribution effects. This meth
    :align: center
 
 To initialize the adjusted distribution function, the base model for conditional distribution function needs to be passed.
-In the following example, we use Logistic Regression. Please make sure that your base model implements ``fit`` and ``predict_proba`` methods.
+In the following example, Logistic Regression is used. Please make sure that your base model implements ``fit`` and ``predict_proba`` methods.
 
 .. code-block:: python
 
@@ -104,7 +104,7 @@ DTE can be computed and visualized in the following code.
    :width: 450px
    :align: center
 
-Confidence bands can be computed in different ways. In the following code, we use moment method to calculate the confidence band.
+Confidence bands can be computed in different ways. In the following code, moment condition is used to calculate the confidence band.
 
 .. code-block:: python
 
@@ -130,12 +130,14 @@ Also, an uniform confidence band is used when ``uniform`` is specified for the `
    :width: 450px
    :align: center
 
-To compute PTE, we can use ``predict_pte`` method.
+To compute PTE, you can use ``predict_pte`` method. The ``locations`` parameter defines interval boundaries, and the method returns probability treatment effects for each interval.
+For each interval, the starting point is not included but the ending point is included. For example, if the `locations` is [0, 1, 2], PTE is computed for `(0, 1]` and `(1, 2]`.
 
 .. code-block:: python
 
-  pte, lower_bound, upper_bound = estimator.predict_pte(target_treatment_arm=1, control_treatment_arm=0, width=1, locations=locations, variance_type="simple")
-  plot(locations, pte, lower_bound, upper_bound, chart_type="bar", title="PTE of adjusted estimator with simple confidence band")
+  pte, lower_bound, upper_bound = estimator.predict_pte(target_treatment_arm=1, control_treatment_arm=0, locations=locations, variance_type="simple")
+  # Note: pte will have shape (len(locations)-1,) since it computes intervals between locations
+  plot(locations[:-1], pte, lower_bound, upper_bound, chart_type="bar", title="PTE of adjusted estimator with simple confidence band")
 
 .. image:: _static/pte_empirical.png
    :alt: PTE of adjusted estimator with simple confidence band
@@ -143,7 +145,7 @@ To compute PTE, we can use ``predict_pte`` method.
    :width: 450px
    :align: center
 
-To compute QTE, we use ``predict_qte`` method. The confidence band is computed by bootstrap method.
+To compute QTE, you can use ``predict_qte`` method. The confidence band is computed by bootstrap method.
 
 .. code-block:: python
 
