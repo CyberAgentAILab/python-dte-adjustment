@@ -10,7 +10,7 @@ scipy = ">=1.13.1"
 
 [dev-packages]
 build = "~=1.2.2"
-ruff = "~=0.12.2"
+ruff = "~=0.12.3"
 sphinx = "~=8.2.3"
 scikit-learn = "~=1.5.0"
 
