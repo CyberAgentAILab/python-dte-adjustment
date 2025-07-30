@@ -200,17 +200,17 @@ class DistributionEstimatorBase(ABC):
 
                 import numpy as np
                 from dte_adj import SimpleStratifiedDistributionEstimator
-                
+
                 # Generate stratified sample data
                 X = np.random.randn(1000, 5)
                 strata = np.random.choice([0, 1, 2], size=1000)
                 D = np.random.binomial(1, 0.5, 1000)
                 Y = X[:, 0] + 2 * D + 0.5 * strata + np.random.randn(1000)
-                
+
                 # Fit stratified estimator
                 estimator = SimpleStratifiedDistributionEstimator()
                 estimator.fit(X, D, Y, strata)
-                
+
                 # Compute QTE at specific quantiles
                 quantiles = np.array([0.25, 0.5, 0.75])  # 25th, 50th, 75th percentiles
                 qte, lower, upper = estimator.predict_qte(
@@ -219,7 +219,7 @@ class DistributionEstimatorBase(ABC):
                     quantiles=quantiles,
                     n_bootstrap=100
                 )
-                
+
                 print(f"QTE at quantiles {quantiles}: {qte}")
                 print(f"Median effect (50th percentile): {qte[1]:.3f}")
         """
@@ -238,7 +238,7 @@ class DistributionEstimatorBase(ABC):
         qtes = np.zeros((n_bootstrap, qte.shape[0]))
         for b in range(n_bootstrap):
             bootstrap_indexes = np.random.choice(indexes, size=n_obs, replace=True)
-                
+
             qtes[b] = self._compute_qtes(
                 target_treatment_arm,
                 control_treatment_arm,
@@ -381,7 +381,7 @@ class DistributionEstimatorBase(ABC):
                 # Temporarily store original strata and use the provided strata
                 original_strata = self.strata
                 self.strata = strata
-                
+
                 val, _, _ = self._compute_cumulative_distribution(
                     arm,
                     np.full((1), locations[mid]),
@@ -389,10 +389,10 @@ class DistributionEstimatorBase(ABC):
                     treatment_arms,
                     outcomes,
                 )
-                
+
                 # Restore original strata
                 self.strata = original_strata
-                
+
                 if val[0] <= quantile:
                     result = locations[mid]
                     low = mid + 1
