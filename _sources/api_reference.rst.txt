@@ -1,35 +1,22 @@
-dte_adj
-=======
+API Reference
+=============
 
-A Python Package for Estimating Distribution Treatment Effects
---------------------------------------------------------------
+This section provides comprehensive documentation for all classes and functions in the dte_adj package. The API is organized into logical groups based on functionality and use cases.
 
-`dte_adj` is a Python package for estimating distribution treatment effects in randomized experiments. 
-It provides APIs for conducting regression adjustment to estimate precise distribution functions, enabling deeper insights beyond average treatment effects through machine learning-enhanced estimation methods.
+Overview
+--------
 
-.. image:: _static/distributional_effect.png
-   :alt: distributional effect
-   :height: 400px
-   :width: 700px
-   :align: center
-
-Estimator Types
----------------
-
-The package provides several types of estimators for computing distribution treatment effects:
+The dte_adj package provides several types of estimators for computing distribution treatment effects:
 
 * **Simple Randomization Estimators**: For estimating distributional effects in simple randomized experiments where treatment assignment is independent of all covariates
 * **Covariate Adaptive Randomization Estimators**: For estimating distributional effects under covariate-adaptive randomization (CAR) designs, including stratified block randomization and other adaptive schemes
 * **Local Distribution Estimators**: For estimating local distribution treatment effects weighted by treatment propensity within strata
+* **Utility Functions**: Helper functions for confidence intervals and statistical computations  
+* **Plotting Utilities**: Visualization tools for treatment effects and distributions
 
-Theoretical Foundations
------------------------
+For theoretical foundations, see Byambadalai et al. (2024) [#simple2024]_ for simple randomization and Byambadalai et al. (2025) [#car2025]_ for covariate-adaptive randomization.
 
-For theoretical foundations, see:
-
-* **Simple randomization**: Byambadalai et al. (2024) [#simple2024]_ 
-* **Covariate-adaptive randomization**: Byambadalai et al. (2025) [#car2025]_
-* **Multi-task learning**: Byambadalai et al. (2024) [#multitask2024]_
+For multi-task learning approaches that train models for all locations simultaneously (using ``is_multi_task=True``), see the neural network framework in [#multitask2024]_.
 
 .. [#simple2024] Byambadalai, U., Oka, T., & Yasui, S. (2024). Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction. arXiv preprint `arXiv:2407.16037 <https://arxiv.org/abs/2407.16037>`_.
 
@@ -37,22 +24,13 @@ For theoretical foundations, see:
 
 .. [#multitask2024] Byambadalai, U., Hirata, T., Oka, T., & Yasui, S. (2024). Efficient and Scalable Estimation of Distributional Treatment Effects with Multi-Task Neural Networks. arXiv preprint `arXiv:2507.07738 <https://arxiv.org/abs/2507.07738>`_.
 
+Detailed Documentation
+----------------------
+
 .. toctree::
-   :maxdepth: 1
-   :caption: Contents:
+   :maxdepth: 2
 
-   installation
-   get_started
-   api_reference
-   contributing
-
-Indices and tables
-~~~~~~~~~~~~~~~~~~
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-License
-~~~~~~~
-MIT License
+   api/simple
+   api/stratified
+   api/local
+   api/plot

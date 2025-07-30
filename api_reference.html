@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>dte_adj &#8212; dte_adj 0.1.7 documentation</title>
+    <title>API Reference &#8212; dte_adj 0.1.7 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
@@ -14,7 +14,8 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Installation Guide" href="installation.html" />
+    <link rel="next" title="Simple Randomization Estimators" href="api/simple.html" />
+    <link rel="prev" title="Get Started" href="get_started.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -32,32 +33,21 @@
 
           <div class="body" role="main">
             
-  <section id="dte-adj">
-<h1>dte_adj<a class="headerlink" href="#dte-adj" title="Link to this heading">¶</a></h1>
-<section id="a-python-package-for-estimating-distribution-treatment-effects">
-<h2>A Python Package for Estimating Distribution Treatment Effects<a class="headerlink" href="#a-python-package-for-estimating-distribution-treatment-effects" title="Link to this heading">¶</a></h2>
-<p><cite>dte_adj</cite> is a Python package for estimating distribution treatment effects in randomized experiments.
-It provides APIs for conducting regression adjustment to estimate precise distribution functions, enabling deeper insights beyond average treatment effects through machine learning-enhanced estimation methods.</p>
-<a class="reference internal image-reference" href="_images/distributional_effect.png"><img alt="distributional effect" class="align-center" src="_images/distributional_effect.png" style="width: 700px; height: 400px;" />
-</a>
-</section>
-<section id="estimator-types">
-<h2>Estimator Types<a class="headerlink" href="#estimator-types" title="Link to this heading">¶</a></h2>
-<p>The package provides several types of estimators for computing distribution treatment effects:</p>
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h1>
+<p>This section provides comprehensive documentation for all classes and functions in the dte_adj package. The API is organized into logical groups based on functionality and use cases.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>The dte_adj package provides several types of estimators for computing distribution treatment effects:</p>
 <ul class="simple">
 <li><p><strong>Simple Randomization Estimators</strong>: For estimating distributional effects in simple randomized experiments where treatment assignment is independent of all covariates</p></li>
 <li><p><strong>Covariate Adaptive Randomization Estimators</strong>: For estimating distributional effects under covariate-adaptive randomization (CAR) designs, including stratified block randomization and other adaptive schemes</p></li>
 <li><p><strong>Local Distribution Estimators</strong>: For estimating local distribution treatment effects weighted by treatment propensity within strata</p></li>
+<li><p><strong>Utility Functions</strong>: Helper functions for confidence intervals and statistical computations</p></li>
+<li><p><strong>Plotting Utilities</strong>: Visualization tools for treatment effects and distributions</p></li>
 </ul>
-</section>
-<section id="theoretical-foundations">
-<h2>Theoretical Foundations<a class="headerlink" href="#theoretical-foundations" title="Link to this heading">¶</a></h2>
-<p>For theoretical foundations, see:</p>
-<ul class="simple">
-<li><p><strong>Simple randomization</strong>: Byambadalai et al. (2024) <a class="footnote-reference brackets" href="#simple2024" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></li>
-<li><p><strong>Covariate-adaptive randomization</strong>: Byambadalai et al. (2025) <a class="footnote-reference brackets" href="#car2025" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p></li>
-<li><p><strong>Multi-task learning</strong>: Byambadalai et al. (2024) <a class="footnote-reference brackets" href="#multitask2024" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></p></li>
-</ul>
+<p>For theoretical foundations, see Byambadalai et al. (2024) <a class="footnote-reference brackets" href="#simple2024" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> for simple randomization and Byambadalai et al. (2025) <a class="footnote-reference brackets" href="#car2025" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> for covariate-adaptive randomization.</p>
+<p>For multi-task learning approaches that train models for all locations simultaneously (using <code class="docutils literal notranslate"><span class="pre">is_multi_task=True</span></code>), see the neural network framework in <a class="footnote-reference brackets" href="#multitask2024" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>.</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="simple2024" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
@@ -72,27 +62,29 @@ It provides APIs for conducting regression adjustment to estimate precise distri
 <p>Byambadalai, U., Hirata, T., Oka, T., &amp; Yasui, S. (2024). Efficient and Scalable Estimation of Distributional Treatment Effects with Multi-Task Neural Networks. arXiv preprint <a class="reference external" href="https://arxiv.org/abs/2507.07738">arXiv:2507.07738</a>.</p>
 </aside>
 </aside>
+</section>
+<section id="detailed-documentation">
+<h2>Detailed Documentation<a class="headerlink" href="#detailed-documentation" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contribution Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/simple.html">Simple Randomization Estimators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/simple.html#simpledistributionestimator">SimpleDistributionEstimator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/simple.html#adjusteddistributionestimator">AdjustedDistributionEstimator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/stratified.html">Covariate Adaptive Randomization Estimators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/stratified.html#simplestratifieddistributionestimator">SimpleStratifiedDistributionEstimator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/stratified.html#adjustedstratifieddistributionestimator">AdjustedStratifiedDistributionEstimator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/local.html">Local Distribution Estimators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/local.html#simplelocaldistributionestimator">SimpleLocalDistributionEstimator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/local.html#adjustedlocaldistributionestimator">AdjustedLocalDistributionEstimator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/plot.html">Plotting Utilities</a></li>
 </ul>
 </div>
-<section id="indices-and-tables">
-<h3>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h3>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
-</section>
-<section id="license">
-<h3>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h3>
-<p>MIT License</p>
-</section>
 </section>
 </section>
 
@@ -103,7 +95,7 @@ It provides APIs for conducting regression adjustment to estimate precise distri
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="#">dte_adj</a></h1>
+<h1 class="logo"><a href="index.html">dte_adj</a></h1>
 
 
 
@@ -123,18 +115,19 @@ It provides APIs for conducting regression adjustment to estimate precise distri
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contribution Guide</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
-  <li><a href="#">Documentation overview</a><ul>
-      <li>Next: <a href="installation.html" title="next chapter">Installation Guide</a></li>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="get_started.html" title="previous chapter">Get Started</a></li>
+      <li>Next: <a href="api/simple.html" title="next chapter">Simple Randomization Estimators</a></li>
   </ul></li>
 </ul>
 </div>
@@ -158,7 +151,7 @@ It provides APIs for conducting regression adjustment to estimate precise distri
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
-      <a href="_sources/index.rst.txt"
+      <a href="_sources/api_reference.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

@@ -1,5 +1,5 @@
-Get Started with dte_adj
-========================
+Get Started
+===========
 
 This page contains basic usage of dte_adj library.
 
