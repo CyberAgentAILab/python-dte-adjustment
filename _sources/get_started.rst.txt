@@ -25,26 +25,26 @@ Generate data for training cumulative distribution function:
       """
       # Generate covariates X from a uniform distribution on (0, 1)
       X = np.random.uniform(0, 1, (n, d_x))
-
+      
       # Generate treatment variable D from a Bernoulli distribution with success probability rho
       D = np.random.binomial(1, rho, n)
-
+      
       # Define beta_j and gamma_j according to the problem statement
       beta = np.zeros(d_x)
       gamma = np.zeros(d_x)
-
+      
       # Set the first 50 values of beta and gamma to 1
       beta[:50] = 1
       gamma[:50] = 1
-
+      
       # Compute the outcome Y
       U = np.random.normal(0, 1, n)  # Error term
       linear_term = np.dot(X, beta)
       quadratic_term = np.dot(X**2, gamma)
-
+      
       # Outcome equation
       Y = 5 * D + linear_term + quadratic_term + U
-
+      
       return X, D, Y
 
   n = 1000  # Sample size
@@ -56,7 +56,7 @@ Then, let's build an empirical cumulative distribution function (CDF).
 
   import dte_adj
   from dte_adj.plot import plot
-
+  
   estimator = dte_adj.SimpleDistributionEstimator()
   estimator.fit(X, D, Y)
   locations = np.linspace(Y.min(), Y.max(), 20)
@@ -159,7 +159,7 @@ To compute QTE, you can use ``predict_qte`` method. The confidence band is compu
    :width: 450px
    :align: center
 
-You can use any model with ``predict_proba`` or ``predict`` method to adjust the distribution function estimation.
+You can use any model with ``predict_proba`` or ``predict`` method to adjust the distribution function estimation. 
 For example, the following code use XGBoost classifier to estimate the conditional distribution.
 
 .. code-block:: python
