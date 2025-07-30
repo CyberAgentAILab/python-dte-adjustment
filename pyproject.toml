@@ -15,6 +15,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent"
 ]
 dependencies = [
@@ -23,9 +24,28 @@ dependencies = [
   "scipy>=1.13.1"
 ]
 
+[project.optional-dependencies]
+dev = [
+  "build~=1.2.2",
+  "ruff~=0.12.2",
+  "sphinx~=7.3.7",
+  "scikit-learn~=1.5.0",
+  "pre-commit~=4.0.1"
+]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["dte_adj", "dte_adj.*"]
 
 [project.urls]
 homepage = "https://github.com/CyberAgentAILab/python-dte-adjustment"
+
+
+[tool.uv]
+dev-dependencies = [
+  "build~=1.2.2",
+  "ruff~=0.12.2",
+  "sphinx~=7.3.7",
+  "scikit-learn~=1.5.0",
+  "pre-commit~=4.0.1"
+]

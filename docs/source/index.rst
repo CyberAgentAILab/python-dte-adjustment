@@ -4,7 +4,7 @@ dte_adj
 A Python Package for Estimating Distribution Treatment Effects
 --------------------------------------------------------------
 
-`dte_adj` is a Python package for estimating distribution treatment effects in randomized experiments. 
+`dte_adj` is a Python package for estimating distribution treatment effects in randomized experiments.
 It provides APIs for conducting regression adjustment to estimate precise distribution functions, enabling deeper insights beyond average treatment effects through machine learning-enhanced estimation methods.
 
 .. image:: _static/distributional_effect.png
@@ -27,7 +27,7 @@ Theoretical Foundations
 
 For theoretical foundations, see:
 
-* **Simple randomization**: Byambadalai et al. (2024) [#simple2024]_ 
+* **Simple randomization**: Byambadalai et al. (2024) [#simple2024]_
 * **Covariate-adaptive randomization**: Byambadalai et al. (2025) [#car2025]_
 * **Multi-task learning**: Byambadalai et al. (2024) [#multitask2024]_
 
