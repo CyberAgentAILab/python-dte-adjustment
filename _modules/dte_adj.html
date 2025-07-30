@@ -233,17 +233,17 @@
 
 <span class="sd">                import numpy as np</span>
 <span class="sd">                from dte_adj import SimpleStratifiedDistributionEstimator</span>
-
+<span class="sd">                </span>
 <span class="sd">                # Generate stratified sample data</span>
 <span class="sd">                X = np.random.randn(1000, 5)</span>
 <span class="sd">                strata = np.random.choice([0, 1, 2], size=1000)</span>
 <span class="sd">                D = np.random.binomial(1, 0.5, 1000)</span>
 <span class="sd">                Y = X[:, 0] + 2 * D + 0.5 * strata + np.random.randn(1000)</span>
-
+<span class="sd">                </span>
 <span class="sd">                # Fit stratified estimator</span>
 <span class="sd">                estimator = SimpleStratifiedDistributionEstimator()</span>
 <span class="sd">                estimator.fit(X, D, Y, strata)</span>
-
+<span class="sd">                </span>
 <span class="sd">                # Compute QTE at specific quantiles</span>
 <span class="sd">                quantiles = np.array([0.25, 0.5, 0.75])  # 25th, 50th, 75th percentiles</span>
 <span class="sd">                qte, lower, upper = estimator.predict_qte(</span>
@@ -252,7 +252,7 @@
 <span class="sd">                    quantiles=quantiles,</span>
 <span class="sd">                    n_bootstrap=100</span>
 <span class="sd">                )</span>
-
+<span class="sd">                </span>
 <span class="sd">                print(f&quot;QTE at quantiles {quantiles}: {qte}&quot;)</span>
 <span class="sd">                print(f&quot;Median effect (50th percentile): {qte[1]:.3f}&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -271,7 +271,7 @@
         <span class="n">qtes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_bootstrap</span><span class="p">,</span> <span class="n">qte</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
         <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">):</span>
             <span class="n">bootstrap_indexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">indexes</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_obs</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
+                
             <span class="n">qtes</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_qtes</span><span class="p">(</span>
                 <span class="n">target_treatment_arm</span><span class="p">,</span>
                 <span class="n">control_treatment_arm</span><span class="p">,</span>
@@ -414,7 +414,7 @@
                 <span class="c1"># Temporarily store original strata and use the provided strata</span>
                 <span class="n">original_strata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strata</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">strata</span> <span class="o">=</span> <span class="n">strata</span>
-
+                
                 <span class="n">val</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
                     <span class="n">arm</span><span class="p">,</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">),</span> <span class="n">locations</span><span class="p">[</span><span class="n">mid</span><span class="p">]),</span>
@@ -422,10 +422,10 @@
                     <span class="n">treatment_arms</span><span class="p">,</span>
                     <span class="n">outcomes</span><span class="p">,</span>
                 <span class="p">)</span>
-
+                
                 <span class="c1"># Restore original strata</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">strata</span> <span class="o">=</span> <span class="n">original_strata</span>
-
+                
                 <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">quantile</span><span class="p">:</span>
                     <span class="n">result</span> <span class="o">=</span> <span class="n">locations</span><span class="p">[</span><span class="n">mid</span><span class="p">]</span>
                     <span class="n">low</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span>
@@ -495,12 +495,12 @@
 
 
 <div class="viewcode-block" id="SimpleStratifiedDistributionEstimator">
-<a class="viewcode-back" href="../api/stratified.html#dte_adj.SimpleStratifiedDistributionEstimator">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleStratifiedDistributionEstimator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimpleStratifiedDistributionEstimator</span><span class="p">(</span><span class="n">DistributionEstimatorBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class is for estimating the empirical distribution function and computing the Distributional parameters for CAR.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SimpleStratifiedDistributionEstimator.fit">
-<a class="viewcode-back" href="../api/stratified.html#dte_adj.SimpleStratifiedDistributionEstimator.fit">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleStratifiedDistributionEstimator.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -642,7 +642,7 @@
 
 
 <div class="viewcode-block" id="AdjustedStratifiedDistributionEstimator">
-<a class="viewcode-back" href="../api/stratified.html#dte_adj.AdjustedStratifiedDistributionEstimator">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedStratifiedDistributionEstimator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AdjustedStratifiedDistributionEstimator</span><span class="p">(</span><span class="n">DistributionEstimatorBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class is for estimating the adjusted distribution function and computing the Distributional parameters for CAR.&quot;&quot;&quot;</span>
 
@@ -670,7 +670,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
 <div class="viewcode-block" id="AdjustedStratifiedDistributionEstimator.fit">
-<a class="viewcode-back" href="../api/stratified.html#dte_adj.AdjustedStratifiedDistributionEstimator.fit">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedStratifiedDistributionEstimator.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -895,7 +895,7 @@
 
 
 <div class="viewcode-block" id="SimpleDistributionEstimator">
-<a class="viewcode-back" href="../api/simple.html#dte_adj.SimpleDistributionEstimator">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleDistributionEstimator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimpleDistributionEstimator</span><span class="p">(</span><span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for computing the empirical distribution function and distributional treatment effects</span>
@@ -936,7 +936,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
 <div class="viewcode-block" id="SimpleDistributionEstimator.fit">
-<a class="viewcode-back" href="../api/simple.html#dte_adj.SimpleDistributionEstimator.fit">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleDistributionEstimator.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SimpleDistributionEstimator&quot;</span><span class="p">:</span>
@@ -968,7 +968,7 @@
 
 
 <div class="viewcode-block" id="AdjustedDistributionEstimator">
-<a class="viewcode-back" href="../api/simple.html#dte_adj.AdjustedDistributionEstimator">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedDistributionEstimator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AdjustedDistributionEstimator</span><span class="p">(</span><span class="n">AdjustedStratifiedDistributionEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for computing distribution treatment effects using machine learning adjustment.</span>
@@ -1002,7 +1002,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="AdjustedDistributionEstimator.fit">
-<a class="viewcode-back" href="../api/simple.html#dte_adj.AdjustedDistributionEstimator.fit">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedDistributionEstimator.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AdjustedDistributionEstimator&quot;</span><span class="p">:</span>
@@ -1034,7 +1034,7 @@
 
 
 <div class="viewcode-block" id="SimpleLocalDistributionEstimator">
-<a class="viewcode-back" href="../api/local.html#dte_adj.SimpleLocalDistributionEstimator">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleLocalDistributionEstimator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimpleLocalDistributionEstimator</span><span class="p">(</span><span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for computing Local Distribution Treatment Effects (LDTE) and Local Probability</span>
@@ -1055,7 +1055,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
 <div class="viewcode-block" id="SimpleLocalDistributionEstimator.fit">
-<a class="viewcode-back" href="../api/local.html#dte_adj.SimpleLocalDistributionEstimator.fit">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleLocalDistributionEstimator.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1084,7 +1084,7 @@
 
 
 <div class="viewcode-block" id="SimpleLocalDistributionEstimator.predict_ldte">
-<a class="viewcode-back" href="../api/local.html#dte_adj.SimpleLocalDistributionEstimator.predict_ldte">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleLocalDistributionEstimator.predict_ldte">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict_ldte</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1147,7 +1147,7 @@
 
 
 <div class="viewcode-block" id="SimpleLocalDistributionEstimator.predict_lpte">
-<a class="viewcode-back" href="../api/local.html#dte_adj.SimpleLocalDistributionEstimator.predict_lpte">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.SimpleLocalDistributionEstimator.predict_lpte">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict_lpte</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1215,7 +1215,7 @@
 
 
 <div class="viewcode-block" id="AdjustedLocalDistributionEstimator">
-<a class="viewcode-back" href="../api/local.html#dte_adj.AdjustedLocalDistributionEstimator">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedLocalDistributionEstimator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AdjustedLocalDistributionEstimator</span><span class="p">(</span><span class="n">AdjustedStratifiedDistributionEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for computing Local Distribution Treatment Effects (LDTE) and Local Probability</span>
@@ -1242,7 +1242,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">folds</span><span class="p">,</span> <span class="n">is_multi_task</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AdjustedLocalDistributionEstimator.fit">
-<a class="viewcode-back" href="../api/local.html#dte_adj.AdjustedLocalDistributionEstimator.fit">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedLocalDistributionEstimator.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1271,7 +1271,7 @@
 
 
 <div class="viewcode-block" id="AdjustedLocalDistributionEstimator.predict_ldte">
-<a class="viewcode-back" href="../api/local.html#dte_adj.AdjustedLocalDistributionEstimator.predict_ldte">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedLocalDistributionEstimator.predict_ldte">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict_ldte</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1335,7 +1335,7 @@
 
 
 <div class="viewcode-block" id="AdjustedLocalDistributionEstimator.predict_lpte">
-<a class="viewcode-back" href="../api/local.html#dte_adj.AdjustedLocalDistributionEstimator.predict_lpte">[docs]</a>
+<a class="viewcode-back" href="../modules.html#dte_adj.AdjustedLocalDistributionEstimator.predict_lpte">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict_lpte</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1431,8 +1431,8 @@
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../get_started.html">Get Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started.html">Get Started with dte_adj</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contribution Guide</a></li>
 </ul>
 

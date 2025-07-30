@@ -34,55 +34,19 @@
             
   <section id="dte-adj">
 <h1>dte_adj<a class="headerlink" href="#dte-adj" title="Link to this heading">¶</a></h1>
-<section id="a-python-package-for-estimating-distribution-treatment-effects">
-<h2>A Python Package for Estimating Distribution Treatment Effects<a class="headerlink" href="#a-python-package-for-estimating-distribution-treatment-effects" title="Link to this heading">¶</a></h2>
-<p><cite>dte_adj</cite> is a Python package for estimating distribution treatment effects in randomized experiments.
-It provides APIs for conducting regression adjustment to estimate precise distribution functions, enabling deeper insights beyond average treatment effects through machine learning-enhanced estimation methods.</p>
-<a class="reference internal image-reference" href="_images/distributional_effect.png"><img alt="distributional effect" class="align-center" src="_images/distributional_effect.png" style="width: 700px; height: 400px;" />
-</a>
-</section>
-<section id="estimator-types">
-<h2>Estimator Types<a class="headerlink" href="#estimator-types" title="Link to this heading">¶</a></h2>
-<p>The package provides several types of estimators for computing distribution treatment effects:</p>
-<ul class="simple">
-<li><p><strong>Simple Randomization Estimators</strong>: For estimating distributional effects in simple randomized experiments where treatment assignment is independent of all covariates</p></li>
-<li><p><strong>Covariate Adaptive Randomization Estimators</strong>: For estimating distributional effects under covariate-adaptive randomization (CAR) designs, including stratified block randomization and other adaptive schemes</p></li>
-<li><p><strong>Local Distribution Estimators</strong>: For estimating local distribution treatment effects weighted by treatment propensity within strata</p></li>
-</ul>
-</section>
-<section id="theoretical-foundations">
-<h2>Theoretical Foundations<a class="headerlink" href="#theoretical-foundations" title="Link to this heading">¶</a></h2>
-<p>For theoretical foundations, see:</p>
-<ul class="simple">
-<li><p><strong>Simple randomization</strong>: Byambadalai et al. (2024) <a class="footnote-reference brackets" href="#simple2024" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></li>
-<li><p><strong>Covariate-adaptive randomization</strong>: Byambadalai et al. (2025) <a class="footnote-reference brackets" href="#car2025" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p></li>
-<li><p><strong>Multi-task learning</strong>: Byambadalai et al. (2024) <a class="footnote-reference brackets" href="#multitask2024" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></p></li>
-</ul>
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="simple2024" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p>Byambadalai, U., Oka, T., &amp; Yasui, S. (2024). Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction. arXiv preprint <a class="reference external" href="https://arxiv.org/abs/2407.16037">arXiv:2407.16037</a>.</p>
-</aside>
-<aside class="footnote brackets" id="car2025" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
-<p>Byambadalai, U., Hirata, T., Oka, T., &amp; Yasui, S. (2025). On Efficient Estimation of Distributional Treatment Effects under Covariate-Adaptive Randomization. arXiv preprint <a class="reference external" href="https://arxiv.org/abs/2506.05945">arXiv:2506.05945</a>.</p>
-</aside>
-<aside class="footnote brackets" id="multitask2024" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
-<p>Byambadalai, U., Hirata, T., Oka, T., &amp; Yasui, S. (2024). Efficient and Scalable Estimation of Distributional Treatment Effects with Multi-Task Neural Networks. arXiv preprint <a class="reference external" href="https://arxiv.org/abs/2507.07738">arXiv:2507.07738</a>.</p>
-</aside>
-</aside>
+<p><cite>dte_adj</cite> is a Python package for estimating distribution treatment effects.
+It provides APIs for conducting regression adjustment to estimate precise distribution functions as well as convenient utils.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started with dte_adj</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contribution Guide</a></li>
 </ul>
 </div>
 <section id="indices-and-tables">
-<h3>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h3>
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
@@ -90,9 +54,8 @@ It provides APIs for conducting regression adjustment to estimate precise distri
 </ul>
 </section>
 <section id="license">
-<h3>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h3>
+<h2>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
 <p>MIT License</p>
-</section>
 </section>
 </section>
 
@@ -125,8 +88,8 @@ It provides APIs for conducting regression adjustment to estimate precise distri
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started with dte_adj</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contribution Guide</a></li>
 </ul>
 
