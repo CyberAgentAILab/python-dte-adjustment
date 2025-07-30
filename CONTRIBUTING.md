@@ -28,29 +28,38 @@ Pull requests are welcome! If you plan to make significant changes, please open 
 - Open a pull request in the original repository.
 
 ## Development
-Important commands and major dependencies are managed in Pipenv. Here are the basic commands you can use to develop this package.
+Important commands and major dependencies are managed with uv. Here are the basic commands you can use to develop this package.
 
-### Install Pipenv
-If you don't have `pipenv` installed, you can install it using `pip`:
+### Install Dependencies
+Install all development dependencies using uv:
 
 ```sh
-pip install pipenv
+uv sync --dev
 ```
 
-### Linting
-We use `ruff` for linting the code. To run the linter, use the following command:
+### Pre-commit Hooks
+We use pre-commit hooks to automatically format code and check for issues. Install them with:
+
 ```sh
-pipenv run lint
+uv run pre-commit install
 ```
 
-### Auto format
-We use `ruff` for formatting the code. To run the formatter, use the following command:
+### Manual Commands
+
+#### Linting
+We use `ruff` for linting the code. To run the linter manually:
 ```sh
-pipenv run format
+uv run ruff check
 ```
 
-### Unit test
-We use `unittest` for testing the code. To run the unit tests, use the following command:
+#### Auto format
+We use `ruff` for formatting the code. To run the formatter manually:
 ```sh
-pipenv run unittest
+uv run ruff format
+```
+
+#### Unit test
+We use `unittest` for testing the code. To run the unit tests:
+```sh
+uv run python -m unittest
 ```

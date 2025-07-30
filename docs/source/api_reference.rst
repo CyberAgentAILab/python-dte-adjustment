@@ -11,7 +11,7 @@ The dte_adj package provides several types of estimators for computing distribut
 * **Simple Randomization Estimators**: For estimating distributional effects in simple randomized experiments where treatment assignment is independent of all covariates
 * **Covariate Adaptive Randomization Estimators**: For estimating distributional effects under covariate-adaptive randomization (CAR) designs, including stratified block randomization and other adaptive schemes
 * **Local Distribution Estimators**: For estimating local distribution treatment effects weighted by treatment propensity within strata
-* **Utility Functions**: Helper functions for confidence intervals and statistical computations  
+* **Utility Functions**: Helper functions for confidence intervals and statistical computations
 * **Plotting Utilities**: Visualization tools for treatment effects and distributions
 
 For theoretical foundations, see Byambadalai et al. (2024) [#simple2024]_ for simple randomization and Byambadalai et al. (2025) [#car2025]_ for covariate-adaptive randomization.
