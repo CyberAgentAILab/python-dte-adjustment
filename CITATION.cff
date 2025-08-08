@@ -1,0 +1,75 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "dte_adj: A Python Package for Estimating Distribution Treatment Effects"
+version: 0.1.7
+date-released: 2024-12-01
+url: "https://github.com/CyberAgentAILab/python-dte-adjustment"
+repository-code: "https://github.com/CyberAgentAILab/python-dte-adjustment"
+abstract: "A Python package for estimating distribution treatment effects in randomized experiments. It provides APIs for conducting regression adjustment to estimate precise distribution functions, enabling deeper insights beyond average treatment effects through machine learning-enhanced estimation methods."
+license: MIT
+authors:
+  - family-names: Byambadalai
+    given-names: Undral
+  - family-names: Hirata
+    given-names: Taiki
+  - family-names: Oka
+    given-names: Tatsushi
+  - family-names: Yasui
+    given-names: Shota
+preferred-citation:
+  type: article
+  title: "Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction"
+  authors:
+    - family-names: Byambadalai
+      given-names: Undral
+    - family-names: Oka
+      given-names: Tatsushi
+    - family-names: Yasui
+      given-names: Shota
+  year: 2024
+  url: "https://arxiv.org/abs/2407.16037"
+  repository: "arXiv:2407.16037"
+references:
+  - type: article
+    title: "Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction"
+    authors:
+      - family-names: Byambadalai
+        given-names: Undral
+      - family-names: Oka
+        given-names: Tatsushi
+      - family-names: Yasui
+        given-names: Shota
+    year: 2024
+    url: "https://arxiv.org/abs/2407.16037"
+    repository: "arXiv:2407.16037"
+  - type: article
+    title: "On Efficient Estimation of Distributional Treatment Effects under Covariate-Adaptive Randomization"
+    authors:
+      - family-names: Byambadalai
+        given-names: Undral
+      - family-names: Hirata
+        given-names: Taiki
+      - family-names: Oka
+        given-names: Tatsushi
+      - family-names: Yasui
+        given-names: Shota
+    year: 2025
+    url: "https://arxiv.org/abs/2506.05945"
+    repository: "arXiv:2506.05945"
+  - type: article
+    title: "Efficient and Scalable Estimation of Distributional Treatment Effects with Multi-Task Neural Networks"
+    authors:
+      - family-names: Hirata
+        given-names: Taiki
+      - family-names: Byambadalai
+        given-names: Undral
+      - family-names: Oka
+        given-names: Tatsushi
+      - family-names: Yasui
+        given-names: Shota
+      - family-names: Uto
+        given-names: Sho
+    year: 2025
+    url: "https://arxiv.org/abs/2507.07738"
+    repository: "arXiv:2507.07738"
