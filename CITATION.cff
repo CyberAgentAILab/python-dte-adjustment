@@ -12,7 +12,7 @@ authors:
   - family-names: Byambadalai
     given-names: Undral
   - family-names: Hirata
-    given-names: Taiki
+    given-names: Tomu
   - family-names: Oka
     given-names: Tatsushi
   - family-names: Yasui
@@ -49,7 +49,7 @@ references:
       - family-names: Byambadalai
         given-names: Undral
       - family-names: Hirata
-        given-names: Taiki
+        given-names: Tomu
       - family-names: Oka
         given-names: Tatsushi
       - family-names: Yasui
@@ -61,7 +61,7 @@ references:
     title: "Efficient and Scalable Estimation of Distributional Treatment Effects with Multi-Task Neural Networks"
     authors:
       - family-names: Hirata
-        given-names: Taiki
+        given-names: Tomu
       - family-names: Byambadalai
         given-names: Undral
       - family-names: Oka
