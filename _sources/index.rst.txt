@@ -43,6 +43,7 @@ For theoretical foundations, see:
 
    installation
    get_started
+   tutorials
    api_reference
    contributing
 

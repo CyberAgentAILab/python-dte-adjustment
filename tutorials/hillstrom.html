@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Hillstrom Email Marketing Experiment &#8212; dte_adj 0.1.7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
+    <script src="../_static/documentation_options.js?v=ca7ad2ea"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api_reference.html" />
+    <link rel="prev" title="Tutorials: Analyzing Famous Randomized Control Trials" href="../tutorials.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="hillstrom-email-marketing-experiment">
+<h1>Hillstrom Email Marketing Experiment<a class="headerlink" href="#hillstrom-email-marketing-experiment" title="Link to this heading">¶</a></h1>
+<p>The Hillstrom email marketing dataset is a classic example from digital marketing, involving 64,000 customers randomly assigned to receive either a men’s merchandise email, women’s merchandise email, or no email (control). This experiment allows us to examine which email campaign strategy is most effective using revenue as the outcome.</p>
+<p><strong>Background</strong>: Kevin Hillstrom provided this dataset to demonstrate email marketing analytics. Customers who purchased within the last 12 months were randomly divided into three groups to test targeted email campaigns against a control group.</p>
+<p><strong>Research Question</strong>: Which email campaign performed best - the men’s version or the women’s version - and how do the effects vary across the revenue distribution?</p>
+<section id="data-setup-and-loading">
+<h2>Data Setup and Loading<a class="headerlink" href="#data-setup-and-loading" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">LabelEncoder</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dte_adj</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj.plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot</span>
+
+<span class="c1"># Load the real Hillstrom dataset</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://www.minethatdata.com/Kevin_Hillstrom_MineThatData_E-MailAnalytics_DataMiningChallenge_2008.03.20.csv&quot;</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset shape: </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average spend by segment:</span><span class="se">\n</span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;segment&#39;</span><span class="p">)[</span><span class="s1">&#39;spend&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Prepare the data for dte_adj analysis</span>
+<span class="c1"># Create treatment indicator: 0=No E-Mail, 1=Mens E-Mail, 2=Women E-Mail</span>
+<span class="n">treatment_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;No E-Mail&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Mens E-Mail&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Women E-Mail&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;segment&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">treatment_mapping</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+
+<span class="c1"># Use spend as the outcome variable (revenue)</span>
+<span class="n">revenue</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;spend&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="n">zip_code_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Surburban&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Rural&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Urban&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># Note: typo in original data</span>
+<span class="n">channel_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Phone&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Web&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Multichannel&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+
+<span class="c1"># Create feature matrix</span>
+<span class="n">features</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s1">&#39;recency&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;recency&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;history&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;history&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;history_segment&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;history_segment&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span>
+    <span class="s1">&#39;mens&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;mens&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;women&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;women&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;zip_code&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;zip_code&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">zip_code_mapping</span><span class="p">),</span>
+    <span class="s1">&#39;newbie&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;newbie&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">channel_mapping</span><span class="p">)</span>
+<span class="p">})</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">values</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Dataset size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">D</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> customers&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Control group (No Email): </span><span class="si">{</span><span class="p">(</span><span class="n">D</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="p">(</span><span class="n">D</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Men&#39;s Email group: </span><span class="si">{</span><span class="p">(</span><span class="n">D</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="p">(</span><span class="n">D</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Women&#39;s Email group: </span><span class="si">{</span><span class="p">(</span><span class="n">D</span><span class="o">==</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="p">(</span><span class="n">D</span><span class="o">==</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Average Spend by Treatment:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No Email: $</span><span class="si">{</span><span class="n">revenue</span><span class="p">[</span><span class="n">D</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Men&#39;s Email: $</span><span class="si">{</span><span class="n">revenue</span><span class="p">[</span><span class="n">D</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Women&#39;s Email: $</span><span class="si">{</span><span class="n">revenue</span><span class="p">[</span><span class="n">D</span><span class="o">==</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Also show conversion rates</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Conversion Rates:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No Email: </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;segment&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;No E-Mail&#39;</span><span class="p">][</span><span class="s1">&#39;conversion&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Men&#39;s Email: </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;segment&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;Mens E-Mail&#39;</span><span class="p">][</span><span class="s1">&#39;conversion&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Women&#39;s Email: </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;segment&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;Women E-Mail&#39;</span><span class="p">][</span><span class="s1">&#39;conversion&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="comparing-men-s-vs-women-s-email-campaigns">
+<h2>Comparing Men’s vs Women’s Email Campaigns<a class="headerlink" href="#comparing-men-s-vs-women-s-email-campaigns" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Email campaign comparison sample: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">D_email</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> customers&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Men&#39;s Email: </span><span class="si">{</span><span class="p">(</span><span class="n">D_email</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Women&#39;s Email: </span><span class="si">{</span><span class="p">(</span><span class="n">D_email</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Initialize estimators for email comparison</span>
+<span class="n">simple_email</span> <span class="o">=</span> <span class="n">dte_adj</span><span class="o">.</span><span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">ml_email</span> <span class="o">=</span> <span class="n">dte_adj</span><span class="o">.</span><span class="n">AdjustedDistributionEstimator</span><span class="p">(</span>
+    <span class="n">LinearRegression</span><span class="p">(),</span>
+    <span class="n">folds</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">)</span>
+
+<span class="c1"># Fit estimators</span>
+<span class="n">simple_email</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">revenue</span><span class="p">)</span>
+<span class="n">ml_email</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">revenue</span><span class="p">)</span>
+
+<span class="c1"># Define revenue evaluation points</span>
+<span class="n">revenue_locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">51</span><span class="p">)</span>
+
+<span class="c1"># Compute DTE: Women&#39;s vs Men&#39;s email campaigns</span>
+<span class="n">dte_simple</span><span class="p">,</span> <span class="n">lower_simple</span><span class="p">,</span> <span class="n">upper_simple</span> <span class="o">=</span> <span class="n">simple_email</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># Women&#39;s email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Men&#39;s email (as &quot;control&quot;)</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">revenue_locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="n">dte_ml</span><span class="p">,</span> <span class="n">lower_ml</span><span class="p">,</span> <span class="n">upper_ml</span> <span class="o">=</span> <span class="n">ml_email</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># Women&#39;s email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Men&#39;s email</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">revenue_locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="distribution-treatment-effects-analysis">
+<h2>Distribution Treatment Effects Analysis<a class="headerlink" href="#distribution-treatment-effects-analysis" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Visualize the distribution treatment effects using dte_adj&#39;s built-in plot function</span>
+
+<span class="c1"># Simple estimator</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">revenue_locations</span><span class="p">,</span> <span class="n">dte_simple</span><span class="p">,</span> <span class="n">lower_simple</span><span class="p">,</span> <span class="n">upper_simple</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Email Campaign Comparison: Women&#39;s vs Men&#39;s (Simple Estimator)&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Distribution Treatment Effect&quot;</span><span class="p">)</span>
+
+<span class="c1"># ML-adjusted estimator</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">revenue_locations</span><span class="p">,</span> <span class="n">dte_ml</span><span class="p">,</span> <span class="n">lower_ml</span><span class="p">,</span> <span class="n">upper_ml</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Email Campaign Comparison: Women&#39;s vs Men&#39;s (ML-Adjusted Estimator)&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Distribution Treatment Effect&quot;</span><span class="p">)</span>
+
+<span class="c1"># Statistical summary</span>
+<span class="n">positive_dte</span> <span class="o">=</span> <span class="p">(</span><span class="n">dte_ml</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">significant_dte</span> <span class="o">=</span> <span class="p">((</span><span class="n">lower_ml</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">upper_ml</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Distributional Analysis Results:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Locations where Women&#39;s &gt; Men&#39;s: </span><span class="si">{</span><span class="n">positive_dte</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Statistically significant differences: </span><span class="si">{</span><span class="n">significant_dte</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average DTE: </span><span class="si">{</span><span class="n">dte_ml</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The analysis produces the following distribution treatment effects visualization:</p>
+<a class="reference internal image-reference" href="../_images/hillstorm_dte.png"><img alt="Hillstrom Email Marketing DTE Analysis" class="align-center" src="../_images/hillstorm_dte.png" style="width: 800px;" />
+</a>
+<p><strong>Interpreting the Results</strong>: The plot shows the distribution treatment effects (DTE) comparing Women’s vs Men’s email campaigns across different spending levels. Key observations:</p>
+<ul class="simple">
+<li><p><strong>Positive DTE values</strong> (above zero line) indicate that Women’s email campaign increases the probability of spending at that level compared to Men’s campaign</p></li>
+<li><p><strong>Confidence intervals</strong> (shaded areas) show statistical uncertainty - where intervals don’t cross zero, effects are statistically significant</p></li>
+<li><p><strong>Heterogeneous effects</strong> across spending distribution reveal that campaign effectiveness varies by customer spending levels</p></li>
+<li><p><strong>ML-adjusted estimator</strong> (bottom panel) typically provides more precise estimates with tighter confidence intervals than the simple estimator (top panel)</p></li>
+</ul>
+<p>The distributional analysis reveals nuanced patterns that would be missed by simply comparing average spending between campaigns.</p>
+</section>
+<section id="revenue-category-analysis-with-pte">
+<h2>Revenue Category Analysis with PTE<a class="headerlink" href="#revenue-category-analysis-with-pte" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute Probability Treatment Effects</span>
+<span class="n">pte_simple</span><span class="p">,</span> <span class="n">pte_lower_simple</span><span class="p">,</span> <span class="n">pte_upper_simple</span> <span class="o">=</span> <span class="n">simple_email</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># Women&#39;s email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Men&#39;s email</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">revenue_locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="n">pte_ml</span><span class="p">,</span> <span class="n">pte_lower_ml</span><span class="p">,</span> <span class="n">pte_upper_ml</span> <span class="o">=</span> <span class="n">ml_email</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># Women&#39;s email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Men&#39;s email</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">revenue_locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Visualize PTE results using dte_adj&#39;s plot function with bar chart</span>
+
+<span class="c1"># Simple estimator</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">revenue_locations</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">pte_simple</span><span class="p">,</span> <span class="n">pte_lower_simple</span><span class="p">,</span> <span class="n">pte_upper_simple</span><span class="p">,</span>
+    <span class="n">chart_type</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Spending Category Effects: Women&#39;s vs Men&#39;s (Simple Estimator)&quot;</span><span class="p">,</span>
+    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending Category&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Probability Treatment Effect&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">)</span>
+
+<span class="c1"># ML-adjusted estimator</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">revenue_locations</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">pte_ml</span><span class="p">,</span> <span class="n">pte_lower_ml</span><span class="p">,</span> <span class="n">pte_upper_ml</span><span class="p">,</span>
+    <span class="n">chart_type</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Spending Category Effects: Women&#39;s vs Men&#39;s (ML-Adjusted Estimator)&quot;</span><span class="p">,</span>
+    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending Category&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Probability Treatment Effect&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The Probability Treatment Effects analysis produces the following visualization:</p>
+<a class="reference internal image-reference" href="../_images/hillstorm_pte.png"><img alt="Hillstrom Email Marketing PTE Analysis" class="align-center" src="../_images/hillstorm_pte.png" style="width: 800px;" />
+</a>
+<p><strong>Interpreting the PTE Results</strong>: The bar charts show probability treatment effects across different spending intervals, revealing which spending ranges are most affected by the Women’s vs Men’s email campaigns:</p>
+<ul class="simple">
+<li><p><strong>Positive bars</strong> indicate spending ranges where Women’s email campaign increases the probability of customers spending in that range compared to Men’s email</p></li>
+<li><p><strong>Negative bars</strong> show ranges where Men’s email campaign is more effective</p></li>
+<li><p><strong>Error bars</strong> represent confidence intervals - bars that don’t cross zero are statistically significant</p></li>
+<li><p><strong>Different patterns</strong> between simple (top) and ML-adjusted (bottom) estimators show how machine learning adjustment can provide more precise estimates</p></li>
+</ul>
+<p><strong>Key PTE Findings</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>Low spending ranges</strong> ($0-$25): Women’s campaign may be more effective at driving small purchases</p></li>
+<li><p><strong>Medium spending ranges</strong> ($25-$100): Effects vary, showing differential campaign effectiveness</p></li>
+<li><p><strong>High spending ranges</strong> ($100+): Reveals which campaign is better at generating high-value customers</p></li>
+<li><p><strong>Statistical significance</strong>: Confidence intervals show where differences are reliable vs. due to chance</p></li>
+</ol>
+<p>This granular analysis helps marketers understand not just which campaign generates more revenue overall, but specifically which spending behaviors each campaign drives.</p>
+</section>
+<section id="control-vs-email-campaigns-analysis">
+<h2>Control vs Email Campaigns Analysis<a class="headerlink" href="#control-vs-email-campaigns-analysis" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dte_mens_ctrl</span><span class="p">,</span> <span class="n">lower_mens_ctrl</span><span class="p">,</span> <span class="n">upper_mens_ctrl</span> <span class="o">=</span> <span class="n">simple_email</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">revenue_locations</span><span class="p">,</span> <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="n">dte_women_ctrl</span><span class="p">,</span> <span class="n">lower_women_ctrl</span><span class="p">,</span> <span class="n">upper_women_ctrl</span> <span class="o">=</span> <span class="n">simple_email</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">revenue_locations</span><span class="p">,</span> <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Visualize both campaigns vs control using dte_adj&#39;s plot function</span>
+
+<span class="c1"># Men&#39;s vs Control</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">revenue_locations</span><span class="p">,</span> <span class="n">dte_mens_ctrl</span><span class="p">,</span> <span class="n">lower_mens_ctrl</span><span class="p">,</span> <span class="n">upper_mens_ctrl</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Men&#39;s Email Campaign vs Control&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Distribution Treatment Effect&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">)</span>
+
+<span class="c1"># Women&#39;s vs Control</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">revenue_locations</span><span class="p">,</span> <span class="n">dte_women_ctrl</span><span class="p">,</span> <span class="n">lower_women_ctrl</span><span class="p">,</span> <span class="n">upper_women_ctrl</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Women&#39;s Email Campaign vs Control&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Distribution Treatment Effect&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The control vs email campaigns analysis produces the following comparison:</p>
+<a class="reference internal image-reference" href="../_images/hillstorm_dte_control.png"><img alt="Hillstrom Email Campaigns vs Control Analysis" class="align-center" src="../_images/hillstorm_dte_control.png" style="width: 800px;" />
+</a>
+<p><strong>Interpreting the Control Comparison Results</strong>: These side-by-side plots show how each email campaign performs against the no-email control group across different spending levels:</p>
+<p><strong>Men’s Email vs Control (Top Panel)</strong>:
+- <strong>Positive DTE values</strong> indicate that Men’s email campaign increases the probability of spending at those levels compared to no email
+- <strong>Distribution pattern</strong> shows where Men’s email is most effective in driving customer spending
+- <strong>Confidence intervals</strong> reveal statistical significance of the treatment effects</p>
+<p><strong>Women’s Email vs Control (Bottom Panel)</strong>:
+- <strong>Comparative effectiveness</strong> can be assessed by comparing the magnitude and patterns of effects
+- <strong>Different spending ranges</strong> may show varying campaign effectiveness
+- <strong>Statistical significance</strong> indicated by confidence intervals not crossing zero</p>
+<p><strong>Key Control Analysis Findings</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>Campaign Effectiveness</strong>: Both campaigns show positive effects compared to no email, confirming that email marketing drives incremental spending</p></li>
+<li><p><strong>Differential Patterns</strong>: The shape and magnitude of effects differ between campaigns, revealing:
+- Which campaign has stronger overall effects
+- Different spending ranges where each campaign excels
+- Varying confidence in treatment effects across spending levels</p></li>
+<li><p><strong>Business Implications</strong>:
+- <strong>ROI Assessment</strong>: Compare effect sizes to determine which campaign provides better return on investment
+- <strong>Customer Segmentation</strong>: Identify spending ranges where each campaign is most/least effective
+- <strong>Resource Allocation</strong>: Data-driven decisions on campaign budget allocation</p></li>
+<li><p><strong>Statistical Rigor</strong>: Confidence intervals provide guidance on where observed differences are statistically reliable vs. potentially due to sampling variation</p></li>
+</ol>
+<p>This analysis answers the fundamental question: “Do email campaigns work?” and more importantly, “Which one works better and for which customer segments?”</p>
+<p><strong>Key Findings</strong>: Using the real Hillstrom dataset with 64,000 customers, the distributional analysis reveals nuanced patterns in how email campaigns affect customer spending. The analysis goes beyond simple average comparisons to show how treatment effects vary across the entire spending distribution, providing insights into which customer segments respond best to different campaign types. This demonstrates the power of distribution treatment effect analysis for understanding heterogeneous responses in digital marketing experiments.</p>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Try with your own randomized experiment data</p></li>
+<li><p>Experiment with different ML models (XGBoost, Neural Networks) for adjustment</p></li>
+<li><p>Explore stratified estimators for covariate-adaptive randomization designs</p></li>
+<li><p>Use multi-task learning (<code class="docutils literal notranslate"><span class="pre">is_multi_task=True</span></code>) for computational efficiency with many locations</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">dte_adj</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started.html">Get Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials: Analyzing Famous Randomized Control Trials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contribution Guide</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../tutorials.html">Tutorials: Analyzing Famous Randomized Control Trials</a><ul>
+      <li>Previous: <a href="../tutorials.html" title="previous chapter">Tutorials: Analyzing Famous Randomized Control Trials</a></li>
+      <li>Next: <a href="../api_reference.html" title="next chapter">API Reference</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, CyberAgent, Inc..
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../_sources/tutorials/hillstrom.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
