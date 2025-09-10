@@ -73,7 +73,7 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         for s in s_list:
             s_mask = strata == s
             w_s[s] = (s_mask & treatment_mask).sum() / s_mask.sum()
-        for i, outcome in enumerate(n_loc):
+        for i, outcome in enumerate(locations):
             for j in range(n_records):
                 s = strata[j]
                 prediction[j, i] = (outcomes[j] <= outcome) / w_s[s] * treatment_mask[j]
