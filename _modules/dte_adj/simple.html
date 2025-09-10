@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dte_adj.simple &#8212; dte_adj 0.1.7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dte_adj.simple</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.stratified</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">,</span>
+    <span class="n">AdjustedStratifiedDistributionEstimator</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="SimpleDistributionEstimator">
+<a class="viewcode-back" href="../../api/simple.html#dte_adj.SimpleDistributionEstimator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SimpleDistributionEstimator</span><span class="p">(</span><span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class for computing the empirical distribution function and distributional treatment effects</span>
+<span class="sd">    using simple (unadjusted) estimation methods.</span>
+
+<span class="sd">    This estimator computes Distribution Treatment Effects (DTE), Probability Treatment Effects (PTE),</span>
+<span class="sd">    and Quantile Treatment Effects (QTE) without using machine learning models for adjustment.</span>
+<span class="sd">    It provides a baseline approach suitable when treatment assignment is random or when</span>
+<span class="sd">    covariate adjustment is not needed.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            import numpy as np</span>
+<span class="sd">            from dte_adj import SimpleDistributionEstimator</span>
+
+<span class="sd">            # Generate sample data</span>
+<span class="sd">            X = np.random.randn(1000, 5)</span>
+<span class="sd">            D = np.random.binomial(1, 0.5, 1000)  # Random treatment</span>
+<span class="sd">            Y = X[:, 0] + 2 * D + np.random.randn(1000)</span>
+
+<span class="sd">            # Fit simple estimator</span>
+<span class="sd">            estimator = SimpleDistributionEstimator()</span>
+<span class="sd">            estimator.fit(X, D, Y)</span>
+
+<span class="sd">            # Compute treatment effects</span>
+<span class="sd">            locations = np.linspace(Y.min(), Y.max(), 20)</span>
+<span class="sd">            dte, lower, upper = estimator.predict_dte(1, 0, locations)</span>
+<span class="sd">            pte, pte_lower, pte_upper = estimator.predict_pte(1, 0, locations)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the SimpleDistributionEstimator.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SimpleDistributionEstimator: An instance of the estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SimpleDistributionEstimator.fit">
+<a class="viewcode-back" href="../../api/simple.html#dte_adj.SimpleDistributionEstimator.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SimpleDistributionEstimator&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            covariates (np.ndarray): Pre-treatment covariates.</span>
+<span class="sd">            treatment_arms (np.ndarray): The index of the treatment arm.</span>
+<span class="sd">            outcomes (np.ndarray): Scalar-valued observed outcome.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SimpleDistributionEstimator: The fitted estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">covariates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">treatment_arms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The shape of covariates and treatment_arm should be same&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">covariates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The shape of covariates and outcome should be same&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">covariates</span> <span class="o">=</span> <span class="n">covariates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span> <span class="o">=</span> <span class="n">treatment_arms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="n">outcomes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">covariates</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AdjustedDistributionEstimator">
+<a class="viewcode-back" href="../../api/simple.html#dte_adj.AdjustedDistributionEstimator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AdjustedDistributionEstimator</span><span class="p">(</span><span class="n">AdjustedStratifiedDistributionEstimator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class for computing distribution treatment effects using machine learning adjustment.</span>
+
+<span class="sd">    This estimator uses cross-fitting with ML models to adjust for confounding when computing</span>
+<span class="sd">    Distribution Treatment Effects (DTE), Probability Treatment Effects (PTE), and</span>
+<span class="sd">    Quantile Treatment Effects (QTE). It provides more precise estimates when treatment</span>
+<span class="sd">    assignment depends on observed covariates.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            import numpy as np</span>
+<span class="sd">            from sklearn.ensemble import RandomForestClassifier</span>
+<span class="sd">            from dte_adj import AdjustedDistributionEstimator</span>
+
+<span class="sd">            # Generate confounded data</span>
+<span class="sd">            X = np.random.randn(1000, 5)</span>
+<span class="sd">            treatment_prob = 1 / (1 + np.exp(-(X[:, 0] + X[:, 1])))</span>
+<span class="sd">            D = np.random.binomial(1, treatment_prob, 1000)</span>
+<span class="sd">            Y = X.sum(axis=1) + 2 * D + np.random.randn(1000)</span>
+
+<span class="sd">            # Fit adjusted estimator</span>
+<span class="sd">            base_model = RandomForestClassifier(n_estimators=100)</span>
+<span class="sd">            estimator = AdjustedDistributionEstimator(base_model, folds=3)</span>
+<span class="sd">            estimator.fit(X, D, Y)</span>
+
+<span class="sd">            # Compute adjusted treatment effects</span>
+<span class="sd">            locations = np.linspace(Y.min(), Y.max(), 20)</span>
+<span class="sd">            dte, lower, upper = estimator.predict_dte(1, 0, locations, variance_type=&quot;moment&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AdjustedDistributionEstimator.fit">
+<a class="viewcode-back" href="../../api/simple.html#dte_adj.AdjustedDistributionEstimator.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AdjustedDistributionEstimator&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            covariates (np.ndarray): Pre-treatment covariates.</span>
+<span class="sd">            treatment_arms (np.ndarray): The index of the treatment arm.</span>
+<span class="sd">            outcomes (np.ndarray): Scalar-valued observed outcome.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            AdjustedDistributionEstimator: The fitted estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">covariates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">treatment_arms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The shape of covariates and treatment_arm should be same&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">covariates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The shape of covariates and outcome should be same&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">covariates</span> <span class="o">=</span> <span class="n">covariates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span> <span class="o">=</span> <span class="n">treatment_arms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="n">outcomes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">covariates</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">dte_adj</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contribution Guide</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, CyberAgent, Inc..
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
