@@ -73,10 +73,8 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         for s in s_list:
             s_mask = strata == s
             w_s[s] = (s_mask & treatment_mask).sum() / s_mask.sum()
-        n_obs = outcomes.shape[0]
-        n_loc = locations.shape[0]
-        for i, outcome in enumerate(locations):
-            for j in range(n_obs):
+        for i, outcome in enumerate(n_loc):
+            for j in range(n_records):
                 s = strata[j]
                 prediction[j, i] = (outcomes[j] <= outcome) / w_s[s] * treatment_mask[j]
 
@@ -123,10 +121,8 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         for s in s_list:
             s_mask = strata == s
             w_s[s] = (s_mask & treatment_mask).sum() / s_mask.sum()
-        n_obs = outcomes.shape[0]
-        n_loc = locations.shape[0]
         for i, outcome in enumerate(locations):
-            for j in range(n_obs):
+            for j in range(n_records):
                 s = strata[j]
                 prediction[j, i] = (outcomes[j] <= outcome) / w_s[s] * treatment_mask[j]
 
@@ -349,7 +345,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                     self.model.fit(covariates_train, binomial_train)
                 for s in s_list:
                     s_mask = strata == s
-                    wight = (s_mask & treatment_mask).sum() / s_mask.sum()
+                    weight = (s_mask & treatment_mask).sum() / s_mask.sum()
                     superset_mask = (folds == fold) & s_mask
                     subset_train_mask = (folds != fold) & s_mask & treatment_mask
                     covariates_train = covariates[subset_train_mask]
@@ -361,7 +357,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                             pred
                             + treatment_mask[superset_mask]
                             * (binomial[superset_mask] - pred)
-                            / wight
+                            / weight
                         )
                         continue
                     pred = self._compute_model_prediction(
@@ -371,7 +367,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                         pred
                         + treatment_mask[superset_mask]
                         * (binomial[superset_mask] - pred)
-                        / wight
+                        / weight
                     )
                     superset_prediction[superset_mask, i] = pred
 
