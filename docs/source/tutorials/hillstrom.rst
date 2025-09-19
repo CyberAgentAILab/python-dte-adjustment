@@ -269,14 +269,14 @@ Revenue Category Analysis with PTE
 .. code-block:: python
 
     # Compute Probability Treatment Effects
-    pte_simple, pte_lower_simple, pte_upper_simple = simple_email.predict_pte(
+    pte_simple, pte_lower_simple, pte_upper_simple = simple_estimator.predict_pte(
         target_treatment_arm=1,  # Women's email
         control_treatment_arm=0,  # Men's email
         locations=[-1] + revenue_locations,
         variance_type="moment"
     )
 
-    pte_ml, pte_lower_ml, pte_upper_ml = ml_email.predict_pte(
+    pte_ml, pte_lower_ml, pte_upper_ml = ml_estimator.predict_pte(
         target_treatment_arm=1,  # Women's email
         control_treatment_arm=0,  # Men's email
         locations=[-1] + revenue_locations,
