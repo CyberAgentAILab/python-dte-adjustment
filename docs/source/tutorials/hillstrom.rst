@@ -5,7 +5,7 @@ The Hillstrom email marketing dataset is a classic example from digital marketin
 
 **Background**: Kevin Hillstrom provided this dataset to demonstrate email marketing analytics. Customers who purchased within the last 12 months were randomly divided into three groups to test targeted email campaigns against a control group.
 
-**Research Question**: Which email campaign performed best - the men's version or the women's version - and how do the effects vary across the revenue distribution?
+**Research Question**: Which email campaign performed best: the men's version or the women's version, and how do the effects vary across the revenue distribution?
 
 Data Setup and Loading
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,8 +86,8 @@ Email Campaign Effectiveness Analysis
     # Define revenue evaluation points
     revenue_locations = np.linspace(0, 500, 51)
 
-Control vs Women's Email Campaign
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Women's Email vs Control Analysis
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First, let's examine how the Women's email campaign performs compared to no email (control):
 
@@ -106,16 +106,7 @@ First, let's examine how the Women's email campaign performs compared to no emai
          title="Women's Email Campaign vs Control",
          xlabel="Spending ($)", ylabel="Distribution Treatment Effect")
 
-    # Statistical summary
-    positive_dte_women = (dte_women_ctrl > 0).mean()
-    significant_dte_women = ((lower_women_ctrl > 0) | (upper_women_ctrl < 0)).mean()
-
-    print(f"Women's Email vs Control Results:")
-    print(f"Locations where Women's > Control: {positive_dte_women:.1%}")
-    print(f"Statistically significant differences: {significant_dte_women:.1%}")
-    print(f"Average DTE: {dte_women_ctrl.mean():.3f}")
-
-Control vs Men's Email Campaign
+Men's Email vs Control Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Next, let's examine how the Men's email campaign performs compared to no email (control):
@@ -135,64 +126,96 @@ Next, let's examine how the Men's email campaign performs compared to no email (
          title="Men's Email Campaign vs Control",
          xlabel="Spending ($)", ylabel="Distribution Treatment Effect", color="purple")
 
-    # Statistical summary
-    positive_dte_men = (dte_men_ctrl > 0).mean()
-    significant_dte_men = ((lower_men_ctrl > 0) | (upper_men_ctrl < 0)).mean()
-
-    print(f"Men's Email vs Control Results:")
-    print(f"Locations where Men's > Control: {positive_dte_men:.1%}")
-    print(f"Statistically significant differences: {significant_dte_men:.1%}")
-    print(f"Average DTE: {dte_men_ctrl.mean():.3f}")
-
-Both Campaigns vs Control Comparison
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The control vs email campaigns analysis produces the following comparison:
-
 .. image:: ../_static/hillstorm_dte_control.png
    :alt: Hillstrom Email Campaigns vs Control Analysis
+   :width: 500px
+   :align: center
+
+Spending Category Effects: Each Campaign vs Control
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Let's also examine how each campaign affects spending in specific intervals using Probability Treatment Effects (PTE):
+
+.. code-block:: python
+
+    # Compute PTE: Women's email vs Control
+    pte_women_ctrl, pte_lower_women_ctrl, pte_upper_women_ctrl = simple_estimator.predict_pte(
+        target_treatment_arm=2,  # Women's email
+        control_treatment_arm=0,  # No email control
+        locations=[-1] + revenue_locations,
+        variance_type="moment"
+    )
+
+    # Compute PTE: Men's email vs Control
+    pte_men_ctrl, pte_lower_men_ctrl, pte_upper_men_ctrl = simple_estimator.predict_pte(
+        target_treatment_arm=1,  # Men's email
+        control_treatment_arm=0,  # No email control
+        locations=[-1] + revenue_locations,
+        variance_type="moment"
+    )
+
+    # Visualize PTE results using dte_adj's plot function with bar charts side by side
+    import matplotlib.pyplot as plt
+
+    # Create subplots for side-by-side comparison
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+
+    # Women's vs Control PTE
+    plot(revenue_locations[1:], pte_women_ctrl, pte_lower_women_ctrl, pte_upper_women_ctrl,
+        chart_type="bar",
+        title="Women's Email vs Control",
+        xlabel="Spending Category ($)", ylabel="Probability Treatment Effect",
+        ax=ax1)
+
+    # Men's vs Control PTE
+    plot(revenue_locations[1:], pte_men_ctrl, pte_lower_men_ctrl, pte_upper_men_ctrl,
+        chart_type="bar",
+        title="Men's Email vs Control",
+        xlabel="Spending Category ($)", ylabel="Probability Treatment Effect",
+        color="purple", ax=ax2)
+
+    plt.tight_layout()
+    plt.show()
+
+The side-by-side PTE analysis produces the following visualization:
+
+.. image:: ../_static/hillstorm_pte_control.png
+   :alt: Hillstrom Email Campaigns vs Control PTE Analysis
    :width: 800px
    :align: center
 
-**Interpreting the Control Comparison Results**: These plots show how each email campaign performs against the no-email control group across different spending levels:
+**Interpreting the PTE Control Comparison**: These bar charts show how each email campaign affects the probability of customers spending in specific intervals compared to no email:
 
-**Women's Email vs Control**:
-- **Positive DTE values** indicate that Women's email campaign increases the probability of spending at those levels compared to no email
-- **Distribution pattern** shows where Women's email is most effective in driving customer spending
-- **Confidence intervals** reveal statistical significance of the treatment effects
+**Women's Email vs Control (Left Panel)**: The bar chart reveals specific spending intervals where women's email campaigns increase or decrease customer probability. Positive bars indicate intervals where the campaign increases the likelihood of spending in that range, while negative bars show intervals where it decreases probability.
 
-**Men's Email vs Control**:
-- **Comparative effectiveness** can be assessed by comparing the magnitude and patterns of effects
-- **Different spending ranges** may show varying campaign effectiveness
-- **Statistical significance** indicated by confidence intervals not crossing zero
+**Men's Email vs Control (Right Panel)**: Similarly shows the interval-specific effects of men's email campaigns. The side-by-side comparison allows direct assessment of which campaign is more effective in driving specific spending behaviors.
 
-**Key Control Analysis Findings**:
+**Key Insights from the Hillstrom Email Campaign Analysis**:
 
-1. **Campaign Effectiveness**: Both campaigns show positive effects compared to no email, confirming that email marketing drives incremental spending
+The distributional treatment effects and probability treatment effects reveal several important patterns in how email campaigns affect customer spending behavior:
 
-2. **Differential Patterns**: The shape and magnitude of effects differ between campaigns, revealing:
-   - Which campaign has stronger overall effects
-   - Different spending ranges where each campaign excels
-   - Varying confidence in treatment effects across spending levels
+1. **Email Campaigns Reduce Zero Spending**: Both men's and women's email campaigns show strong negative effects at the $0 spending level, indicating that email campaigns successfully convert non-purchasers into purchasers. This confirms that email marketing has a clear activation effect.
 
-3. **Business Implications**:
-   - **ROI Assessment**: Compare effect sizes to determine which campaign provides better return on investment
-   - **Customer Segmentation**: Identify spending ranges where each campaign is most/least effective
-   - **Resource Allocation**: Data-driven decisions on campaign budget allocation
+2. **Spending Category Redistribution**: The PTE analysis reveals how campaigns redistribute customers across spending intervals. Both campaigns show clear redistribution patterns, with negative effects in the $0 spending category (reducing non-purchase probability) and varying effects across other spending ranges. This redistribution pattern confirms that campaigns shift spending behavior rather than uniformly increasing it across all categories.
 
-4. **Statistical Rigor**: Confidence intervals provide guidance on where observed differences are statistically reliable vs. potentially due to sampling variation
+3. **Campaign-Specific Interval Effects**: The side-by-side PTE comparison reveals distinct patterns between campaigns. Women's email campaigns show stronger effects in certain spending intervals (particularly in moderate spending ranges), while men's campaigns display different interval-specific patterns. The visual comparison makes it clear that each campaign has optimal spending ranges where it excels, providing actionable insights for customer segmentation and targeting strategies.
 
-This analysis answers the fundamental question: "Do email campaigns work?" and establishes the baseline effectiveness of each campaign against no email.
+4. **Statistical Significance Across Intervals**: The confidence intervals in both DTE and PTE analyses reveal that the most reliable effects occur at the zero spending level and in low-to-moderate spending ranges. PTE analysis provides additional granularity by showing which specific spending intervals have statistically significant changes in probability.
+
+5. **Business Implications**: Email campaigns are most effective at converting non-buyers to buyers and redistributing customers toward moderate purchase amounts. The campaigns have minimal effect on driving high-value purchases ($200+). The PTE analysis provides actionable insights for campaign optimization by identifying which spending intervals are most responsive to each campaign type, enabling more precise targeting and resource allocation strategies.
+
+This distributional analysis reveals that email marketing's primary value lies in customer activation (reducing zero spending) and encouraging moderate purchase amounts, rather than dramatically increasing high-value purchases. The heterogeneous effects across the spending distribution provide actionable insights for optimizing email campaign strategies and customer segmentation.
 
 Direct Campaign Comparison: Men's vs Women's Email
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Finally, let's directly compare the two email campaigns to answer the key research question:
+Finally, let's directly compare the two email campaigns to answer the key research question.
+This time we estimate the distribution treatment effects with regression adjustment using linear regression for higher precision.
 
 .. code-block:: python
 
     # Compute DTE: Women's vs Men's email campaigns
-    dte_women_men, lower_women_men, upper_women_men = simple_estimator.predict_dte(
+    dte_simple, lower_simple, upper_simple = simple_estimator.predict_dte(
         target_treatment_arm=2,  # Women's email
         control_treatment_arm=1,  # Men's email (as "control")
         locations=revenue_locations,
@@ -207,25 +230,23 @@ Finally, let's directly compare the two email campaigns to answer the key resear
     )
 
     # Visualize the distribution treatment effects using dte_adj's built-in plot function
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
     # Simple estimator
-    plot(revenue_locations, dte_women_men, lower_women_men, upper_women_men,
-         title="Email Campaign Comparison: Women's vs Men's (Simple Estimator)",
-         xlabel="Spending ($)", ylabel="Distribution Treatment Effect")
+    plot(revenue_locations, dte_simple, lower_simple, upper_simple,
+        title="Email Campaign Comparison: Women's vs Men's (Simple Estimator)",
+        xlabel="Spending ($)", ylabel="Distribution Treatment Effect",
+        color="purple",
+        ax=ax1)
 
     # ML-adjusted estimator
     plot(revenue_locations, dte_ml, lower_ml, upper_ml,
-         title="Email Campaign Comparison: Women's vs Men's (ML-Adjusted Estimator)",
-         xlabel="Spending ($)", ylabel="Distribution Treatment Effect")
+        title="Email Campaign Comparison: Women's vs Men's (ML-Adjusted Estimator)",
+        xlabel="Spending ($)", ylabel="Distribution Treatment Effect",
+        ax=ax2)
 
-    # Statistical summary
-    positive_dte = (dte_ml > 0).mean()
-    significant_dte = ((lower_ml > 0) | (upper_ml < 0)).mean()
-
-    print(f"\nDirect Campaign Comparison Results:")
-    print(f"Locations where Women's > Men's: {positive_dte:.1%}")
-    print(f"Statistically significant differences: {significant_dte:.1%}")
-    print(f"Average DTE: {dte_ml.mean():.3f}")
+    plt.tight_layout()
+    plt.show()
 
 The analysis produces the following distribution treatment effects visualization:
 
@@ -234,48 +255,51 @@ The analysis produces the following distribution treatment effects visualization
    :width: 800px
    :align: center
 
-**Interpreting the Campaign Comparison Results**: The plot shows the distribution treatment effects (DTE) comparing Women's vs Men's email campaigns across different spending levels. Key observations:
+The side-by-side plots show the distribution treatment effects (DTE) comparing Women's vs Men's email campaigns across different spending levels. Key observations:
 
-- **Positive DTE values** (above zero line) indicate that Women's email campaign increases the probability of spending at that level compared to Men's campaign
-- **Confidence intervals** (shaded areas) show statistical uncertainty - where intervals don't cross zero, effects are statistically significant
-- **Heterogeneous effects** across spending distribution reveal that campaign effectiveness varies by customer spending levels
-- **ML-adjusted estimator** (bottom panel) typically provides more precise estimates with tighter confidence intervals than the simple estimator (top panel)
+**DTE Interpretation**: The predominantly positive DTE values indicate that women's campaigns increase the cumulative probability of customers spending at or below each threshold compared to men's campaigns. This means women's campaigns result in more customers having lower revenue levels, which is unfavorable for business outcomes.
 
-The distributional analysis reveals nuanced patterns that would be missed by simply comparing average spending between campaigns.
+**Men's Campaign Superiority**: The statistical significance of positive DTE values across most spending levels provides strong evidence that men's campaigns outperform women's campaigns by reducing the probability of customers spending small amounts and encouraging higher revenue per customer.
+
+**Business Implication**: The DTE analysis clearly demonstrates that men's campaigns are superior for revenue maximization, as they consistently reduce the cumulative probability of low spending levels, effectively shifting customers toward higher revenue categories.
 
 Revenue Category Analysis with PTE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
-    # Compute Probability Treatment Effects for Women's vs Men's comparison
-    pte_simple, pte_lower_simple, pte_upper_simple = simple_estimator.predict_pte(
-        target_treatment_arm=2,  # Women's email
-        control_treatment_arm=1,  # Men's email
-        locations=revenue_locations,
+    # Compute Probability Treatment Effects
+    pte_simple, pte_lower_simple, pte_upper_simple = simple_email.predict_pte(
+        target_treatment_arm=1,  # Women's email
+        control_treatment_arm=0,  # Men's email
+        locations=[-1] + revenue_locations,
         variance_type="moment"
     )
 
-    pte_ml, pte_lower_ml, pte_upper_ml = ml_estimator.predict_pte(
-        target_treatment_arm=2,  # Women's email
-        control_treatment_arm=1,  # Men's email
-        locations=revenue_locations,
+    pte_ml, pte_lower_ml, pte_upper_ml = ml_email.predict_pte(
+        target_treatment_arm=1,  # Women's email
+        control_treatment_arm=0,  # Men's email
+        locations=[-1] + revenue_locations,
         variance_type="moment"
     )
 
-    # Visualize PTE results using dte_adj's plot function with bar chart
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
     # Simple estimator
-    plot(revenue_locations[:-1], pte_simple, pte_lower_simple, pte_upper_simple,
+    plot(revenue_locations[1:], pte_simple, pte_lower_simple, pte_upper_simple,
         chart_type="bar",
         title="Spending Category Effects: Women's vs Men's (Simple Estimator)",
-        xlabel="Spending Category", ylabel="Probability Treatment Effect", color="purple")
+        xlabel="Spending Category", ylabel="Probability Treatment Effect", color="purple",
+        ax=ax1)
 
     # ML-adjusted estimator
-    plot(revenue_locations[:-1], pte_ml, pte_lower_ml, pte_upper_ml,
+    plot(revenue_locations[1:], pte_ml, pte_lower_ml, pte_upper_ml,
         chart_type="bar",
         title="Spending Category Effects: Women's vs Men's (ML-Adjusted Estimator)",
-        xlabel="Spending Category", ylabel="Probability Treatment Effect")
+        xlabel="Spending Category", ylabel="Probability Treatment Effect",
+        ax=ax2)
+    plt.tight_layout()
+    plt.show()
 
 The Probability Treatment Effects analysis produces the following visualization:
 
@@ -284,23 +308,29 @@ The Probability Treatment Effects analysis produces the following visualization:
    :width: 800px
    :align: center
 
-**Interpreting the PTE Results**: The bar charts show probability treatment effects across different spending intervals, revealing which spending ranges are most affected by the Women's vs Men's email campaigns:
+The side-by-side bar charts show probability treatment effects across different spending intervals, revealing the true story of campaign effectiveness:
 
-- **Positive bars** indicate spending ranges where Women's email campaign increases the probability of customers spending in that range compared to Men's email
-- **Negative bars** show ranges where Men's email campaign is more effective
-- **Error bars** represent confidence intervals - bars that don't cross zero are statistically significant
-- **Different patterns** between simple (top) and ML-adjusted (bottom) estimators show how machine learning adjustment can provide more precise estimates
+**Critical Finding - Zero Revenue Effect**: Women's campaigns show a positive effect in the $0 revenue category, meaning they increase the probability of customers making no purchase compared to men's campaigns. This is a negative outcome indicating that women's campaigns are less effective at driving any purchase behavior.
+
+**Spending Category Analysis**: Men's campaigns demonstrate superior performance in driving actual revenue. The negative PTE values in revenue-generating categories for women's campaigns indicate that men's campaigns are more effective at encouraging customers to make purchases and spend meaningful amounts.
+
+**Revenue Generation Patterns**: Men's campaigns show stronger performance in categories that generate actual revenue, while women's campaigns appear to be associated with higher non-purchase rates. This pattern suggests that men's campaigns are more effective at converting prospects into paying customers.
+
+**Methodological Confirmation**: Both simple and ML-adjusted estimators confirm this pattern, with the ML-adjusted analysis providing more precise estimates that strengthen the evidence for men's campaign superiority in driving revenue-generating behavior.
+
+**Strategic Implications**: Men's campaigns should be prioritized for revenue generation and customer conversion goals, as they demonstrate superior ability to drive actual purchases rather than just engagement.
 
 **Key PTE Findings**:
 
-1. **Low spending ranges** ($0-$25): Women's campaign may be more effective at driving small purchases
-2. **Medium spending ranges** ($25-$100): Effects vary, showing differential campaign effectiveness
-3. **High spending ranges** ($100+): Reveals which campaign is better at generating high-value customers
-4. **Statistical significance**: Confidence intervals show where differences are reliable vs. due to chance
+1. **Men's Campaigns Drive More Purchases**: The critical finding is that women's campaigns increase the probability of zero revenue (non-purchase) compared to men's campaigns. This means men's campaigns are more effective at converting prospects into paying customers.
 
-This granular analysis helps marketers understand not just which campaign generates more revenue overall, but specifically which spending behaviors each campaign drives.
+2. **Revenue Generation Superiority**: Men's campaigns show consistently better performance in revenue-generating categories. The negative PTE values for women's campaigns in spending intervals indicate that men's campaigns drive more customers to make actual purchases across most revenue ranges.
 
-**Key Findings**: Using the real Hillstrom dataset with 64,000 customers, the distributional analysis reveals nuanced patterns in how email campaigns affect customer spending. The analysis goes beyond simple average comparisons to show how treatment effects vary across the entire spending distribution, providing insights into which customer segments respond best to different campaign types. This demonstrates the power of distribution treatment effect analysis for understanding heterogeneous responses in digital marketing experiments.
+3. **Quantified Business Impact**: The analysis reveals that men's campaigns reduce non-purchase rates and increase the probability of revenue generation. Switching from women's to men's campaigns could improve overall conversion rates and revenue per customer.
+
+4. **Statistical Significance**: The statistical significance of the zero-revenue effect for women's campaigns provides strong evidence that men's campaigns are superior for business outcomes focused on revenue generation rather than just engagement.
+
+**Conclusion**: Using the real Hillstrom dataset with 64,000 customers, the distributional analysis reveals nuanced patterns in how email campaigns affect customer spending. The analysis goes beyond simple average comparisons to show how treatment effects vary across the entire spending distribution, providing insights into which customer segments respond best to different campaign types. This demonstrates the power of distribution treatment effect analysis for understanding heterogeneous responses in digital marketing experiments.
 
 Next Steps
 ~~~~~~~~~~
