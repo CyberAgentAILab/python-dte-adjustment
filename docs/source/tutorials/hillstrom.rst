@@ -184,7 +184,7 @@ The side-by-side PTE analysis produces the following visualization:
    :width: 800px
    :align: center
 
-**Interpreting the PTE Control Comparison**: These bar charts show how each email campaign affects the probability of customers spending in specific intervals compared to no email:
+These bar charts show how each email campaign affects the probability of customers spending in specific intervals compared to no email:
 
 **Women's Email vs Control (Left Panel)**: The bar chart reveals specific spending intervals where women's email campaigns increase or decrease customer probability. Positive bars indicate intervals where the campaign increases the likelihood of spending in that range, while negative bars show intervals where it decreases probability.
 
