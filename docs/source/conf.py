@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 project = "dte_adj"
 copyright = "2024, CyberAgent, Inc."
 author = "CyberAgent, Inc"
-release = "0.1.7"
+release = "0.1.8"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

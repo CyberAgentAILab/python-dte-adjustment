@@ -72,6 +72,44 @@ class TestPlot(unittest.TestCase):
             "Chart type other is not supported",
         )
 
+    @patch("dte_adj.plot.plt")
+    def test_plot_weighted(self, mock_plt):
+        # Arrange
+        x_values = np.array([1, 2, 3, 4, 5])
+        means = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
+        upper_bands = np.array([0.2, 0.3, 0.4, 0.5, 0.6])
+        lower_bands = np.array([0.0, 0.1, 0.2, 0.3, 0.4])
+        mock_ax = MagicMock()
+        mock_plt.subplots.return_value = (MagicMock(), mock_ax)
 
-if __name__ == "__main__":
-    unittest.main()
+        # Act
+        result_ax = plot(
+            x_values,
+            means,
+            lower_bands,
+            upper_bands,
+            chart_type="line",
+            weighted=True,
+        )
+
+        # Assert
+        self.assertEqual(result_ax, mock_ax)
+        mock_plt.subplots.assert_called_once()
+        plot_call = mock_ax.plot.call_args
+        fill_between_call = mock_ax.fill_between.call_args
+
+        # Check that values are weighted (multiplied by x_values)
+        plot_args, plot_kwargs = plot_call
+        x_values_arg, y_values_arg = plot_args
+        expected_weighted_means = means * x_values
+        self.assertTrue(np.array_equal(x_values_arg, x_values))
+        self.assertTrue(np.array_equal(y_values_arg, expected_weighted_means))
+
+        # Check that confidence intervals are also weighted
+        fill_between_args, fill_between_kwargs = fill_between_call
+        x_fill, lower_fill, upper_fill = fill_between_args
+        expected_weighted_lower = lower_bands * x_values
+        expected_weighted_upper = upper_bands * x_values
+        self.assertTrue(np.array_equal(x_fill, x_values_arg))
+        self.assertTrue(np.array_equal(lower_fill, expected_weighted_lower))
+        self.assertTrue(np.array_equal(upper_fill, expected_weighted_upper))
