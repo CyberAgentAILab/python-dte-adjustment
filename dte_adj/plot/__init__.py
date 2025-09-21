@@ -15,6 +15,7 @@ def plot(
     title: Optional[str] = None,
     xlabel: Optional[str] = None,
     ylabel: Optional[str] = None,
+    weighted: bool = False,
 ):
     """Visualize distributional parameters and their confidence intervals.
 
@@ -29,12 +30,18 @@ def plot(
         title (str, optional): Axes title.
         xlabel (str, optional): X-axis title label.
         ylabel (str, optional): Y-axis title label.
+        weighted (bool, optional): If True, multiply treatment effects by X values to show value-weighted effects. Defaults to False.
 
     Returns:
         matplotlib.axes.Axes: The axes with the plot.
     """
     if ax is None:
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
+
+    if weighted:
+        means = means * X
+        lower_bounds = lower_bounds * X
+        upper_bounds = upper_bounds * X
 
     if chart_type == "line":
         ax.plot(X, means, label="Values", color=color)
