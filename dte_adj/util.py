@@ -185,10 +185,10 @@ def _compute_local_treatment_effects_core(
 
         # Compute outcome indicators (different for LDTE vs LPTE)
         if use_intervals:
-            bi = (Y[i] < locations) * 1
+            bi = (Y[i] <= locations) * 1
             bi = bi[1:] - bi[:-1]  # Convert to interval probabilities
         else:
-            bi = Y[i] <= locations
+            bi = (Y[i] <= locations) * 1
 
         xi_t[i] = ((1 - 1 / w_s) * y_t_mu[i] - y_c_mu[i] + bi / w_s) - beta * (
             (1 - 1 / w_s) * d_t_eta[i] - d_c_eta[i] + D[i] / w_s
