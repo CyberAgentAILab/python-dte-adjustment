@@ -4,6 +4,8 @@ from unittest.mock import patch, MagicMock
 from sklearn.linear_model import LogisticRegression
 from dte_adj import SimpleDistributionEstimator, AdjustedDistributionEstimator
 
+np.random.seed(123)
+
 
 def generate_data(n, d_x=100, rho=0.5):
     """
