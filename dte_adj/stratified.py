@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Tuple, Any
 from copy import deepcopy
-from .base import DistributionEstimatorBase
+from dte_adj.base import DistributionEstimatorBase
 
 
 class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):

@@ -49,3 +49,11 @@ dev-dependencies = [
   "scikit-learn>=1.5,<1.8",
   "pre-commit>=4.0.1,<4.4.0"
 ]
+
+[tool.ruff.lint]
+# TID252: Ban relative imports - enforce absolute imports for internal modules
+select = ["TID252"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+# Ban all relative imports
+ban-relative-imports = "all"

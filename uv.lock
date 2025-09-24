@@ -346,7 +346,7 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.7" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.0.1,<4.4.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = "~=0.12.2" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.12.2,<0.14.0" },
     { name = "scikit-learn", marker = "extra == 'dev'", specifier = ">=1.5,<1.8" },
     { name = "scipy", specifier = ">=1.13.1" },
     { name = "sphinx", marker = "extra == 'dev'", specifier = ">=7.3.7,<8.2.0" },
@@ -357,7 +357,7 @@ provides-extras = ["dev"]
 dev = [
     { name = "build", specifier = ">=1.2.2,<1.4.0" },
     { name = "pre-commit", specifier = ">=4.0.1,<4.4.0" },
-    { name = "ruff", specifier = "~=0.12.2" },
+    { name = "ruff", specifier = ">=0.12.2,<0.14.0" },
     { name = "scikit-learn", specifier = ">=1.5,<1.8" },
     { name = "sphinx", specifier = ">=7.3.7,<8.2.0" },
 ]

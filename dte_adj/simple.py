@@ -1,5 +1,5 @@
 import numpy as np
-from .stratified import (
+from dte_adj.stratified import (
     SimpleStratifiedDistributionEstimator,
     AdjustedStratifiedDistributionEstimator,
 )

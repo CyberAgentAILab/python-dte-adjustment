@@ -1,14 +1,17 @@
 # Import estimator classes from separate modules
-from .base import DistributionEstimatorBase
-from .simple import SimpleDistributionEstimator, AdjustedDistributionEstimator
-from .stratified import (
+from dte_adj.base import DistributionEstimatorBase
+from dte_adj.simple import SimpleDistributionEstimator, AdjustedDistributionEstimator
+from dte_adj.stratified import (
     SimpleStratifiedDistributionEstimator,
     AdjustedStratifiedDistributionEstimator,
 )
-from .local import SimpleLocalDistributionEstimator, AdjustedLocalDistributionEstimator
+from dte_adj.local import (
+    SimpleLocalDistributionEstimator,
+    AdjustedLocalDistributionEstimator,
+)
 
 # Import utility functions
-from .util import compute_confidence_intervals, compute_ldte, compute_lpte
+from dte_adj.util import compute_confidence_intervals, compute_ldte, compute_lpte
 
 __all__ = [
     "DistributionEstimatorBase",
