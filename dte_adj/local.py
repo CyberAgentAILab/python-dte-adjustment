@@ -1,10 +1,10 @@
 import numpy as np
 from typing import Tuple
-from .stratified import (
+from dte_adj.stratified import (
     SimpleStratifiedDistributionEstimator,
     AdjustedStratifiedDistributionEstimator,
 )
-from .util import compute_ldte, compute_lpte
+from dte_adj.util import compute_ldte, compute_lpte
 
 
 class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
