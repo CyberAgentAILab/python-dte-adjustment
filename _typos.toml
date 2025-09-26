@@ -1,0 +1,4 @@
+[default.extend-words]
+# Allow dataset-specific column names from Hillstrom dataset
+womens = "womens"
+mens = "mens"
