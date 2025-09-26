@@ -44,7 +44,7 @@ Data Setup and Loading
         'history': df['history'],
         'history_segment': df['history_segment'].map(lambda s: int(s[0])),
         'mens': df['mens'],
-        'women': df['women'],
+        'womens': df['womens'],
         'zip_code': df['zip_code'].map(zip_code_mapping),
         'newbie': df['newbie'],
         'channel': df['channel'].map(channel_mapping)
