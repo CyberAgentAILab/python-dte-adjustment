@@ -20,7 +20,7 @@ For multi-task learning approaches that train models for all locations simultane
 
 .. [#simple2024] Byambadalai, U., Oka, T., & Yasui, S. (2024). Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction. In Proceedings of the 41st International Conference on Machine Learning (ICML'24). `arXiv:2407.16037 <https://arxiv.org/abs/2407.16037>`_.
 
-.. [#car2025] Byambadalai, U., Hirata, T., Oka, T., & Yasui, S. (2025). On Efficient Estimation of Distributional Treatment Effects under Covariate-Adaptive Randomization. arXiv preprint `arXiv:2506.05945 <https://arxiv.org/abs/2506.05945>`_.
+.. [#car2025] Byambadalai, U., Hirata, T., Oka, T., & Yasui, S. (2025). On Efficient Estimation of Distributional Treatment Effects under Covariate-Adaptive Randomization. In Proceedings of the 42nd International Conference on Machine Learning (ICML'25). `arXiv:2506.05945 <https://arxiv.org/abs/2506.05945>`_.
 
 .. [#multitask2025] Hirata, T., Byambadalai, U., Oka, T., Yasui, S., & Uto, S. (2025). Efficient and Scalable Estimation of Distributional Treatment Effects with Multi-Task Neural Networks. arXiv preprint `arXiv:2507.07738 <https://arxiv.org/abs/2507.07738>`_.
 
