@@ -262,9 +262,9 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                     covariates_train = covariates[fold_mask]
                     binomial_train = binomial[fold_mask]
                     # Pool the records across strata and train the model
-                    # if len(np.unique(binomial_train)) > 1:
-                    #     self.model = deepcopy(self.base_model)
-                    #     self.model.fit(covariates_train, binomial_train)
+                    if len(np.unique(binomial_train)) > 1:
+                        self.model = deepcopy(self.base_model)
+                        self.model.fit(covariates_train, binomial_train)
                     for s in s_list:
                         s_mask = strata == s
                         weight = (s_mask & treatment_mask).sum() / s_mask.sum()
@@ -274,8 +274,8 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                         binomial_train = binomial[subset_train_mask]
                         # TODO: revisit the logic here
                         if len(np.unique(binomial_train)) > 1:
-                            self.model = deepcopy(self.base_model)
-                            self.model.fit(covariates_train, binomial_train)
+                            # self.model = deepcopy(self.base_model)
+                            # self.model.fit(covariates_train, binomial_train)
                             pass
                         else:
                             pred = binomial_train[0]
