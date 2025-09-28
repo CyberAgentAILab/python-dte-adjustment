@@ -18,8 +18,8 @@ authors:
   - family-names: Yasui
     given-names: Shota
 preferred-citation:
-  type: article
-  title: "Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction"
+  type: conference-paper
+  title: "Estimating distributional treatment effects in randomized experiments: machine learning for variance reduction"
   authors:
     - family-names: Byambadalai
       given-names: Undral
@@ -28,11 +28,14 @@ preferred-citation:
     - family-names: Yasui
       given-names: Shota
   year: 2024
+  conference:
+    name: "Proceedings of the 41st International Conference on Machine Learning"
+  publisher:
+    name: "JMLR.org"
   url: "https://arxiv.org/abs/2407.16037"
-  repository: "arXiv:2407.16037"
 references:
-  - type: article
-    title: "Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction"
+  - type: conference-paper
+    title: "Estimating distributional treatment effects in randomized experiments: machine learning for variance reduction"
     authors:
       - family-names: Byambadalai
         given-names: Undral
@@ -41,8 +44,11 @@ references:
       - family-names: Yasui
         given-names: Shota
     year: 2024
+    conference:
+      name: "Proceedings of the 41st International Conference on Machine Learning"
+    publisher:
+      name: "JMLR.org"
     url: "https://arxiv.org/abs/2407.16037"
-    repository: "arXiv:2407.16037"
   - type: article
     title: "On Efficient Estimation of Distributional Treatment Effects under Covariate-Adaptive Randomization"
     authors:
@@ -73,3 +79,17 @@ references:
     year: 2025
     url: "https://arxiv.org/abs/2507.07738"
     repository: "arXiv:2507.07738"
+  - type: article
+    title: "Beyond the Average: Distributional Causal Inference under Imperfect Compliance"
+    authors:
+      - family-names: Byambadalai
+        given-names: Undral
+      - family-names: Hirata
+        given-names: Tomu
+      - family-names: Oka
+        given-names: Tatsushi
+      - family-names: Yasui
+        given-names: Shota
+    year: 2024
+    url: "https://arxiv.org/abs/2509.15594"
+    repository: "arXiv:2509.15594"
