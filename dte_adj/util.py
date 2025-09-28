@@ -1,6 +1,12 @@
 import numpy as np
 from scipy.stats import norm
-from typing import Tuple
+from typing import Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dte_adj.local import (
+        SimpleStratifiedDistributionEstimator,
+        AdjustedLocalDistributionEstimator,
+    )
 
 
 def compute_confidence_intervals(
@@ -110,7 +116,7 @@ def compute_confidence_intervals(
 
 
 def _compute_local_treatment_effects_core(
-    estimator,
+    estimator: "SimpleStratifiedDistributionEstimator | AdjustedLocalDistributionEstimator",
     target_treatment_arm: int,
     control_treatment_arm: int,
     locations: np.ndarray,
@@ -149,10 +155,10 @@ def _compute_local_treatment_effects_core(
 
     # Compute treatment propensity (probability of treatment)
     d_t_prediction, d_t_psi, d_t_eta = estimator._compute_cumulative_distribution(
-        target_treatment_arm, np.zeros(1), X, Z, 1 - D
+        target_treatment_arm, np.zeros(1), X, Z, 1 - (target_treatment_arm == D)
     )
     d_c_prediction, d_c_psi, d_c_eta = estimator._compute_cumulative_distribution(
-        control_treatment_arm, np.zeros(1), X, Z, 1 - D
+        control_treatment_arm, np.zeros(1), X, Z, 1 - (target_treatment_arm == D)
     )
 
     # Compute outcome distributions (different for LDTE vs LPTE)
@@ -257,7 +263,7 @@ def _compute_local_treatment_effects_core(
 
 
 def compute_ldte(
-    estimator,
+    estimator: "SimpleStratifiedDistributionEstimator | AdjustedLocalDistributionEstimator",
     target_treatment_arm: int,
     control_treatment_arm: int,
     locations: np.ndarray,
@@ -290,7 +296,7 @@ def compute_ldte(
 
 
 def compute_lpte(
-    estimator,
+    estimator: "SimpleStratifiedDistributionEstimator | AdjustedLocalDistributionEstimator",
     target_treatment_arm: int,
     control_treatment_arm: int,
     locations: np.ndarray,

@@ -73,10 +73,9 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         for s in s_list:
             s_mask = strata == s
             w_s[s] = (s_mask & treatment_mask).sum() / s_mask.sum()
-        for i, outcome in enumerate(locations):
-            for j in range(n_records):
-                s = strata[j]
-                prediction[j, i] = (outcomes[j] <= outcome) / w_s[s] * treatment_mask[j]
+        for j in range(n_records):
+            s = strata[j]
+            prediction[j] = (outcomes[j] <= locations) / w_s[s] * treatment_mask[j]
 
         unconditional_pred = {s: prediction[s == strata].mean(axis=0) for s in s_list}
         conditional_prediction = np.array([unconditional_pred[s] for s in strata])
