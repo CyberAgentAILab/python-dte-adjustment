@@ -25,24 +25,32 @@ Examples of how to use this package are available in [this Get-started Guide](ht
 This package implements methods from the following research papers:
 
 ### Simple Randomization
-- **Byambadalai, U., Oka, T., & Yasui, S.** (2024). *Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction*. [arXiv:2407.16037](https://arxiv.org/abs/2407.16037)
+- **Byambadalai, U., Oka, T., & Yasui, S.** (2024). *Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction*. In Proceedings of the 41st International Conference on Machine Learning (ICML'24). [arXiv:2407.16037](https://arxiv.org/abs/2407.16037)
 
 ### Covariate-Adaptive Randomization
-- **Byambadalai, U., Hirata, T., Oka, T., & Yasui, S.** (2025). *On Efficient Estimation of Distributional Treatment Effects under Covariate-Adaptive Randomization*. [arXiv:2506.05945](https://arxiv.org/abs/2506.05945)
+- **Byambadalai, U., Hirata, T., Oka, T., & Yasui, S.** (2025). *On Efficient Estimation of Distributional Treatment Effects under Covariate-Adaptive Randomization*. In Proceedings of the 42nd International Conference on Machine Learning (ICML'25). [arXiv:2506.05945](https://arxiv.org/abs/2506.05945)
 
 ### Multi-Task Learning
 - **Hirata, T., Byambadalai, U., Oka, T., Yasui, S., & Uto, S.** (2025). *Efficient and Scalable Estimation of Distributional Treatment Effects with Multi-Task Neural Networks*. [arXiv:2507.07738](https://arxiv.org/abs/2507.07738)
+
+### Imperfect Compliance
+- **Byambadalai, U., Hirata, T., Oka, T., & Yasui, S.** (2024). *Beyond the Average: Distributional Causal Inference under Imperfect Compliance*. [arXiv:2509.15594](https://arxiv.org/abs/2509.15594)
 
 ## Citation
 
 If you use this software in your research, please cite our work:
 
 ```bibtex
-@article{byambadalai2024estimating,
-  title={Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction},
+@inproceedings{byambadalai2024estimating,
+  title={Estimating distributional treatment effects in randomized experiments: machine learning for variance reduction},
   author={Byambadalai, Undral and Oka, Tatsushi and Yasui, Shota},
-  journal={arXiv preprint arXiv:2407.16037},
-  year={2024}
+  booktitle={Proceedings of the 41st International Conference on Machine Learning},
+  articleno={199},
+  numpages={32},
+  year={2024},
+  publisher={JMLR.org},
+  series={ICML'24},
+  location={Vienna, Austria}
 }
 ```
 
