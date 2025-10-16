@@ -34,7 +34,7 @@ This package implements methods from the following research papers:
 - **Hirata, T., Byambadalai, U., Oka, T., Yasui, S., & Uto, S.** (2025). *Efficient and Scalable Estimation of Distributional Treatment Effects with Multi-Task Neural Networks*. [arXiv:2507.07738](https://arxiv.org/abs/2507.07738)
 
 ### Imperfect Compliance
-- **Byambadalai, U., Hirata, T., Oka, T., & Yasui, S.** (2024). *Beyond the Average: Distributional Causal Inference under Imperfect Compliance*. [arXiv:2509.15594](https://arxiv.org/abs/2509.15594)
+- **Byambadalai, U., Hirata, T., Oka, T., & Yasui, S.** (2025). *Beyond the Average: Distributional Causal Inference under Imperfect Compliance*. [arXiv:2509.15594](https://arxiv.org/abs/2509.15594)
 
 ## Citation
 
