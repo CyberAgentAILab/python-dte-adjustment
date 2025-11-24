@@ -30,7 +30,7 @@ dev = [
   "ruff>=0.12.2,<0.14.0",
   "sphinx>=7.3.7,<8.2.0",
   "scikit-learn>=1.5,<1.8",
-  "pre-commit>=4.0.1,<4.4.0"
+  "pre-commit>=4.0.1,<4.6.0"
 ]
 
 [tool.setuptools.packages.find]
@@ -47,7 +47,7 @@ dev-dependencies = [
   "ruff>=0.12.2,<0.14.0",
   "sphinx>=7.3.7,<8.2.0",
   "scikit-learn>=1.5,<1.8",
-  "pre-commit>=4.0.1,<4.4.0"
+  "pre-commit>=4.0.1,<4.6.0"
 ]
 
 [tool.ruff.lint]
