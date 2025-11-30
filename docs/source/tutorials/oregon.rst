@@ -21,8 +21,6 @@ The dataset includes multiple files containing information about participants in
 
 This data supports research on how health insurance affects healthcare utilization and is maintained by researchers Amy Finkelstein and Katherine Baicker. Please ensure you comply with the data use agreements when downloading and using this dataset.
 
-**Important**: When using this dataset for research or publications, appropriate citation is required as specified in the NBER data use agreement.
-
 .. code-block:: python
 
     import numpy as np
@@ -56,18 +54,18 @@ This data supports research on how health insurance affects healthcare utilizati
     # Prepare the data for dte_adj analysis
     # Create treatment assignment (instrumental variable): 0=Not selected, 1=Selected
     treatment_assignment_mapping = {'Not selected': 0, 'Selected': 1}
-    df['Z'] = df['treatment'].map(treatment_assignment_mapping).astype(float).fillna(-1).astype(int)
+    df['Z'] = df['treatment'].map(treatment_assignment_mapping)
 
     # Create actual treatment indicator: 0=Not enrolled, 1=Enrolled, -1=Missing
     treatment_mapping = {'NOT enrolled': 0, 'Enrolled': 1}
-    df['D'] = df['ohp_all_ever_inperson'].map(treatment_mapping).astype(float).fillna(-1).astype(int)
-
-    # Use emergency department costs and visits as outcome variables
-    df['Y_ED_CHARG_TOT_ED'] = df['ed_charg_tot_ed'].fillna(0)
-    df['Y_NUM_VISIT_CENS_ED'] = df['num_visit_cens_ed'].fillna(0)
+    df['D'] = df['ohp_all_ever_inperson'].map(treatment_mapping)
 
     # Create strata based on household size
-    df['strata'] = df['numhh_list']
+    df.rename(columns={'numhh_list': 'strata'}, inplace=True)
+    df['strata'] = df['strata'].replace({
+        'signed self up + 1 additional person': 'signed self up + others',
+        'signed self up + 2 additional people': 'signed self up + others'
+    })
 
     # Create feature mappings for categorical variables
     gender_mapping = {'Male': 0, 'Female': 1, 'Transgender F to M': 2, 'Transgender M to F': 3}
@@ -80,21 +78,21 @@ This data supports research on how health insurance affects healthcare utilizati
     df['edu_inp'] = df['edu_inp'].map(edu_mapping).astype(float).fillna(-1).astype(int)
 
     # Select control variables: pre-randomization ED utilization variables
-    ctrl_cols = [col for col in df_ed.columns if 'pre' in col and 'num' in col]
-    ctrl_cols.append('charg_tot_pre_ed')
-    selected_cols = ['person_id', 'strata', 'Y_NUM_VISIT_CENS_ED', 'Y_ED_CHARG_TOT_ED', 'Z', 'D'] + ctrl_cols + ['gender_inp', 'age', 'health_last12_inp', 'edu_inp']
+    ctrl_cols = [col for col in df_ed.columns if 'pre' in col and 'num' in col] + ['gender_inp', 'age', 'health_last12_inp', 'edu_inp', 'charg_tot_pre_ed']
+    selected_cols = ['person_id', 'strata', 'ed_charg_tot_ed', 'num_visit_cens_ed', 'Z', 'D'] + ctrl_cols
     df = df[selected_cols]
-    df = df[df.isna().any(axis=1) == False]
+    df = df.dropna().reset_index(drop=True)
 
     # Create feature matrix (excluding treatment variables)
-    features = pd.DataFrame(df[ctrl_cols + ['gender_inp', 'age', 'health_last12_inp', 'edu_inp']])
-    X = features.values
+    X = df[ctrl_cols].values
 
-    Z = df['Z'].values  # Treatment assignment (instrumental variable)
-    D = df['D'].values  # Actual treatment (endogenous variable)
+    Z = df['Z'].astype(int).values  # Treatment assignment (instrumental variable)
+    D = df['D'].astype(int).values  # Actual treatment (endogenous variable)
     strata = df['strata'].values  # Stratification variable
-    Y_ED_CHARG_TOT_ED = df['Y_ED_CHARG_TOT_ED'].values
-    Y_NUM_VISIT_CENS_ED = df['Y_NUM_VISIT_CENS_ED'].values
+
+    # Use num_visit_cens_ed and ed_charg_tot_ed as outcome variables
+    Y_ED_CHARG_TOT_ED = df['ed_charg_tot_ed'].values
+    Y_NUM_VISIT_CENS_ED = df['num_visit_cens_ed'].values
 
     print(f"\nDataset size: {len(D):,} people")
     print(f"Treatment assignment (Z) - Not selected: {(Z==0).sum():,} ({(Z==0).mean():.1%})")
