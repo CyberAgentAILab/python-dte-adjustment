@@ -123,7 +123,7 @@ Emergency Department Cost Analysis
     ml_local_estimator.fit(X, Z, D, Y_ED_CHARG_TOT_ED, strata)
 
     # Define evaluation points for emergency department costs
-    outcome_ed_costs_locations = np.linspace(Y_ED_CHARG_TOT_ED.min(), Y_ED_CHARG_TOT_ED.max(), 100)
+    outcome_ed_costs_locations = np.arange(Y_ED_CHARG_TOT_ED.min(), Y_ED_CHARG_TOT_ED.max(), 3000)
 
 Local Distribution Treatment Effects: Medicaid Assignment vs Control
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -288,8 +288,6 @@ The side-by-side bar charts show probability treatment effects across different 
 
 **Policy Implications**: Understanding these distributional effects is crucial for healthcare policy. The local analysis reveals that Medicaid's impact varies across the cost distribution for those who actually enroll when assigned, which has important implications for healthcare budgeting and understanding the true effects of public health insurance programs on compliers.
 
-**Conclusion**: Using the real Oregon Health Insurance Experiment dataset with 24,000 participants, the local distributional analysis reveals nuanced patterns in how Medicaid assignment affects healthcare utilization among compliers. The analysis accounts for non-compliance and goes beyond simple average comparisons to show how treatment effects vary across the entire emergency department cost distribution, providing insights into how public health insurance impacts different segments of the population who actually enroll. This demonstrates the power of local distribution treatment effect analysis for understanding heterogeneous responses in healthcare policy interventions with non-compliance.
-
 Emergency Department Visits Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -310,19 +308,12 @@ Now let's examine how Medicaid enrollment affects the distribution of emergency 
     ml_local_estimator.fit(X, Z, D, Y_NUM_VISIT_CENS_ED, strata)
 
     # Define evaluation points for emergency department visits
-    outcome_ed_visits_locations = np.linspace(Y_NUM_VISIT_CENS_ED.min(), Y_NUM_VISIT_CENS_ED.max(), 20)
+    outcome_ed_visits_locations = np.arange(Y_NUM_VISIT_CENS_ED.min(), Y_NUM_VISIT_CENS_ED.max(), 1)
 
 Distribution Treatment Effects: Visits Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
-
-    # Compute LDTE: Treatment vs Control
-    ldte_ctrl, lower_ctrl, upper_ctrl = simple_local_estimator.predict_ldte(
-        target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
-        control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
-        locations=outcome_ed_visits_locations
-    )
 
     # LDTE: Treatment vs Control
     ldte_simple, lower_simple, upper_simple = simple_local_estimator.predict_ldte(
@@ -364,13 +355,6 @@ Probability Treatment Effects: Visits Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
-
-    # Compute LPTE: Treatment vs Control
-    lpte_ctrl, lpte_lower_ctrl, lpte_upper_ctrl = simple_local_estimator.predict_lpte(
-        target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
-        control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
-        locations=[-1] + outcome_ed_visits_locations
-    )
 
     # Compute Local Probability Treatment Effects
     lpte_simple, lpte_lower_simple, lpte_upper_simple = simple_local_estimator.predict_lpte(
