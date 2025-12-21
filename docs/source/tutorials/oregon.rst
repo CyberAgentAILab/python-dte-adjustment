@@ -406,74 +406,80 @@ The Oregon experiment allows us to examine how treatment effects vary across dif
     # Individual Stratum Analysis with Local Estimators
     print("\n=== Individual Stratum Analysis (Local Estimators) ===")
 
+    # Helper function to filter data for a specific stratum
+    def filter_stratum_data(strata_values, stratum_name, X, Z, D, Y):
+        """Filter and extract data for a specific stratum"""
+        mask = strata_values == stratum_name
+        return {
+            'X': X[mask],
+            'Z': Z[mask],
+            'D': D[mask],
+            'Y': Y[mask],
+            'strata': np.zeros(mask.sum(), dtype=int),  # Uniform strata for subset
+            'n_total': mask.sum(),
+            'n_assigned': (Z[mask] == 1).sum(),
+            'n_enrolled': (D[mask] == 1).sum()
+        }
+
+    # Helper function to estimate LDTE for a stratum
+    def estimate_stratum_ldte(stratum_data, location_step=3000, folds=3):
+        """Initialize estimators, fit data, and compute LDTE for a stratum"""
+        # Initialize estimators
+        simple_estimator = dte_adj.SimpleLocalDistributionEstimator()
+        ml_estimator = dte_adj.AdjustedLocalDistributionEstimator(
+            LinearRegression(),
+            folds=folds
+        )
+
+        # Fit estimators
+        simple_estimator.fit(stratum_data['X'], stratum_data['Z'],
+                           stratum_data['D'], stratum_data['Y'], stratum_data['strata'])
+        ml_estimator.fit(stratum_data['X'], stratum_data['Z'],
+                       stratum_data['D'], stratum_data['Y'], stratum_data['strata'])
+
+        # Define evaluation locations based on stratum's data range
+        locations = np.arange(stratum_data['Y'].min(), stratum_data['Y'].max(), location_step)
+
+        # Compute LDTE
+        ldte_simple, lower_simple, upper_simple = simple_estimator.predict_ldte(
+            target_treatment_arm=1, control_treatment_arm=0, locations=locations
+        )
+        ldte_ml, lower_ml, upper_ml = ml_estimator.predict_ldte(
+            target_treatment_arm=1, control_treatment_arm=0, locations=locations
+        )
+
+        return {
+            'simple': {'ldte': ldte_simple, 'lower': lower_simple, 'upper': upper_simple},
+            'ml': {'ldte': ldte_ml, 'lower': lower_ml, 'upper': upper_ml},
+            'locations': locations,
+            'sample_size': stratum_data['n_total'],
+            'treatment_assignment_size': stratum_data['n_assigned'],
+            'treatment_indicator_size': stratum_data['n_enrolled']
+        }
+
     # Get strata values (already consolidated in preprocessing)
     strata_consolidated_values = df['strata'].values
     unique_consolidated_strata = np.unique(strata_consolidated_values)
 
-    # Individual estimations for each stratum
+    # Analyze each stratum
     individual_results = {}
-
     for stratum in unique_consolidated_strata:
         print(f"\nAnalyzing stratum: {stratum}")
 
         # Filter data for this stratum
-        stratum_mask = strata_consolidated_values == stratum
-        X_stratum = X[stratum_mask]
-        treatment_arms_stratum = Z[stratum_mask]
-        treatment_indicator_stratum = D[stratum_mask]
-        Y_stratum = Y_ED_CHARG_TOT_ED[stratum_mask]
-
-        # Create uniform strata for this subset (all observations in same stratum)
-        strata_stratum = np.zeros(len(X_stratum), dtype=int)
-
-        print(f"  Sample size: {len(treatment_indicator_stratum):,}")
-        print(f"  Treatment assignment (Selected): {(treatment_arms_stratum == 1).sum():,}")
-        print(f"  Treatment indicator (Enrolled): {(treatment_indicator_stratum == 1).sum():,}")
-
-        # Initialize local estimators for this stratum
-        simple_stratum_estimator = dte_adj.SimpleLocalDistributionEstimator()
-        ml_stratum_estimator = dte_adj.AdjustedLocalDistributionEstimator(
-            LinearRegression(),
-            folds=3  # Reduced folds due to smaller sample size
+        stratum_data = filter_stratum_data(
+            strata_consolidated_values, stratum, X, Z, D, Y_ED_CHARG_TOT_ED
         )
 
-        # Fit estimators on stratum data
-        simple_stratum_estimator.fit(X_stratum, treatment_arms_stratum, treatment_indicator_stratum, Y_stratum, strata_stratum)
-        ml_stratum_estimator.fit(X_stratum, treatment_arms_stratum, treatment_indicator_stratum, Y_stratum, strata_stratum)
+        # Print stratum statistics
+        print(f"  Sample size: {stratum_data['n_total']:,}")
+        print(f"  Treatment assignment (Selected): {stratum_data['n_assigned']:,}")
+        print(f"  Treatment indicator (Enrolled): {stratum_data['n_enrolled']:,}")
 
-        # Define locations for this stratum based on its data range
-        outcome_ed_costs_locations_stratum = np.arange(Y_stratum.min(), Y_stratum.max(), 3000)
-
-        # Compute LDTE for this stratum using stratum-specific locations
-        ldte_simple_stratum, lower_simple_stratum, upper_simple_stratum = simple_stratum_estimator.predict_ldte(
-            target_treatment_arm=1,
-            control_treatment_arm=0,
-            locations=outcome_ed_costs_locations_stratum
+        # Estimate LDTE for this stratum
+        individual_results[stratum] = estimate_stratum_ldte(
+            stratum_data, location_step=3000, folds=3
         )
-
-        ldte_ml_stratum, lower_ml_stratum, upper_ml_stratum = ml_stratum_estimator.predict_ldte(
-            target_treatment_arm=1,
-            control_treatment_arm=0,
-            locations=outcome_ed_costs_locations_stratum
-        )
-
-        # Store results including the locations
-        individual_results[stratum] = {
-            'simple': {
-                'ldte': ldte_simple_stratum,
-                'lower': lower_simple_stratum,
-                'upper': upper_simple_stratum
-            },
-            'ml': {
-                'ldte': ldte_ml_stratum,
-                'lower': lower_ml_stratum,
-                'upper': upper_ml_stratum
-            },
-            'locations': outcome_ed_costs_locations_stratum,
-            'sample_size': len(treatment_indicator_stratum),
-            'treatment_assignment_size': (treatment_arms_stratum == 1).sum(),
-            'treatment_indicator_size': (treatment_indicator_stratum == 1).sum()
-        }
 
 Visualization: Comparing Overall Population vs Stratified Results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
