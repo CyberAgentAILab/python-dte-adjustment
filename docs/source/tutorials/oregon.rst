@@ -197,11 +197,15 @@ The analysis produces the following local distribution treatment effects visuali
    :width: 800px
    :align: center
 
-**LDTE Interpretation**: The positive LDTE values indicate that Medicaid assignment increases the cumulative probability of individuals having emergency department costs at or below each threshold among compliers (those who enroll when selected). This suggests that while Medicaid increases overall ED utilization, it may also help contain costs for some individuals who actually enroll.
+**1. LDTE Interpretation and Distribution-Level Insights**
 
-**Statistical Significance**: Both simple and ML-adjusted local estimators show similar patterns, providing robust evidence that Medicaid assignment has significant distributional effects on emergency department costs for compliers. The confidence intervals indicate that these effects are statistically significant across most cost levels.
+- **Simple Local Estimator**: Shows LDTE ≈ -0.12 at zero costs, meaning 12 percentage points fewer insured individuals have zero ED costs. The effect converges to zero around $10,000 and remains flat thereafter.
+- **ML-Adjusted Local Estimator**: Shows a smaller effect of LDTE ≈ -0.15 at zero costs, with similar convergence patterns.
+- **Key Finding**: Both estimators reveal insurance primarily affects the lower tail (zero to ~$10,000), shifting the distribution rightward. This indicates insurance increases ED access among those who would otherwise not seek care, while having minimal impact on high-cost users.
 
-**Non-Compliance Considerations**: The LDTE analysis accounts for the fact that not all individuals assigned to treatment actually enrolled in Medicaid, providing a more accurate estimate of the effects for those who actually receive treatment when assigned.
+**2. Covariate Adjustment Effects and Confidence Intervals**
+
+The confidence intervals are not substantially narrower with ML adjustment. Both methods show comparably wide confidence bands, indicating limited efficiency gains. This suggests: (1) covariates have limited predictive power for ED costs, (2) the linear regression model may be too simple, or (3) the simple estimator is already reasonably efficient.
 
 Cost Analysis with Local PTE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -249,17 +253,15 @@ The Local Probability Treatment Effects analysis produces the following visualiz
    :width: 800px
    :align: center
 
-The side-by-side bar charts show probability treatment effects across different emergency department cost intervals, revealing how Medicaid enrollment affects healthcare utilization patterns:
+**1. LPTE Interpretation and Distribution-Level Insights**
 
-**Cost Distribution Effects**: The LPTE analysis shows how Medicaid assignment changes the probability of compliers incurring emergency department costs in specific ranges. Positive bars indicate cost intervals where Medicaid assignment increases the likelihood of incurring costs in that range, while negative bars show intervals where it decreases the probability.
+- **Simple Local Estimator**: Shows mixed effects across cost bins. At zero costs, LPTE ≈ -0.02 (not statistically significant given wide confidence intervals). Small positive effects appear in the $5,000-$10,000 range (LPTE ≈ 0.01-0.02), converging to zero beyond $30,000.
+- **ML-Adjusted Local Estimator**: Shows a larger negative effect at zero costs (LPTE ≈ -0.04) and positive effects in the $5,000-$15,000 range (LPTE ≈ 0.01-0.02). Effects converge to zero at higher costs.
+- **Key Finding**: Insurance reduces the probability mass at zero costs while increasing it in the moderate cost range ($5,000-$15,000). This represents a redistribution of probability mass from non-users to moderate ED cost users, with minimal effect on high-cost outliers.
 
-**Healthcare Utilization Patterns**: Both simple and ML-adjusted local estimators reveal consistent patterns in how Medicaid assignment affects emergency department utilization across different cost categories for compliers. The analysis shows that Medicaid assignment has heterogeneous effects, increasing utilization in some cost ranges while potentially reducing it in others.
+**2. Covariate Adjustment Effects and Confidence Intervals**
 
-**Access vs. Utilization Trade-offs**: The probability treatment effects reveal the complex relationship between health insurance coverage and emergency department use. While Medicaid provides access to care, the distributional effects suggest that it may help some individuals avoid very high-cost emergency situations while increasing utilization for routine or preventive care.
-
-**Methodological Robustness**: Both simple and ML-adjusted local estimators confirm similar patterns, providing robust evidence for the distributional effects of Medicaid assignment on emergency department costs for compliers. The ML-adjusted analysis provides more precise estimates that account for confounding factors while handling non-compliance.
-
-**Policy Implications**: Understanding these distributional effects is crucial for healthcare policy. The local analysis reveals that Medicaid's impact varies across the cost distribution for those who actually enroll when assigned, which has important implications for healthcare budgeting and understanding the true effects of public health insurance programs on compliers.
+The confidence intervals remain wide for both estimators, though ML adjustment shows slightly more consistent patterns in the moderate cost range. The limited precision suggests: (1) substantial heterogeneity in treatment effects within cost bins, (2) limited predictive power of covariates for specific cost levels, or (3) relatively small sample sizes within individual bins.
 
 Emergency Department Visits Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -328,6 +330,16 @@ Let's compare the results from both simple and machine learning-adjusted local e
    :width: 800px
    :align: center
 
+**1. LDTE Interpretation and Distribution-Level Insights**
+
+- **Simple Local Estimator**: Shows LDTE ≈ -0.12 at zero visits, meaning 12 percentage points fewer insured individuals have zero ED visits. The effect gradually converges toward zero around 16 visits and remains near zero thereafter.
+- **ML-Adjusted Local Estimator**: Shows a smaller effect of LDTE ≈ -0.15 at zero visits, with similar convergence patterns.
+- **Key Finding**: Both estimators reveal insurance primarily affects the lower tail (zero to ~7 visits), shifting the distribution rightward. This indicates insurance increases ED utilization among those who would otherwise not visit, while having minimal impact on frequent ED users.
+
+**2. Covariate Adjustment Effects and Confidence Intervals**
+
+The confidence intervals are not substantially narrower with ML adjustment. Both methods show comparably wide confidence bands, indicating limited efficiency gains. This suggests: (1) covariates have limited predictive power for ED visit frequency, (2) the linear regression model may be too simple, or (3) the simple estimator is already reasonably efficient.
+
 Visits Analysis with Local PTE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -373,17 +385,15 @@ Visits Analysis with Local PTE
    :width: 800px
    :align: center
 
-**Key Insights from Visits Analysis**:
+**1. LPTE Interpretation and Distribution-Level Insights**
 
-The emergency department visits analysis reveals complementary patterns to the cost analysis:
+- **Simple Local Estimator**: Shows a large negative effect at zero visits (LPTE ≈ -0.12), indicating 12 percentage points fewer insured individuals have zero ED visits. Small positive effects appear in the 1-5 visit range (LPTE ≈ 0.02-0.03), converging to zero beyond 7 visits.
+- **ML-Adjusted Local Estimator**: Shows a larger negative effect at zero visits (LPTE ≈ -0.14) and positive effects in the 1-5 visit range (LPTE ≈ 0.03-0.04). Effects converge to zero at higher visit frequencies.
+- **Key Finding**: Insurance reduces the probability mass at zero visits while increasing it in the low-to-moderate visit range (1-5 visits). This represents a redistribution of probability mass from non-users to low-frequency ED users, with minimal effect on frequent visitors.
 
-**Visit Frequency Effects**: Medicaid assignment shows distinct effects on the probability of different visit frequencies for compliers. The LPTE analysis reveals which visit count categories are most affected by Medicaid assignment among those who actually enroll.
+**2. Covariate Adjustment Effects and Confidence Intervals**
 
-**Utilization Patterns**: The local distributional analysis of visits provides insights into how health insurance assignment affects the frequency of emergency department use for compliers, separate from the cost per visit. This helps distinguish between intensive margin effects (cost per visit) and extensive margin effects (frequency of visits) for the complier population.
-
-**Policy Understanding**: By analyzing both costs and visits separately using local estimators, we gain a more complete picture of how Medicaid assignment affects emergency department utilization for those who actually enroll when selected. This dual analysis is crucial for understanding the full impact of health insurance policy on healthcare delivery in non-compliance scenarios.
-
-**Methodological Robustness**: Both simple and ML-adjusted local estimators show similar patterns for visits analysis, providing confidence in the robustness of the findings while properly accounting for non-compliance in the experimental design.
+The confidence intervals remain wide for both estimators, particularly at zero and low visit counts. The limited precision suggests: (1) substantial heterogeneity in treatment effects within visit frequency bins, (2) limited predictive power of covariates for specific visit levels, or (3) relatively small sample sizes within individual bins.
 
 
 Stratified Analysis by Household Registration
@@ -438,13 +448,13 @@ The Oregon experiment allows us to examine how treatment effects vary across dif
         ldte_simple_stratum, lower_simple_stratum, upper_simple_stratum = simple_stratum_estimator.predict_ldte(
             target_treatment_arm=1,
             control_treatment_arm=0,
-            locations=[-1] + outcome_ed_costs_locations_stratum
+            locations=outcome_ed_costs_locations_stratum
         )
 
         ldte_ml_stratum, lower_ml_stratum, upper_ml_stratum = ml_stratum_estimator.predict_ldte(
             target_treatment_arm=1,
             control_treatment_arm=0,
-            locations=[-1] + outcome_ed_costs_locations_stratum
+            locations=outcome_ed_costs_locations_stratum
         )
 
         # Store results including the locations
@@ -475,7 +485,7 @@ Visualization: Comparing Overall Population vs Stratified Results
 
     # Row 1: Simple local estimators
     # Overall (all data)
-    plot(outcome_ed_costs_locations_stratum, ldte_simple_stratum, lower_simple_stratum, upper_simple_stratum,
+    plot(outcome_ed_costs_locations, ldte_simple, lower_simple, upper_simple,
             title="ED Costs: Overall Population\n(Simple Local Estimator)",
             xlabel="Emergency Department Costs",
             ylabel="Local Distribution Treatment Effect",
@@ -497,7 +507,7 @@ Visualization: Comparing Overall Population vs Stratified Results
 
     # Row 2: ML-Adjusted local estimators
     # Overall (all data)
-    plot(outcome_ed_costs_locations_stratum, ldte_ml_stratum, lower_ml_stratum, upper_ml_stratum,
+    plot(outcome_ed_costs_locations, ldte_ml, lower_ml, upper_ml,
             title="ED Costs: Overall Population\n(ML-Adjusted Local Estimator)",
             xlabel="Emergency Department Costs",
             ylabel="Local Distribution Treatment Effect",
@@ -521,39 +531,84 @@ Visualization: Comparing Overall Population vs Stratified Results
     plt.tight_layout()
     plt.show()
 
-.. image:: ../_static/oregon_ldte_strata.png
+.. image:: ../_static/oregon_ldte_costs_strata.png
    :alt: Oregon Health Insurance Experiment DTE Strata Analysis
    :width: 800px
    :align: center
 
-**Key Insights from Stratified Analysis**:
+**1. Overall Population vs Stratified Analysis**
 
-The stratified analysis by household registration type reveals important heterogeneity in how Medicaid assignment affects different populations:
+- **Overall Population (Left panels)**:
 
-**Heterogeneous Local Treatment Effects**: The comparison between overall population effects and individual strata shows that local treatment effects vary significantly across different household registration patterns. This heterogeneity suggests that "one-size-fits-all" policy evaluations may miss important subgroup differences in complier populations.
+  - Simple: LDTE ≈ -0.21 at zero costs, converging to zero around $10,000
+  - ML-Adjusted: LDTE ≈ -0.15 at zero costs, similar convergence pattern
+  - Both show consistent rightward distribution shifts across the entire population
 
-**Sample Size Considerations**: Different strata have varying sample sizes, which affects the precision of estimates. Larger strata (like "signed self up") provide more precise estimates, while smaller strata show wider confidence intervals but may reveal important effect heterogeneity among compliers.
+- **Signed Self Up (Middle panels, n=12,982)**:
 
-**Policy Targeting Implications**: Understanding which household types respond most strongly to Medicaid assignment can inform more targeted policy interventions and help identify populations that would benefit most from expanded coverage when they actually enroll.
+  - Simple: LDTE ≈ -0.18 at zero costs, converging to zero around $20,000
+  - ML-Adjusted: LDTE ≈ -0.20 at zero costs, similar pattern
+  - Smaller magnitude effects compared to overall population, suggesting this stratum has more moderate responses to insurance
 
-**Methodological Consistency**: Both simple and ML-adjusted local estimators show similar patterns within each stratum, providing confidence in the robustness of the stratified findings across different analytical approaches while accounting for non-compliance.
+- **Signed Self Up + Others (Right panels, n=4,068)**:
+
+  - Simple: LDTE ≈ -0.55 at zero costs, converging to zero around $15,000-$20,000
+  - ML-Adjusted: Shows extreme values (≈ -0.30 to +20 near zero costs with very wide confidence intervals)
+  - Much larger magnitude effects, indicating households with multiple members show substantially stronger treatment effects
+
+**2. Heterogeneity Across Strata**
+
+The stratified analysis reveals substantial treatment effect heterogeneity:
+
+- **"Signed self up" stratum**: Moderate effects (LDTE ≈ -0.18 to -0.20), suggesting single-person households have more modest increases in ED utilization
+- **"Signed self up + others" stratum**: Large effects (LDTE ≈ -0.55 for Simple), suggesting multi-person households experience much greater increases in ED access
+- The 3-4x larger effect in the "signed self up + others" group indicates that household composition is a critical moderator of insurance impact
+
+**3. Estimation Challenges and Confidence Intervals**
+
+- **Overall population**: Both estimators show reasonable confidence intervals, with ML adjustment providing modest improvements in the mid-range.
+- **"Signed self up" stratum**: Confidence intervals remain wide but manageable for both estimators, showing similar patterns to the overall population.
+- **"Signed self up + others" stratum**:
+
+  - Extreme estimation instability, particularly for ML-adjusted estimator
+  - Very wide confidence intervals and implausible point estimates (values reaching +20) suggest:
+
+    - Small sample size (n=4,068) insufficient for stable ML estimation
+    - Extreme outliers or sparse data in certain cost regions
+    - Overfitting or poor model specification in the ML adjustment
+
+  - The Simple estimator appears more stable for this smaller stratum
+
+**4. Practical Implications**
+
+- **Household structure matters**: Multi-person households show 3-4x larger treatment effects, likely because insurance coverage enables care-seeking for multiple family members
+- **Stratification reveals hidden heterogeneity**: The overall population estimate masks substantial variation across household types
+- **Sample size considerations**: ML adjustment may be counterproductive in smaller strata where model complexity exceeds data informativeness
 
 Conclusion
 ~~~~~~~~~~
 
-The Oregon Health Insurance Experiment provides a unique opportunity to study the local distributional effects of Medicaid assignment using the `dte_adj` library while accounting for non-compliance. This analysis demonstrates several key capabilities:
+This analysis of the Oregon Health Insurance Experiment using local distribution treatment effects reveals specific patterns in how Medicaid insurance affects emergency department utilization among compliers:
 
-**Local Distributional vs. Average Effects**: While traditional analyses focus on average treatment effects, the local distributional approach reveals how Medicaid assignment affects the entire distribution of healthcare utilization and costs for compliers (those who enroll when selected), providing a more accurate picture of policy impacts on the treated population.
+**1. Insurance Primarily Shifts the Lower Tail of the Distribution**
 
-**Non-Compliance Handling**: By using Local Distribution Treatment Effects (LDTE) and Local Probability Treatment Effects (LPTE), we properly account for the fact that not all individuals assigned to treatment actually enrolled, providing estimates that are valid for the complier population.
+Our LDTE analysis shows that Medicaid insurance reduces the probability of zero ED costs by 12-15 percentage points (LDTE ≈ -0.12 to -0.15 at $0), with effects converging to zero around $10,000. Similarly, for ED visits, insurance reduces zero visits by 12-14 percentage points (LPTE ≈ -0.12 to -0.14 at 0 visits). This indicates insurance primarily enables access for those who would otherwise not use ED services, rather than affecting high-cost or frequent users.
 
-**Multiple Outcome Analysis**: By analyzing both emergency department costs and visits separately using local estimators, we gain insights into different dimensions of healthcare utilization for compliers - the intensive margin (cost per visit) and extensive margin (frequency of visits).
+**2. Probability Mass Redistribution, Not Uniform Increases**
 
-**Heterogeneity Analysis**: The stratified analysis by household registration type reveals important local treatment effect heterogeneity, showing that different populations respond differently to Medicaid assignment when they actually enroll.
+The LPTE analysis reveals insurance does not uniformly increase ED utilization. Instead, it redistributes probability mass: reducing zero-cost/zero-visit individuals while increasing moderate users ($5,000-$15,000 costs; 1-5 visits). High-cost outliers (>$30,000) and frequent users (>7 visits) show minimal treatment effects, suggesting insurance's impact is concentrated among marginal users.
 
-**Methodological Robustness**: Comparing simple and ML-adjusted local estimators provides confidence in our findings and demonstrates the robustness of the local distributional treatment effect methodology for handling non-compliance scenarios.
+**3. Substantial Heterogeneity by Household Composition**
 
-**Policy Implications**: The local distributional effects have important implications for healthcare policy, revealing that public health insurance affects different segments of the complier population in different ways, which is crucial for policy design and evaluation when considering real-world implementation challenges.
+Stratified analysis uncovers dramatic treatment effect heterogeneity: single-person households ("signed self up") show moderate effects (LDTE ≈ -0.18 to -0.20), while multi-person households ("signed self up + others") exhibit 3-4x larger effects (LDTE ≈ -0.55). This suggests household structure is a critical moderator—insurance enables care-seeking for multiple family members when households include dependents.
+
+**4. Limited Efficiency Gains from ML Adjustment**
+
+Despite using pre-randomization ED utilization history and demographic covariates, ML-adjusted estimators show minimal efficiency gains over simple estimators. Confidence intervals remain comparably wide for both methods, suggesting: (1) the covariates have limited predictive power for ED outcomes, (2) the linear regression model may be too simple, or (3) substantial residual heterogeneity exists even after covariate adjustment. Notably, ML adjustment becomes unstable in small strata (n=4,068), producing implausible estimates (LDTE reaching +20), highlighting that model complexity must match sample informativeness.
+
+**5. Policy Implications for Targeted Interventions**
+
+The distributional analysis reveals that Medicaid's primary benefit is enabling ED access for marginal users who would otherwise forego care, rather than increasing utilization among existing high users. The 3-4x larger effects for multi-person households suggest family coverage may yield substantially greater utilization impacts than individual coverage. These findings have direct implications for healthcare budgeting and targeting: policymakers should anticipate larger ED increases when expanding coverage to families versus individuals, and the primary fiscal impact will come from converting non-users to moderate users rather than increasing costs among existing high users.
 
 Next Steps
 ~~~~~~~~~~
