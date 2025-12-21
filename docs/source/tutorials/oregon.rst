@@ -21,6 +21,11 @@ The dataset includes multiple files containing information about participants in
 
 This data supports research on how health insurance affects healthcare utilization and is maintained by researchers Amy Finkelstein and Katherine Baicker. Please ensure you comply with the data use agreements when downloading and using this dataset.
 
+Import Libraries
+^^^^^^^^^^^^^^^^
+
+First, we import the necessary libraries for data processing, analysis, and visualization:
+
 .. code-block:: python
 
     import numpy as np
@@ -31,6 +36,13 @@ This data supports research on how health insurance affects healthcare utilizati
     from sklearn.preprocessing import LabelEncoder
     import dte_adj
     from dte_adj.plot import plot
+
+Load and Merge Datasets
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Next, we load the four separate data files and merge them into a single dataset:
+
+.. code-block:: python
 
     # Load the Oregon Health Insurance Experiment dataset
     base_path = "OHIE_Public_Use_Files/OHIE_Data"
@@ -51,7 +63,13 @@ This data supports research on how health insurance affects healthcare utilizati
     print(f"Average num_visit_cens_ed by enrollment:\n{df.groupby('ohp_all_ever_inperson')['num_visit_cens_ed'].mean()}")
     print(f"Average ed_charg_tot_ed by enrollment:\n{df.groupby('ohp_all_ever_inperson')['ed_charg_tot_ed'].mean()}")
 
-    # Prepare the data for dte_adj analysis
+Data Preprocessing
+^^^^^^^^^^^^^^^^^^
+
+Next, we prepare the data for the DTE analysis. This involves creating treatment variables, encoding categorical features, and selecting control variables:
+
+.. code-block:: python
+
     # Create treatment assignment (instrumental variable): 0=Not selected, 1=Selected
     treatment_assignment_mapping = {'Not selected': 0, 'Selected': 1}
     df['Z'] = df['treatment'].map(treatment_assignment_mapping)
@@ -82,6 +100,13 @@ This data supports research on how health insurance affects healthcare utilizati
     selected_cols = ['person_id', 'strata', 'ed_charg_tot_ed', 'num_visit_cens_ed', 'Z', 'D'] + ctrl_cols
     df = df[selected_cols]
     df = df.dropna().reset_index(drop=True)
+
+Prepare Variables for Analysis
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Finally, we create the feature matrices and outcome variables needed for the Local Distribution Treatment Effect analysis:
+
+.. code-block:: python
 
     # Create feature matrix (excluding treatment variables)
     X = df[ctrl_cols].values
@@ -125,62 +150,6 @@ Emergency Department Cost Analysis
     # Define evaluation points for emergency department costs
     outcome_ed_costs_locations = np.arange(Y_ED_CHARG_TOT_ED.min(), Y_ED_CHARG_TOT_ED.max(), 3000)
 
-Local Distribution Treatment Effects: Medicaid Assignment vs Control
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-First, let's examine how Medicaid assignment (accounting for non-compliance) affects the distribution of emergency department costs:
-
-.. code-block:: python
-
-    # Compute Local Distribution Treatment Effects (LDTE)
-    ldte_ctrl, ldte_lower_ctrl, ldte_upper_ctrl = simple_local_estimator.predict_ldte(
-        target_treatment_arm=1,  # Z=1 (assigned to treatment)
-        control_treatment_arm=0,  # Z=0 (assigned to control)
-        locations=outcome_ed_costs_locations
-    )
-
-    # Visualize Treatment vs Control using dte_adj's plot function
-    plot(outcome_ed_costs_locations, ldte_ctrl, ldte_lower_ctrl, ldte_upper_ctrl,
-         title="Treatment vs Control",
-         xlabel="Emergency Department Costs ($)", ylabel="Local Distribution Treatment Effect")
-
-.. image:: ../_static/oregon_ldte_control.png
-   :alt: Oregon Health Insurance Experiment vs Control Analysis
-   :width: 500px
-   :align: center
-
-Local Probability Treatment Effects: Cost Analysis
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Let's also examine how Medicaid assignment affects the probability of incurring specific ranges of emergency department costs using Local Probability Treatment Effects (LPTE):
-
-.. code-block:: python
-
-    # Compute Local Probability Treatment Effects (LPTE)
-    lpte_ctrl, lpte_lower_ctrl, lpte_upper_ctrl = simple_local_estimator.predict_lpte(
-        target_treatment_arm=1,  # Z=1 (assigned to treatment)
-        control_treatment_arm=0,  # Z=0 (assigned to control)
-        locations=[-1] + outcome_ed_costs_locations
-    )
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-
-    # Visualize LPTE results using dte_adj's plot function with bar charts
-    # Treatment vs Control LPTE
-    plot(outcome_ed_costs_locations[1:], lpte_ctrl, lpte_lower_ctrl, lpte_upper_ctrl,
-        chart_type="bar",
-        title="Treatment vs Control",
-        xlabel="Emergency Department Costs ($)", ylabel="Local Probability Treatment Effect",
-        ax=ax)
-
-    plt.tight_layout()
-    plt.show()
-
-.. image:: ../_static/oregon_lpte_control.png
-   :alt: Oregon Health Insurance Experiment vs Control LPTE Analysis
-   :width: 800px
-   :align: center
-
 Local Estimator Comparison: Simple vs ML-Adjusted (Costs)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -206,14 +175,16 @@ Let's compare the results from both simple and machine learning-adjusted local e
 
     # Visualize Treatment vs Control using dte_adj's plot function
     plot(outcome_ed_costs_locations, ldte_simple, lower_simple, upper_simple,
-         title="Treatment vs Control (Simple Local Estimator)",
-         xlabel="Emergency Department Costs", ylabel="Local Distribution Treatment Effect",
+         title="ED Costs: Treatment vs Control (Simple Local Estimator)",
+         xlabel="Emergency Department Costs",
+         ylabel="Local Distribution Treatment Effect",
          color="purple",
          ax=ax1)
 
     plot(outcome_ed_costs_locations, ldte_ml, lower_ml, upper_ml,
-         title="Treatment vs Control (ML-Adjusted Local Estimator)",
-         xlabel="Emergency Department Costs", ylabel="Local Distribution Treatment Effect",
+         title="ED Costs: Treatment vs Control (ML-Adjusted Local Estimator)",
+         xlabel="Emergency Department Costs",
+         ylabel="Local Distribution Treatment Effect",
          ax=ax2)
 
     plt.tight_layout()
@@ -256,7 +227,8 @@ Cost Analysis with Local PTE
     plot(outcome_ed_costs_locations[1:], lpte_simple, lpte_lower_simple, lpte_upper_simple,
         chart_type="bar",
         title="Effects of Emergency Department Costs (Simple Local Estimator)",
-        xlabel="Emergency Department Costs", ylabel="Local Probability Treatment Effect",
+        xlabel="Emergency Department Costs",
+        ylabel="Local Probability Treatment Effect",
         color="purple",
         ax=ax1)
 
@@ -264,7 +236,8 @@ Cost Analysis with Local PTE
     plot(outcome_ed_costs_locations[1:], lpte_ml, lpte_lower_ml, lpte_upper_ml,
         chart_type="bar",
         title="Effects of Emergency Department Costs (ML-Adjusted Local Estimator)",
-        xlabel="Emergency Department Costs", ylabel="Local Probability Treatment Effect",
+        xlabel="Emergency Department Costs",
+        ylabel="Local Probability Treatment Effect",
         ax=ax2)
     plt.tight_layout()
     plt.show()
@@ -310,91 +283,6 @@ Now let's examine how Medicaid enrollment affects the distribution of emergency 
     # Define evaluation points for emergency department visits
     outcome_ed_visits_locations = np.arange(Y_NUM_VISIT_CENS_ED.min(), Y_NUM_VISIT_CENS_ED.max(), 1)
 
-Distribution Treatment Effects: Visits Analysis
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-    # LDTE: Treatment vs Control
-    ldte_simple, lower_simple, upper_simple = simple_local_estimator.predict_ldte(
-        target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
-        control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
-        locations=outcome_ed_visits_locations
-    )
-
-    ldte_ml, lower_ml, upper_ml = ml_local_estimator.predict_ldte(
-        target_treatment_arm=1,  # Selected for treatment (Enrolled)
-        control_treatment_arm=0,  # Not selected for treatment (Not enrolled)
-        locations=outcome_ed_visits_locations
-    )
-
-    # Visualize the local distribution treatment effects using dte_adj's built-in plot function
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
-
-    # Visualize Treatment vs Control using dte_adj's plot function
-    plot(outcome_ed_visits_locations, ldte_simple, lower_simple, upper_simple,
-         title="Treatment vs Control (Simple Local Estimator)",
-         xlabel="Emergency Department Visits", ylabel="Local Distribution Treatment Effect",
-         color="purple",
-         ax=ax1)
-
-    plot(outcome_ed_visits_locations, ldte_ml, lower_ml, upper_ml,
-         title="Treatment vs Control (ML-Adjusted Local Estimator)",
-         xlabel="Emergency Department Visits", ylabel="Local Distribution Treatment Effect",
-         ax=ax2)
-
-    plt.tight_layout()
-    plt.show()
-
-.. image:: ../_static/oregon_ldte_visits.png
-   :alt: Oregon Health Insurance Experiment LDTE Visits Analysis
-   :width: 800px
-   :align: center
-
-Probability Treatment Effects: Visits Analysis
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-    # Compute Local Probability Treatment Effects
-    lpte_simple, lpte_lower_simple, lpte_upper_simple = simple_local_estimator.predict_lpte(
-        target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
-        control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
-        locations=[-1] + outcome_ed_visits_locations
-    )
-
-    lpte_ml, lpte_lower_ml, lpte_upper_ml = ml_local_estimator.predict_lpte(
-        target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
-        control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
-        locations=[-1] + outcome_ed_visits_locations
-    )
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
-
-    # Simple local estimator
-    plot(outcome_ed_visits_locations[1:], lpte_simple, lpte_lower_simple, lpte_upper_simple,
-        chart_type="bar",
-        title="Effects of Emergency Department Visits (Simple Local Estimator)",
-        xlabel="Emergency Department Visits", ylabel="Local Probability Treatment Effect",
-        color="purple",
-        ax=ax1)
-
-    # ML-adjusted local estimator
-    plot(outcome_ed_visits_locations[1:], lpte_ml, lpte_lower_ml, lpte_upper_ml,
-        chart_type="bar",
-        title="Effects of Emergency Department Visits (ML-Adjusted Local Estimator)",
-        xlabel="Emergency Department Visits", ylabel="Local Probability Treatment Effect",
-        ax=ax2)
-
-    plt.tight_layout()
-    plt.show()
-
-.. image:: ../_static/oregon_lpte_visits.png
-   :alt: Oregon Health Insurance Experiment LPTE Visits Analysis
-   :width: 800px
-   :align: center
-
-
 Local Estimator Comparison: Simple vs ML-Adjusted (Visits)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -420,14 +308,16 @@ Let's compare the results from both simple and machine learning-adjusted local e
 
     # Visualize Treatment vs Control using dte_adj's plot function
     plot(outcome_ed_visits_locations, ldte_simple, lower_simple, upper_simple,
-         title="Treatment vs Control (Simple Local Estimator)",
-         xlabel="Emergency Department Visits", ylabel="Local Distribution Treatment Effect",
+         title="ED Visits: Treatment vs Control (Simple Local Estimator)",
+         xlabel="Emergency Department Visits",
+         ylabel="Local Distribution Treatment Effect",
          color="purple",
          ax=ax1)
 
     plot(outcome_ed_visits_locations, ldte_ml, lower_ml, upper_ml,
-         title="Treatment vs Control (ML-Adjusted Local Estimator)",
-         xlabel="Emergency Department Visits", ylabel="Local Distribution Treatment Effect",
+         title="ED Visits: Treatment vs Control (ML-Adjusted Local Estimator)",
+         xlabel="Emergency Department Visits",
+         ylabel="Local Distribution Treatment Effect",
          ax=ax2)
 
     plt.tight_layout()
@@ -462,7 +352,8 @@ Visits Analysis with Local PTE
     plot(outcome_ed_visits_locations[1:], lpte_simple, lpte_lower_simple, lpte_upper_simple,
         chart_type="bar",
         title="Effects of Emergency Department Visits (Simple Local Estimator)",
-        xlabel="Emergency Department Visits", ylabel="Local Probability Treatment Effect",
+        xlabel="Emergency Department Visits",
+        ylabel="Local Probability Treatment Effect",
         color="purple",
         ax=ax1)
 
@@ -470,7 +361,8 @@ Visits Analysis with Local PTE
     plot(outcome_ed_visits_locations[1:], lpte_ml, lpte_lower_ml, lpte_upper_ml,
         chart_type="bar",
         title="Effects of Emergency Department Visits (ML-Adjusted Local Estimator)",
-        xlabel="Emergency Department Visits", ylabel="Local Probability Treatment Effect",
+        xlabel="Emergency Department Visits",
+        ylabel="Local Probability Treatment Effect",
         ax=ax2)
 
     plt.tight_layout()
@@ -504,14 +396,8 @@ The Oregon experiment allows us to examine how treatment effects vary across dif
     # Individual Stratum Analysis with Local Estimators
     print("\n=== Individual Stratum Analysis (Local Estimators) ===")
 
-    # Consolidated stratification for practical analysis
-    strata_consolidated = df['strata'].copy()
-    strata_consolidated = strata_consolidated.replace({
-        'signed self up + 1 additional person': 'signed self up + others',
-        'signed self up + 2 additional people': 'signed self up + others'
-    })
-
-    strata_consolidated_values = strata_consolidated.values
+    # Get strata values (already consolidated in preprocessing)
+    strata_consolidated_values = df['strata'].values
     unique_consolidated_strata = np.unique(strata_consolidated_values)
 
     # Individual estimations for each stratum
@@ -545,20 +431,23 @@ The Oregon experiment allows us to examine how treatment effects vary across dif
         simple_stratum_estimator.fit(X_stratum, treatment_arms_stratum, treatment_indicator_stratum, Y_stratum, strata_stratum)
         ml_stratum_estimator.fit(X_stratum, treatment_arms_stratum, treatment_indicator_stratum, Y_stratum, strata_stratum)
 
-        # Compute LDTE for this stratum
+        # Define locations for this stratum based on its data range
+        outcome_ed_costs_locations_stratum = np.arange(Y_stratum.min(), Y_stratum.max(), 3000)
+
+        # Compute LDTE for this stratum using stratum-specific locations
         ldte_simple_stratum, lower_simple_stratum, upper_simple_stratum = simple_stratum_estimator.predict_ldte(
             target_treatment_arm=1,
             control_treatment_arm=0,
-            locations=outcome_ed_costs_locations
+            locations=[-1] + outcome_ed_costs_locations_stratum
         )
 
         ldte_ml_stratum, lower_ml_stratum, upper_ml_stratum = ml_stratum_estimator.predict_ldte(
             target_treatment_arm=1,
             control_treatment_arm=0,
-            locations=outcome_ed_costs_locations
+            locations=[-1] + outcome_ed_costs_locations_stratum
         )
 
-        # Store results
+        # Store results including the locations
         individual_results[stratum] = {
             'simple': {
                 'ldte': ldte_simple_stratum,
@@ -570,6 +459,7 @@ The Oregon experiment allows us to examine how treatment effects vary across dif
                 'lower': lower_ml_stratum,
                 'upper': upper_ml_stratum
             },
+            'locations': outcome_ed_costs_locations_stratum,
             'sample_size': len(treatment_indicator_stratum),
             'treatment_assignment_size': (treatment_arms_stratum == 1).sum(),
             'treatment_indicator_size': (treatment_indicator_stratum == 1).sum()
@@ -585,10 +475,11 @@ Visualization: Comparing Overall Population vs Stratified Results
 
     # Row 1: Simple local estimators
     # Overall (all data)
-    plot(outcome_ed_costs_locations, ldte_simple, lower_simple, upper_simple,
-         title="Overall Population\n(Simple Local Estimator)",
-         xlabel="Emergency Department Costs", ylabel="Local Distribution Treatment Effect",
-         color="black", ax=axes[0, 0])
+    plot(outcome_ed_costs_locations_stratum, ldte_simple_stratum, lower_simple_stratum, upper_simple_stratum,
+            title="ED Costs: Overall Population\n(Simple Local Estimator)",
+            xlabel="Emergency Department Costs",
+            ylabel="Local Distribution Treatment Effect",
+            color="black", ax=axes[0, 0])
 
     # Individual strata
     col_idx = 1
@@ -596,19 +487,21 @@ Visualization: Comparing Overall Population vs Stratified Results
         if results is None or col_idx > 2:
             continue
 
-        plot(outcome_ed_costs_locations, results['simple']['ldte'],
-             results['simple']['lower'], results['simple']['upper'],
-             title=f"{stratum}\n(Simple Local Estimator, n={results['sample_size']:,})",
-             xlabel="Emergency Department Costs", ylabel="Local Distribution Treatment Effect",
-             color="blue" if col_idx == 1 else "green", ax=axes[0, col_idx])
+        plot(results['locations'], results['simple']['ldte'],
+                results['simple']['lower'], results['simple']['upper'],
+                title=f"ED Costs: {stratum}\n(Simple Local Estimator, n={results['sample_size']:,})",
+                xlabel="Emergency Department Costs",
+                ylabel="Local Distribution Treatment Effect",
+                color="blue" if col_idx == 1 else "green", ax=axes[0, col_idx])
         col_idx += 1
 
     # Row 2: ML-Adjusted local estimators
     # Overall (all data)
-    plot(outcome_ed_costs_locations, ldte_ml, lower_ml, upper_ml,
-         title="Overall Population\n(ML-Adjusted Local Estimator)",
-         xlabel="Emergency Department Costs", ylabel="Local Distribution Treatment Effect",
-         color="black", ax=axes[1, 0])
+    plot(outcome_ed_costs_locations_stratum, ldte_ml_stratum, lower_ml_stratum, upper_ml_stratum,
+            title="ED Costs: Overall Population\n(ML-Adjusted Local Estimator)",
+            xlabel="Emergency Department Costs",
+            ylabel="Local Distribution Treatment Effect",
+            color="black", ax=axes[1, 0])
 
     # Individual strata
     col_idx = 1
@@ -616,11 +509,12 @@ Visualization: Comparing Overall Population vs Stratified Results
         if results is None or col_idx > 2:
             continue
 
-        plot(outcome_ed_costs_locations, results['ml']['ldte'],
-             results['ml']['lower'], results['ml']['upper'],
-             title=f"{stratum}\n(ML-Adjusted Local Estimator, n={results['sample_size']:,})",
-             xlabel="Emergency Department Costs", ylabel="Local Distribution Treatment Effect",
-             color="red" if col_idx == 1 else "purple", ax=axes[1, col_idx])
+        plot(results['locations'], results['ml']['ldte'],
+                results['ml']['lower'], results['ml']['upper'],
+                title=f"ED Costs: {stratum}\n(ML-Adjusted Local Estimator, n={results['sample_size']:,})",
+                xlabel="Emergency Department Costs",
+                ylabel="Local Distribution Treatment Effect",
+                color="red" if col_idx == 1 else "purple", ax=axes[1, col_idx])
         col_idx += 1
 
     plt.suptitle("Comparison: Overall Population vs Individual Household Registration Strata (Local Estimators)", fontsize=16)
