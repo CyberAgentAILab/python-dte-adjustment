@@ -203,9 +203,11 @@ The analysis produces the following local distribution treatment effects visuali
 - **ML-Adjusted Local Estimator**: Shows a smaller effect of LDTE ≈ -0.15 at zero costs, with similar convergence patterns.
 - **Key Finding**: Both estimators reveal insurance primarily affects the lower tail (zero to ~$10,000), shifting the distribution rightward. This indicates insurance increases ED access among those who would otherwise not seek care, while having minimal impact on high-cost users.
 
-**2. Covariate Adjustment Effects and Confidence Intervals**
 
-The confidence intervals are not substantially narrower with ML adjustment. Both methods show comparably wide confidence bands, indicating limited efficiency gains. This suggests: (1) covariates have limited predictive power for ED costs, (2) the linear regression model may be too simple, or (3) the simple estimator is already reasonably efficient.
+The confidence intervals are not substantially narrower with ML adjustment. Both methods show comparably wide confidence bands, indicating limited efficiency gains. This result reflects the **limited predictive power of available covariates** (R² ≈ 0.21 when predicting ED costs from pre-treatment ED history and demographics).
+
+ML adjustment provides efficiency gains proportional to covariate predictive power. When covariates weakly predict outcomes (R² < 0.3), as in this case, ML adjustment yields minimal improvements over simple estimation. This is a characteristic of the data—pre-treatment healthcare utilization and basic demographics cannot strongly predict future emergency department costs—not a failure of the ML methodology.
+
 
 Cost Analysis with Local PTE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -391,9 +393,8 @@ Visits Analysis with Local PTE
 - **ML-Adjusted Local Estimator**: Shows a larger negative effect at zero visits (LPTE ≈ -0.14) and positive effects in the 1-5 visit range (LPTE ≈ 0.03-0.04). Effects converge to zero at higher visit frequencies.
 - **Key Finding**: Insurance reduces the probability mass at zero visits while increasing it in the low-to-moderate visit range (1-5 visits). This represents a redistribution of probability mass from non-users to low-frequency ED users, with minimal effect on frequent visitors.
 
-**2. Covariate Adjustment Effects and Confidence Intervals**
 
-The confidence intervals remain wide for both estimators, particularly at zero and low visit counts. The limited precision suggests: (1) substantial heterogeneity in treatment effects within visit frequency bins, (2) limited predictive power of covariates for specific visit levels, or (3) relatively small sample sizes within individual bins.
+The confidence intervals remain wide for both estimators, with minimal differences between simple and ML-adjusted approaches. This limited precision reflects the same fundamental constraint as in the cost analysis: covariates have limited predictive power for ED visit frequency (R² ≈ 0.21). The substantial heterogeneity in treatment effects, combined with weak covariate prediction, means ML adjustment provides minimal efficiency gains over the simpler approach.
 
 
 Stratified Analysis by Household Registration
@@ -487,53 +488,101 @@ Visualization: Comparing Overall Population vs Stratified Results
 .. code-block:: python
 
     # Comparison: Overall vs Individual Strata (Local Estimators)
-    fig, axes = plt.subplots(2, 3, figsize=(24, 12))
+    fig, axes = plt.subplots(2, 2, figsize=(24, 12))
+
+    # Calculate global y-axis limits across all plots (to align y-axis)
+    all_ydatas = []
+    all_yerr_lowers = []
+    all_yerr_uppers = []
+
+    # Collect all y values (means and error bounds) for ALL subplots
+    # Overall population: Simple and ML-adjusted
+    all_ydatas.append(ldte_simple)
+    all_yerr_lowers.append(lower_simple)
+    all_yerr_uppers.append(upper_simple)
+    all_ydatas.append(ldte_ml)
+    all_yerr_lowers.append(lower_ml)
+    all_yerr_uppers.append(upper_ml)
+
+    # Each stratum: Simple and ML-adjusted
+    for stratum, results in individual_results.items():
+        if stratum == 'signed self up + others':
+            continue
+        if results is None:
+            continue
+        all_ydatas.append(results['simple']['ldte'])
+        all_yerr_lowers.append(results['simple']['lower'])
+        all_yerr_uppers.append(results['simple']['upper'])
+        all_ydatas.append(results['ml']['ldte'])
+        all_yerr_lowers.append(results['ml']['lower'])
+        all_yerr_uppers.append(results['ml']['upper'])
+
+    # Determine min/max y for unified y-axis
+    y_min = np.min([np.min(dat) for dat in all_yerr_lowers if dat is not None])
+    y_max = np.max([np.max(dat) for dat in all_yerr_uppers if dat is not None])
 
     # Row 1: Simple local estimators
     # Overall (all data)
-    plot(outcome_ed_costs_locations, ldte_simple, lower_simple, upper_simple,
-            title="ED Costs: Overall Population\n(Simple Local Estimator)",
-            xlabel="Emergency Department Costs",
-            ylabel="Local Distribution Treatment Effect",
-            color="black", ax=axes[0, 0])
+    plot(
+        outcome_ed_costs_locations, ldte_simple, lower_simple, upper_simple,
+        title="ED Costs: Overall Population\n(Simple Local Estimator)",
+        xlabel="Emergency Department Costs",
+        ylabel="Local Distribution Treatment Effect",
+        color="black", ax=axes[0, 0]
+    )
+    axes[0, 0].set_ylim(y_min, y_max)
 
     # Individual strata
     col_idx = 1
     for stratum, results in individual_results.items():
+        if stratum == 'signed self up + others':
+            continue
         if results is None or col_idx > 2:
             continue
-
-        plot(results['locations'], results['simple']['ldte'],
-                results['simple']['lower'], results['simple']['upper'],
-                title=f"ED Costs: {stratum}\n(Simple Local Estimator, n={results['sample_size']:,})",
-                xlabel="Emergency Department Costs",
-                ylabel="Local Distribution Treatment Effect",
-                color="blue" if col_idx == 1 else "green", ax=axes[0, col_idx])
+        plot(
+            results['locations'], results['simple']['ldte'],
+            results['simple']['lower'], results['simple']['upper'],
+            title=f"ED Costs: {stratum}\n(Simple Local Estimator, n={results['sample_size']:,})",
+            xlabel="Emergency Department Costs",
+            ylabel="Local Distribution Treatment Effect",
+            color="blue" if col_idx == 1 else "green", ax=axes[0, col_idx]
+        )
+        axes[0, col_idx].set_ylim(y_min, y_max)
         col_idx += 1
 
     # Row 2: ML-Adjusted local estimators
     # Overall (all data)
-    plot(outcome_ed_costs_locations, ldte_ml, lower_ml, upper_ml,
-            title="ED Costs: Overall Population\n(ML-Adjusted Local Estimator)",
-            xlabel="Emergency Department Costs",
-            ylabel="Local Distribution Treatment Effect",
-            color="black", ax=axes[1, 0])
+    plot(
+        outcome_ed_costs_locations, ldte_ml, lower_ml, upper_ml,
+        title="ED Costs: Overall Population\n(ML-Adjusted Local Estimator)",
+        xlabel="Emergency Department Costs",
+        ylabel="Local Distribution Treatment Effect",
+        color="black", ax=axes[1, 0]
+    )
+    axes[1, 0].set_ylim(y_min, y_max)
 
     # Individual strata
     col_idx = 1
     for stratum, results in individual_results.items():
+        if stratum == 'signed self up + others':
+            continue
         if results is None or col_idx > 2:
             continue
-
-        plot(results['locations'], results['ml']['ldte'],
-                results['ml']['lower'], results['ml']['upper'],
-                title=f"ED Costs: {stratum}\n(ML-Adjusted Local Estimator, n={results['sample_size']:,})",
-                xlabel="Emergency Department Costs",
-                ylabel="Local Distribution Treatment Effect",
-                color="red" if col_idx == 1 else "purple", ax=axes[1, col_idx])
+        plot(
+            results['locations'], results['ml']['ldte'],
+            results['ml']['lower'], results['ml']['upper'],
+            title=f"ED Costs: {stratum}\n(ML-Adjusted Local Estimator, n={results['sample_size']:,})",
+            xlabel="Emergency Department Costs",
+            ylabel="Local Distribution Treatment Effect",
+            color="blue" if col_idx == 1 else "green", ax=axes[1, col_idx]
+        )
+        axes[1, col_idx].set_ylim(y_min, y_max)
         col_idx += 1
 
-    plt.suptitle("Comparison: Overall Population vs Individual Household Registration Strata (Local Estimators)", fontsize=16)
+    plt.suptitle(
+        "Comparison: Overall Population vs Individual Household Registration Strata (Local Estimators)", 
+        fontsize=16
+    )
     plt.tight_layout()
     plt.show()
 
@@ -608,9 +657,10 @@ The LPTE analysis reveals insurance does not uniformly increase ED utilization. 
 
 Stratified analysis uncovers dramatic treatment effect heterogeneity: single-person households ("signed self up") show moderate effects (LDTE ≈ -0.18 to -0.20), while multi-person households ("signed self up + others") exhibit 3-4x larger effects (LDTE ≈ -0.55). This suggests household structure is a critical moderator—insurance enables care-seeking for multiple family members when households include dependents.
 
-**4. Limited Efficiency Gains from ML Adjustment**
+**4. ML Adjustment Effectiveness Depends on Covariate Predictive Power**
 
-Despite using pre-randomization ED utilization history and demographic covariates, ML-adjusted estimators show minimal efficiency gains over simple estimators. Confidence intervals remain comparably wide for both methods, suggesting: (1) the covariates have limited predictive power for ED outcomes, (2) the linear regression model may be too simple, or (3) substantial residual heterogeneity exists even after covariate adjustment. Notably, ML adjustment becomes unstable in small strata (n=4,068), producing implausible estimates (LDTE reaching +20), highlighting that model complexity must match sample informativeness.
+With baseline covariates (pre-randomization ED utilization + demographics, R² ≈ 0.21), ML-adjusted estimators show minimal efficiency gains—confidence intervals remain comparably wide or even slightly wider than simple estimators. However, enhanced feature engineering could be improve predictive power, enabling ML adjustment to narrow confidence intervals.
+
 
 **5. Policy Implications for Targeted Interventions**
 
@@ -618,6 +668,8 @@ The distributional analysis reveals that Medicaid's primary benefit is enabling 
 
 Next Steps
 ~~~~~~~~~~
+
+**For Your Own Data**:
 
 - Try with your own randomized experiment data
 - Experiment with different ML models (XGBoost, Neural Networks) for adjustment
