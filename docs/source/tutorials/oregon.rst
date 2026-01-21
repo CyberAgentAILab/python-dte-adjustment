@@ -404,6 +404,8 @@ The Oregon experiment allows us to examine how treatment effects vary across dif
 
 .. code-block:: python
 
+    from sklearn.ensemble import RandomForestRegressor
+
     # Individual Stratum Analysis with Local Estimators
     print("\n=== Individual Stratum Analysis (Local Estimators) ===")
 
@@ -428,15 +430,15 @@ The Oregon experiment allows us to examine how treatment effects vary across dif
         # Initialize estimators
         simple_estimator = dte_adj.SimpleLocalDistributionEstimator()
         ml_estimator = dte_adj.AdjustedLocalDistributionEstimator(
-            LinearRegression(),
+            RandomForestRegressor(n_estimators=10, random_state=42),
             folds=folds
         )
 
         # Fit estimators
         simple_estimator.fit(stratum_data['X'], stratum_data['Z'],
-                           stratum_data['D'], stratum_data['Y'], stratum_data['strata'])
+                            stratum_data['D'], stratum_data['Y'], stratum_data['strata'])
         ml_estimator.fit(stratum_data['X'], stratum_data['Z'],
-                       stratum_data['D'], stratum_data['Y'], stratum_data['strata'])
+                        stratum_data['D'], stratum_data['Y'], stratum_data['strata'])
 
         # Define evaluation locations based on stratum's data range
         locations = np.arange(stratum_data['Y'].min(), stratum_data['Y'].max(), location_step)
@@ -479,7 +481,7 @@ The Oregon experiment allows us to examine how treatment effects vary across dif
 
         # Estimate LDTE for this stratum
         individual_results[stratum] = estimate_stratum_ldte(
-            stratum_data, location_step=3000, folds=3
+            stratum_data, location_step=2000, folds=3
         )
 
 Visualization: Comparing Overall Population vs Stratified Results
@@ -488,101 +490,53 @@ Visualization: Comparing Overall Population vs Stratified Results
 .. code-block:: python
 
     # Comparison: Overall vs Individual Strata (Local Estimators)
-    fig, axes = plt.subplots(2, 2, figsize=(24, 12))
-
-    # Calculate global y-axis limits across all plots (to align y-axis)
-    all_ydatas = []
-    all_yerr_lowers = []
-    all_yerr_uppers = []
-
-    # Collect all y values (means and error bounds) for ALL subplots
-    # Overall population: Simple and ML-adjusted
-    all_ydatas.append(ldte_simple)
-    all_yerr_lowers.append(lower_simple)
-    all_yerr_uppers.append(upper_simple)
-    all_ydatas.append(ldte_ml)
-    all_yerr_lowers.append(lower_ml)
-    all_yerr_uppers.append(upper_ml)
-
-    # Each stratum: Simple and ML-adjusted
-    for stratum, results in individual_results.items():
-        if stratum == 'signed self up + others':
-            continue
-        if results is None:
-            continue
-        all_ydatas.append(results['simple']['ldte'])
-        all_yerr_lowers.append(results['simple']['lower'])
-        all_yerr_uppers.append(results['simple']['upper'])
-        all_ydatas.append(results['ml']['ldte'])
-        all_yerr_lowers.append(results['ml']['lower'])
-        all_yerr_uppers.append(results['ml']['upper'])
-
-    # Determine min/max y for unified y-axis
-    y_min = np.min([np.min(dat) for dat in all_yerr_lowers if dat is not None])
-    y_max = np.max([np.max(dat) for dat in all_yerr_uppers if dat is not None])
+    fig, axes = plt.subplots(2, 3, figsize=(24, 12))
 
     # Row 1: Simple local estimators
     # Overall (all data)
-    plot(
-        outcome_ed_costs_locations, ldte_simple, lower_simple, upper_simple,
-        title="ED Costs: Overall Population\n(Simple Local Estimator)",
-        xlabel="Emergency Department Costs",
-        ylabel="Local Distribution Treatment Effect",
-        color="black", ax=axes[0, 0]
-    )
-    axes[0, 0].set_ylim(y_min, y_max)
+    plot(outcome_ed_costs_locations, ldte_simple, lower_simple, upper_simple,
+            title="ED Costs: Overall Population\n(Simple Local Estimator)",
+            xlabel="Emergency Department Costs",
+            ylabel="Local Distribution Treatment Effect",
+            color="black", ax=axes[0, 0])
 
     # Individual strata
     col_idx = 1
     for stratum, results in individual_results.items():
-        if stratum == 'signed self up + others':
-            continue
         if results is None or col_idx > 2:
             continue
-        plot(
-            results['locations'], results['simple']['ldte'],
-            results['simple']['lower'], results['simple']['upper'],
-            title=f"ED Costs: {stratum}\n(Simple Local Estimator, n={results['sample_size']:,})",
-            xlabel="Emergency Department Costs",
-            ylabel="Local Distribution Treatment Effect",
-            color="blue" if col_idx == 1 else "green", ax=axes[0, col_idx]
-        )
-        axes[0, col_idx].set_ylim(y_min, y_max)
+
+        plot(results['locations'], results['simple']['ldte'],
+                results['simple']['lower'], results['simple']['upper'],
+                title=f"ED Costs: {stratum}\n(Simple Local Estimator, n={results['sample_size']:,})",
+                xlabel="Emergency Department Costs",
+                ylabel="Local Distribution Treatment Effect",
+                color="blue" if col_idx == 1 else "green", ax=axes[0, col_idx])
         col_idx += 1
 
     # Row 2: ML-Adjusted local estimators
     # Overall (all data)
-    plot(
-        outcome_ed_costs_locations, ldte_ml, lower_ml, upper_ml,
-        title="ED Costs: Overall Population\n(ML-Adjusted Local Estimator)",
-        xlabel="Emergency Department Costs",
-        ylabel="Local Distribution Treatment Effect",
-        color="black", ax=axes[1, 0]
-    )
-    axes[1, 0].set_ylim(y_min, y_max)
+    plot(outcome_ed_costs_locations, ldte_ml, lower_ml, upper_ml,
+            title="ED Costs: Overall Population\n(ML-Adjusted Local Estimator)",
+            xlabel="Emergency Department Costs",
+            ylabel="Local Distribution Treatment Effect",
+            color="black", ax=axes[1, 0])
 
     # Individual strata
     col_idx = 1
     for stratum, results in individual_results.items():
-        if stratum == 'signed self up + others':
-            continue
         if results is None or col_idx > 2:
             continue
-        plot(
-            results['locations'], results['ml']['ldte'],
-            results['ml']['lower'], results['ml']['upper'],
-            title=f"ED Costs: {stratum}\n(ML-Adjusted Local Estimator, n={results['sample_size']:,})",
-            xlabel="Emergency Department Costs",
-            ylabel="Local Distribution Treatment Effect",
-            color="blue" if col_idx == 1 else "green", ax=axes[1, col_idx]
-        )
-        axes[1, col_idx].set_ylim(y_min, y_max)
+
+        plot(results['locations'], results['ml']['ldte'],
+                results['ml']['lower'], results['ml']['upper'],
+                title=f"ED Costs: {stratum}\n(ML-Adjusted Local Estimator, n={results['sample_size']:,})",
+                xlabel="Emergency Department Costs",
+                ylabel="Local Distribution Treatment Effect",
+                color="red" if col_idx == 1 else "purple", ax=axes[1, col_idx])
         col_idx += 1
 
-    plt.suptitle(
-        "Comparison: Overall Population vs Individual Household Registration Strata (Local Estimators)", 
-        fontsize=16
-    )
+    plt.suptitle("Comparison: Overall Population vs Individual Household Registration Strata (Local Estimators)", fontsize=16)
     plt.tight_layout()
     plt.show()
 
@@ -608,37 +562,36 @@ Visualization: Comparing Overall Population vs Stratified Results
 - **Signed Self Up + Others (Right panels, n=4,068)**:
 
   - Simple: LDTE ≈ -0.55 at zero costs, converging to zero around $15,000-$20,000
-  - ML-Adjusted: Shows extreme values (≈ -0.30 to +20 near zero costs with very wide confidence intervals)
-  - Much larger magnitude effects, indicating households with multiple members show substantially stronger treatment effects
+  - ML-Adjusted: LDTE ≈ -0.10 to -0.15 at zero costs, stable pattern with improved confidence intervals
+  - Much larger magnitude effects in the Simple estimator, indicating households with multiple members show substantially stronger treatment effects
+  - ML adjustment provides more conservative estimates, potentially controlling for confounding household characteristics
 
 **2. Heterogeneity Across Strata**
 
 The stratified analysis reveals substantial treatment effect heterogeneity:
 
 - **"Signed self up" stratum**: Moderate effects (LDTE ≈ -0.18 to -0.20), suggesting single-person households have more modest increases in ED utilization
-- **"Signed self up + others" stratum**: Large effects (LDTE ≈ -0.55 for Simple), suggesting multi-person households experience much greater increases in ED access
-- The 3-4x larger effect in the "signed self up + others" group indicates that household composition is a critical moderator of insurance impact
+- **"Signed self up + others" stratum**: Large effects in Simple estimator (LDTE ≈ -0.55), suggesting multi-person households experience much greater increases in ED access when not adjusting for covariates
+- The 3-4x larger effect in the "signed self up + others" group (Simple estimator) indicates that household composition is a critical moderator of insurance impact
+- However, ML adjustment substantially reduces this estimate, suggesting that some of the observed effect may be attributable to observable household characteristics rather than pure treatment effects
 
-**3. Estimation Challenges and Confidence Intervals**
+**3. Comparison of Estimation Methods**
 
-- **Overall population**: Both estimators show reasonable confidence intervals, with ML adjustment providing modest improvements in the mid-range.
-- **"Signed self up" stratum**: Confidence intervals remain wide but manageable for both estimators, showing similar patterns to the overall population.
+- **Overall population**: Both estimators show reasonable confidence intervals, with ML adjustment providing modest improvements in precision and slightly more conservative estimates.
+- **"Signed self up" stratum**: Both estimators yield similar point estimates and manageable confidence intervals, suggesting robustness to model specification in this larger subsample.
 - **"Signed self up + others" stratum**:
 
-  - Extreme estimation instability, particularly for ML-adjusted estimator
-  - Very wide confidence intervals and implausible point estimates (values reaching +20) suggest:
-
-    - Small sample size (n=4,068) insufficient for stable ML estimation
-    - Extreme outliers or sparse data in certain cost regions
-    - Overfitting or poor model specification in the ML adjustment
-
-  - The Simple estimator appears more stable for this smaller stratum
+  - The Simple estimator shows the largest treatment effects across all strata (LDTE ≈ -0.55)
+  - ML adjustment substantially reduces the estimated effect and stabilizes confidence intervals
+  - This divergence suggests that observable covariates (e.g., household size, age composition, baseline health status) explain a significant portion of the treatment effect heterogeneity
+  - The improved stability of ML-adjusted estimates indicates successful control for confounding factors that may have been correlated with both treatment assignment and outcomes
 
 **4. Practical Implications**
 
-- **Household structure matters**: Multi-person households show 3-4x larger treatment effects, likely because insurance coverage enables care-seeking for multiple family members
-- **Stratification reveals hidden heterogeneity**: The overall population estimate masks substantial variation across household types
-- **Sample size considerations**: ML adjustment may be counterproductive in smaller strata where model complexity exceeds data informativeness
+- **Household structure matters**: Multi-person households show substantially larger treatment effects in unadjusted analyses, likely because insurance coverage enables care-seeking for multiple family members.
+- **The role of covariates**: The difference between Simple and ML-adjusted estimates in the "signed self up + others" stratum highlights the importance of controlling for household characteristics. The unadjusted effect may overstate the pure treatment effect by conflating insurance provision with pre-existing household differences.
+- **Stratification reveals hidden heterogeneity**: The overall population estimate masks substantial variation across household types, demonstrating the value of subgroup analysis.
+- **Model specification considerations**: ML adjustment improves estimation stability in smaller strata and provides more defensible causal estimates by controlling for observable confounders. The convergence of all estimates to zero at higher cost levels confirms that the treatment primarily affects the lower tail of the cost distribution.
 
 Conclusion
 ~~~~~~~~~~
