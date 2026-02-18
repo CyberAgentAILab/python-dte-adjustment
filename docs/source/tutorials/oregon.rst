@@ -335,7 +335,7 @@ Let's compare the results from both simple and machine learning-adjusted local e
 **1. LDTE Interpretation and Distribution-Level Insights**
 
 - **Simple Local Estimator**: Shows LDTE ≈ -0.12 at zero visits, meaning 12 percentage points fewer insured individuals have zero ED visits. The effect gradually converges toward zero around 16 visits and remains near zero thereafter.
-- **ML-Adjusted Local Estimator**: Shows a smaller effect of LDTE ≈ -0.15 at zero visits, with similar convergence patterns.
+- **ML-Adjusted Local Estimator**: Shows a more negative effect of LDTE ≈ -0.15 at zero visits (a larger-magnitude reduction), with similar convergence patterns.
 - **Key Finding**: Both estimators reveal insurance primarily affects the lower tail (zero to ~7 visits), shifting the distribution rightward. This indicates insurance increases ED utilization among those who would otherwise not visit, while having minimal impact on frequent ED users.
 
 **2. Covariate Adjustment Effects and Confidence Intervals**
