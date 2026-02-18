@@ -74,7 +74,7 @@ Next, we prepare the data for the DTE analysis. This involves creating treatment
     treatment_assignment_mapping = {'Not selected': 0, 'Selected': 1}
     df['Z'] = df['treatment'].map(treatment_assignment_mapping)
 
-    # Create actual treatment indicator: 0=Not enrolled, 1=Enrolled, -1=Missing
+    # Create actual treatment indicator: 0=Not enrolled, 1=Enrolled
     treatment_mapping = {'NOT enrolled': 0, 'Enrolled': 1}
     df['D'] = df['ohp_all_ever_inperson'].map(treatment_mapping)
 
