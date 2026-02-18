@@ -612,7 +612,7 @@ Stratified analysis uncovers dramatic treatment effect heterogeneity: single-per
 
 **4. ML Adjustment Effectiveness Depends on Covariate Predictive Power**
 
-With baseline covariates (pre-randomization ED utilization + demographics, R² ≈ 0.21), ML-adjusted estimators show minimal efficiency gains—confidence intervals remain comparably wide or even slightly wider than simple estimators. However, enhanced feature engineering could be improve predictive power, enabling ML adjustment to narrow confidence intervals.
+With baseline covariates (pre-randomization ED utilization + demographics, R² ≈ 0.21), ML-adjusted estimators show minimal efficiency gains—confidence intervals remain comparably wide or even slightly wider than simple estimators. However, enhanced feature engineering could improve predictive power, enabling ML adjustment to narrow confidence intervals.
 
 
 **5. Policy Implications for Targeted Interventions**
