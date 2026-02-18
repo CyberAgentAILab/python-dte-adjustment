@@ -200,7 +200,7 @@ The analysis produces the following local distribution treatment effects visuali
 **1. LDTE Interpretation and Distribution-Level Insights**
 
 - **Simple Local Estimator**: Shows LDTE ≈ -0.12 at zero costs, meaning 12 percentage points fewer insured individuals have zero ED costs. The effect converges to zero around $10,000 and remains flat thereafter.
-- **ML-Adjusted Local Estimator**: Shows a smaller effect of LDTE ≈ -0.15 at zero costs, with similar convergence patterns.
+- **ML-Adjusted Local Estimator**: Shows an LDTE ≈ -0.15 at zero costs—a slightly larger (more negative) effect than -0.12—with similar convergence patterns.
 - **Key Finding**: Both estimators reveal insurance primarily affects the lower tail (zero to ~$10,000), shifting the distribution rightward. This indicates insurance increases ED access among those who would otherwise not seek care, while having minimal impact on high-cost users.
 
 
