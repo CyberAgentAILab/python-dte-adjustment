@@ -142,7 +142,7 @@ Let's also examine how each campaign affects spending in specific intervals usin
     pte_women_ctrl, pte_lower_women_ctrl, pte_upper_women_ctrl = simple_estimator.predict_pte(
         target_treatment_arm=2,  # Women's email
         control_treatment_arm=0,  # No email control
-        locations=[-1] + revenue_locations,
+        locations=np.insert(revenue_locations, 0, -1),
         variance_type="moment"
     )
 
@@ -150,7 +150,7 @@ Let's also examine how each campaign affects spending in specific intervals usin
     pte_men_ctrl, pte_lower_men_ctrl, pte_upper_men_ctrl = simple_estimator.predict_pte(
         target_treatment_arm=1,  # Men's email
         control_treatment_arm=0,  # No email control
-        locations=[-1] + revenue_locations,
+        locations=np.insert(revenue_locations, 0, -1),
         variance_type="moment"
     )
 
@@ -272,14 +272,14 @@ Revenue Category Analysis with PTE
     pte_simple, pte_lower_simple, pte_upper_simple = simple_estimator.predict_pte(
         target_treatment_arm=1,  # Women's email
         control_treatment_arm=0,  # Men's email
-        locations=[-1] + revenue_locations,
+        locations=np.insert(revenue_locations, 0, -1),
         variance_type="moment"
     )
 
     pte_ml, pte_lower_ml, pte_upper_ml = ml_estimator.predict_pte(
         target_treatment_arm=1,  # Women's email
         control_treatment_arm=0,  # Men's email
-        locations=[-1] + revenue_locations,
+        locations=np.insert(revenue_locations, 0, -1),
         variance_type="moment"
     )
 
