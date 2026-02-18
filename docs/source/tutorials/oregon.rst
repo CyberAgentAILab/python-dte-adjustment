@@ -159,14 +159,14 @@ Let's compare the results from both simple and machine learning-adjusted local e
 
     # Compute LDTE: Treatment vs Control
     ldte_simple, lower_simple, upper_simple = simple_local_estimator.predict_ldte(
-        target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
-        control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
+        target_treatment_arm=1,  # Z=1 Selected in lottery for Medicaid (treatment assignment)
+        control_treatment_arm=0,  # Z=0 Not selected in lottery for Medicaid (control assignment)
         locations=outcome_ed_costs_locations
     )
 
     ldte_ml, lower_ml, upper_ml = ml_local_estimator.predict_ldte(
-        target_treatment_arm=1,  # Selected for treatment (Enrolled)
-        control_treatment_arm=0,  # Not selected for treatment (Not enrolled)
+        target_treatment_arm=1,  # Z=1 Selected in lottery for Medicaid (treatment assignment)
+        control_treatment_arm=0,  # Z=0 Not selected in lottery for Medicaid (control assignment)
         locations=outcome_ed_costs_locations
     )
 
