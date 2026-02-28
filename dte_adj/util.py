@@ -9,6 +9,13 @@ if TYPE_CHECKING:
     )
 
 
+def _convert_to_ndarray(data: object) -> np.ndarray:
+    """Convert pd.Series or pd.DataFrame to np.ndarray if needed."""
+    if hasattr(data, "to_numpy"):
+        return data.to_numpy()
+    return data
+
+
 def compute_confidence_intervals(
     vec_y: np.ndarray,
     vec_d: np.ndarray,

@@ -2,6 +2,7 @@ import numpy as np
 from typing import Tuple, Any
 from copy import deepcopy
 from dte_adj.base import DistributionEstimatorBase
+from dte_adj.util import _convert_to_ndarray
 
 
 class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
@@ -25,6 +26,11 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         Returns:
             DistributionEstimatorBase: The fitted estimator.
         """
+        covariates = _convert_to_ndarray(covariates)
+        treatment_arms = _convert_to_ndarray(treatment_arms)
+        outcomes = _convert_to_ndarray(outcomes)
+        strata = _convert_to_ndarray(strata)
+
         if covariates.shape[0] != treatment_arms.shape[0]:
             raise ValueError("The shape of covariates and treatment_arm should be same")
 
@@ -184,6 +190,11 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         Returns:
             DistributionEstimatorBase: The fitted estimator.
         """
+        covariates = _convert_to_ndarray(covariates)
+        treatment_arms = _convert_to_ndarray(treatment_arms)
+        outcomes = _convert_to_ndarray(outcomes)
+        strata = _convert_to_ndarray(strata)
+
         if covariates.shape[0] != treatment_arms.shape[0]:
             raise ValueError("The shape of covariates and treatment_arm should be same")
 

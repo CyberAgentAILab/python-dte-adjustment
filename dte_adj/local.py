@@ -4,7 +4,7 @@ from dte_adj.stratified import (
     SimpleStratifiedDistributionEstimator,
     AdjustedStratifiedDistributionEstimator,
 )
-from dte_adj.util import compute_ldte, compute_lpte
+from dte_adj.util import compute_ldte, compute_lpte, _convert_to_ndarray
 
 
 class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
@@ -47,6 +47,7 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
         Returns:
             SimpleLocalDistributionEstimator: The fitted estimator.
         """
+        treatment_indicator = _convert_to_ndarray(treatment_indicator)
         super().fit(covariates, treatment_arms, outcomes, strata)
         self.treatment_indicator = treatment_indicator
 
@@ -215,6 +216,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         Returns:
             AdjustedLocalDistributionEstimator: The fitted estimator.
         """
+        treatment_indicator = _convert_to_ndarray(treatment_indicator)
         super().fit(covariates, treatment_arms, outcomes, strata)
         self.treatment_indicator = treatment_indicator
 
