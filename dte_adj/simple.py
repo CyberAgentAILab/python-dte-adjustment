@@ -54,9 +54,9 @@ class SimpleDistributionEstimator(SimpleStratifiedDistributionEstimator):
         Set parameters.
 
         Args:
-            covariates (ArrayLike): Pre-treatment covariates.
-            treatment_arms (ArrayLike): The index of the treatment arm.
-            outcomes (ArrayLike): Scalar-valued observed outcome.
+            covariates: Pre-treatment covariates.
+            treatment_arms: The index of the treatment arm.
+            outcomes: Scalar-valued observed outcome.
 
         Returns:
             SimpleDistributionEstimator: The fitted estimator.
@@ -118,9 +118,9 @@ class AdjustedDistributionEstimator(AdjustedStratifiedDistributionEstimator):
         Set parameters.
 
         Args:
-            covariates (ArrayLike): Pre-treatment covariates.
-            treatment_arms (ArrayLike): The index of the treatment arm.
-            outcomes (ArrayLike): Scalar-valued observed outcome.
+            covariates: Pre-treatment covariates.
+            treatment_arms: The index of the treatment arm.
+            outcomes: Scalar-valued observed outcome.
 
         Returns:
             AdjustedDistributionEstimator: The fitted estimator.

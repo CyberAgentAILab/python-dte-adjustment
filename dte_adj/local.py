@@ -40,11 +40,11 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
         Train the SimpleLocalDistributionEstimator.
 
         Args:
-            covariates (ArrayLike): Pre-treatment covariates.
-            treatment_arms (ArrayLike): Treatment assignment variable (Z).
-            treatment_indicator (ArrayLike): Treatment indicator variable (D).
-            outcomes (ArrayLike): Scalar-valued observed outcome.
-            strata (ArrayLike): Stratum indicators.
+            covariates: Pre-treatment covariates.
+            treatment_arms: Treatment assignment variable (Z).
+            treatment_indicator: Treatment indicator variable (D).
+            outcomes: Scalar-valued observed outcome.
+            strata: Stratum indicators.
 
         Returns:
             SimpleLocalDistributionEstimator: The fitted estimator.
@@ -209,11 +209,11 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         Train the AdjustedLocalDistributionEstimator.
 
         Args:
-            covariates (ArrayLike): Pre-treatment covariates.
-            treatment_arms (ArrayLike): Treatment assignment variable (Z).
-            treatment_indicator (ArrayLike): Treatment indicator variable (D).
-            outcomes (ArrayLike): Scalar-valued observed outcome.
-            strata (ArrayLike): Stratum indicators.
+            covariates: Pre-treatment covariates.
+            treatment_arms: Treatment assignment variable (Z).
+            treatment_indicator: Treatment indicator variable (D).
+            outcomes: Scalar-valued observed outcome.
+            strata: Stratum indicators.
 
         Returns:
             AdjustedLocalDistributionEstimator: The fitted estimator.

@@ -21,10 +21,10 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         Train the DistributionEstimatorBase.
 
         Args:
-            covariates (ArrayLike): Pre-treatment covariates.
-            treatment_arms (ArrayLike): The index of the treatment arm.
-            outcomes (ArrayLike): Scalar-valued observed outcome.
-            strata (ArrayLike): Stratum indicators.
+            covariates: Pre-treatment covariates.
+            treatment_arms: The index of the treatment arm.
+            outcomes: Scalar-valued observed outcome.
+            strata: Stratum indicators.
 
         Returns:
             DistributionEstimatorBase: The fitted estimator.
@@ -186,10 +186,10 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         Train the DistributionEstimatorBase.
 
         Args:
-            covariates (ArrayLike): Pre-treatment covariates.
-            treatment_arms (ArrayLike): The index of the treatment arm.
-            outcomes (ArrayLike): Scalar-valued observed outcome.
-            strata (ArrayLike): Stratum indicators.
+            covariates: Pre-treatment covariates.
+            treatment_arms: The index of the treatment arm.
+            outcomes: Scalar-valued observed outcome.
+            strata: Stratum indicators.
 
         Returns:
             DistributionEstimatorBase: The fitted estimator.
