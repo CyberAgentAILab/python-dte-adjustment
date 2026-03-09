@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import numpy as np
 from dte_adj.stratified import (
     SimpleStratifiedDistributionEstimator,
     AdjustedStratifiedDistributionEstimator,
 )
-from dte_adj.util import _convert_to_ndarray
+from dte_adj.util import ArrayLike, _convert_to_ndarray
 
 
 class SimpleDistributionEstimator(SimpleStratifiedDistributionEstimator):
@@ -46,15 +48,15 @@ class SimpleDistributionEstimator(SimpleStratifiedDistributionEstimator):
         super().__init__()
 
     def fit(
-        self, covariates: np.ndarray, treatment_arms: np.ndarray, outcomes: np.ndarray
-    ) -> "SimpleDistributionEstimator":
+        self, covariates: ArrayLike, treatment_arms: ArrayLike, outcomes: ArrayLike
+    ) -> SimpleDistributionEstimator:
         """
         Set parameters.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
+            covariates (ArrayLike): Pre-treatment covariates.
+            treatment_arms (ArrayLike): The index of the treatment arm.
+            outcomes (ArrayLike): Scalar-valued observed outcome.
 
         Returns:
             SimpleDistributionEstimator: The fitted estimator.
@@ -110,15 +112,15 @@ class AdjustedDistributionEstimator(AdjustedStratifiedDistributionEstimator):
     """
 
     def fit(
-        self, covariates: np.ndarray, treatment_arms: np.ndarray, outcomes: np.ndarray
-    ) -> "AdjustedDistributionEstimator":
+        self, covariates: ArrayLike, treatment_arms: ArrayLike, outcomes: ArrayLike
+    ) -> AdjustedDistributionEstimator:
         """
         Set parameters.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
+            covariates (ArrayLike): Pre-treatment covariates.
+            treatment_arms (ArrayLike): The index of the treatment arm.
+            outcomes (ArrayLike): Scalar-valued observed outcome.
 
         Returns:
             AdjustedDistributionEstimator: The fitted estimator.

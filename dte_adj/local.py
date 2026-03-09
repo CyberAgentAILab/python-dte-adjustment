@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import numpy as np
 from typing import Tuple
 from dte_adj.stratified import (
     SimpleStratifiedDistributionEstimator,
     AdjustedStratifiedDistributionEstimator,
 )
-from dte_adj.util import compute_ldte, compute_lpte, _convert_to_ndarray
+from dte_adj.util import ArrayLike, compute_ldte, compute_lpte, _convert_to_ndarray
 
 
 class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
@@ -28,21 +30,21 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
 
     def fit(
         self,
-        covariates: np.ndarray,
-        treatment_arms: np.ndarray,
-        treatment_indicator: np.ndarray,
-        outcomes: np.ndarray,
-        strata: np.ndarray,
-    ) -> "SimpleLocalDistributionEstimator":
+        covariates: ArrayLike,
+        treatment_arms: ArrayLike,
+        treatment_indicator: ArrayLike,
+        outcomes: ArrayLike,
+        strata: ArrayLike,
+    ) -> SimpleLocalDistributionEstimator:
         """
         Train the SimpleLocalDistributionEstimator.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): Treatment assignment variable (Z).
-            treatment_indicator (np.ndarray): Treatment indicator variable (D).
-            outcomes (np.ndarray): Scalar-valued observed outcome.
-            strata (np.ndarray): Stratum indicators.
+            covariates (ArrayLike): Pre-treatment covariates.
+            treatment_arms (ArrayLike): Treatment assignment variable (Z).
+            treatment_indicator (ArrayLike): Treatment indicator variable (D).
+            outcomes (ArrayLike): Scalar-valued observed outcome.
+            strata (ArrayLike): Stratum indicators.
 
         Returns:
             SimpleLocalDistributionEstimator: The fitted estimator.
@@ -197,21 +199,21 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
 
     def fit(
         self,
-        covariates: np.ndarray,
-        treatment_arms: np.ndarray,
-        treatment_indicator: np.ndarray,
-        outcomes: np.ndarray,
-        strata: np.ndarray,
-    ) -> "AdjustedLocalDistributionEstimator":
+        covariates: ArrayLike,
+        treatment_arms: ArrayLike,
+        treatment_indicator: ArrayLike,
+        outcomes: ArrayLike,
+        strata: ArrayLike,
+    ) -> AdjustedLocalDistributionEstimator:
         """
         Train the AdjustedLocalDistributionEstimator.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): Treatment assignment variable (Z).
-            treatment_indicator (np.ndarray): Treatment indicator variable (D).
-            outcomes (np.ndarray): Scalar-valued observed outcome.
-            strata (np.ndarray): Stratum indicators.
+            covariates (ArrayLike): Pre-treatment covariates.
+            treatment_arms (ArrayLike): Treatment assignment variable (Z).
+            treatment_indicator (ArrayLike): Treatment indicator variable (D).
+            outcomes (ArrayLike): Scalar-valued observed outcome.
+            strata (ArrayLike): Stratum indicators.
 
         Returns:
             AdjustedLocalDistributionEstimator: The fitted estimator.

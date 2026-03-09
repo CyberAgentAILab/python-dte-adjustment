@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import numpy as np
 from typing import Tuple, Any
 from copy import deepcopy
 from dte_adj.base import DistributionEstimatorBase
-from dte_adj.util import _convert_to_ndarray
+from dte_adj.util import ArrayLike, _convert_to_ndarray
 
 
 class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
@@ -10,18 +12,19 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
 
     def fit(
         self,
-        covariates: np.ndarray,
-        treatment_arms: np.ndarray,
-        outcomes: np.ndarray,
-        strata: np.ndarray,
-    ) -> "DistributionEstimatorBase":
+        covariates: ArrayLike,
+        treatment_arms: ArrayLike,
+        outcomes: ArrayLike,
+        strata: ArrayLike,
+    ) -> DistributionEstimatorBase:
         """
         Train the DistributionEstimatorBase.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
+            covariates (ArrayLike): Pre-treatment covariates.
+            treatment_arms (ArrayLike): The index of the treatment arm.
+            outcomes (ArrayLike): Scalar-valued observed outcome.
+            strata (ArrayLike): Stratum indicators.
 
         Returns:
             DistributionEstimatorBase: The fitted estimator.
@@ -174,18 +177,19 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
 
     def fit(
         self,
-        covariates: np.ndarray,
-        treatment_arms: np.ndarray,
-        outcomes: np.ndarray,
-        strata: np.ndarray,
-    ) -> "DistributionEstimatorBase":
+        covariates: ArrayLike,
+        treatment_arms: ArrayLike,
+        outcomes: ArrayLike,
+        strata: ArrayLike,
+    ) -> DistributionEstimatorBase:
         """
         Train the DistributionEstimatorBase.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
+            covariates (ArrayLike): Pre-treatment covariates.
+            treatment_arms (ArrayLike): The index of the treatment arm.
+            outcomes (ArrayLike): Scalar-valued observed outcome.
+            strata (ArrayLike): Stratum indicators.
 
         Returns:
             DistributionEstimatorBase: The fitted estimator.
