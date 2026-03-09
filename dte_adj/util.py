@@ -17,12 +17,11 @@ ArrayLike = Union[
     np.ndarray,
     list,
     tuple,
-    pd.DataFrame,
-    pd.Series,
-    pl.DataFrame,
-    pl.Series,
+    "pd.DataFrame",
+    "pd.Series",
+    "pl.DataFrame",
+    "pl.Series",
 ]
-
 
 def _convert_to_ndarray(data: ArrayLike) -> np.ndarray:
     """Convert array-like data to np.ndarray if needed."""
