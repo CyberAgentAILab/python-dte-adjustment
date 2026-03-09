@@ -30,13 +30,15 @@
           <div class="body" role="main">
             
   <h1>Source code for dte_adj.local</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj.stratified</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">SimpleStratifiedDistributionEstimator</span><span class="p">,</span>
     <span class="n">AdjustedStratifiedDistributionEstimator</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_ldte</span><span class="p">,</span> <span class="n">compute_lpte</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">compute_ldte</span><span class="p">,</span> <span class="n">compute_lpte</span><span class="p">,</span> <span class="n">_convert_to_ndarray</span>
 
 
 <div class="viewcode-block" id="SimpleLocalDistributionEstimator">
@@ -64,25 +66,26 @@
 <a class="viewcode-back" href="../../api/local.html#dte_adj.SimpleLocalDistributionEstimator.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">treatment_indicator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">strata</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SimpleLocalDistributionEstimator&quot;</span><span class="p">:</span>
+        <span class="n">covariates</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">treatment_indicator</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">outcomes</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">strata</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleLocalDistributionEstimator</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Train the SimpleLocalDistributionEstimator.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            covariates (np.ndarray): Pre-treatment covariates.</span>
-<span class="sd">            treatment_arms (np.ndarray): Treatment assignment variable (Z).</span>
-<span class="sd">            treatment_indicator (np.ndarray): Treatment indicator variable (D).</span>
-<span class="sd">            outcomes (np.ndarray): Scalar-valued observed outcome.</span>
-<span class="sd">            strata (np.ndarray): Stratum indicators.</span>
+<span class="sd">            covariates: Pre-treatment covariates.</span>
+<span class="sd">            treatment_arms: Treatment assignment variable (Z).</span>
+<span class="sd">            treatment_indicator: Treatment indicator variable (D).</span>
+<span class="sd">            outcomes: Scalar-valued observed outcome.</span>
+<span class="sd">            strata: Stratum indicators.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            SimpleLocalDistributionEstimator: The fitted estimator.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">treatment_indicator</span> <span class="o">=</span> <span class="n">_convert_to_ndarray</span><span class="p">(</span><span class="n">treatment_indicator</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">covariates</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">treatment_indicator</span> <span class="o">=</span> <span class="n">treatment_indicator</span>
 
@@ -244,25 +247,26 @@
 <a class="viewcode-back" href="../../api/local.html#dte_adj.AdjustedLocalDistributionEstimator.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">covariates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">treatment_indicator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">outcomes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">strata</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AdjustedLocalDistributionEstimator&quot;</span><span class="p">:</span>
+        <span class="n">covariates</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">treatment_indicator</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">outcomes</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">strata</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdjustedLocalDistributionEstimator</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Train the AdjustedLocalDistributionEstimator.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            covariates (np.ndarray): Pre-treatment covariates.</span>
-<span class="sd">            treatment_arms (np.ndarray): Treatment assignment variable (Z).</span>
-<span class="sd">            treatment_indicator (np.ndarray): Treatment indicator variable (D).</span>
-<span class="sd">            outcomes (np.ndarray): Scalar-valued observed outcome.</span>
-<span class="sd">            strata (np.ndarray): Stratum indicators.</span>
+<span class="sd">            covariates: Pre-treatment covariates.</span>
+<span class="sd">            treatment_arms: Treatment assignment variable (Z).</span>
+<span class="sd">            treatment_indicator: Treatment indicator variable (D).</span>
+<span class="sd">            outcomes: Scalar-valued observed outcome.</span>
+<span class="sd">            strata: Stratum indicators.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            AdjustedLocalDistributionEstimator: The fitted estimator.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">treatment_indicator</span> <span class="o">=</span> <span class="n">_convert_to_ndarray</span><span class="p">(</span><span class="n">treatment_indicator</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">covariates</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">treatment_indicator</span> <span class="o">=</span> <span class="n">treatment_indicator</span>
 

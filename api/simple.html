@@ -76,14 +76,14 @@ covariate adjustment is not needed.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SimpleDistributionEstimator</span></span></span><a class="reference internal" href="../_modules/dte_adj/simple.html#SimpleDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SimpleDistributionEstimator</span></span></span><a class="reference internal" href="../_modules/dte_adj/simple.html#SimpleDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Set parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>covariates</strong> (<em>np.ndarray</em>) – Pre-treatment covariates.</p></li>
-<li><p><strong>treatment_arms</strong> (<em>np.ndarray</em>) – The index of the treatment arm.</p></li>
-<li><p><strong>outcomes</strong> (<em>np.ndarray</em>) – Scalar-valued observed outcome.</p></li>
+<li><p><strong>covariates</strong> – Pre-treatment covariates.</p></li>
+<li><p><strong>treatment_arms</strong> – The index of the treatment arm.</p></li>
+<li><p><strong>outcomes</strong> – Scalar-valued observed outcome.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -341,14 +341,14 @@ assignment depends on observed covariates.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AdjustedDistributionEstimator</span></span></span><a class="reference internal" href="../_modules/dte_adj/simple.html#AdjustedDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AdjustedDistributionEstimator</span></span></span><a class="reference internal" href="../_modules/dte_adj/simple.html#AdjustedDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Set parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>covariates</strong> (<em>np.ndarray</em>) – Pre-treatment covariates.</p></li>
-<li><p><strong>treatment_arms</strong> (<em>np.ndarray</em>) – The index of the treatment arm.</p></li>
-<li><p><strong>outcomes</strong> (<em>np.ndarray</em>) – Scalar-valued observed outcome.</p></li>
+<li><p><strong>covariates</strong> – Pre-treatment covariates.</p></li>
+<li><p><strong>treatment_arms</strong> – The index of the treatment arm.</p></li>
+<li><p><strong>outcomes</strong> – Scalar-valued observed outcome.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

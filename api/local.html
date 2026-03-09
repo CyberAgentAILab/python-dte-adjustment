@@ -52,16 +52,16 @@ within each stratum, providing estimates that are locally robust to treatment as
 heterogeneity across strata. It uses empirical methods without ML adjustment.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SimpleLocalDistributionEstimator</span></span></span><a class="reference internal" href="../_modules/dte_adj/local.html#SimpleLocalDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SimpleLocalDistributionEstimator</span></span></span><a class="reference internal" href="../_modules/dte_adj/local.html#SimpleLocalDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Train the SimpleLocalDistributionEstimator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>covariates</strong> (<em>np.ndarray</em>) – Pre-treatment covariates.</p></li>
-<li><p><strong>treatment_arms</strong> (<em>np.ndarray</em>) – Treatment assignment variable (Z).</p></li>
-<li><p><strong>treatment_indicator</strong> (<em>np.ndarray</em>) – Treatment indicator variable (D).</p></li>
-<li><p><strong>outcomes</strong> (<em>np.ndarray</em>) – Scalar-valued observed outcome.</p></li>
-<li><p><strong>strata</strong> (<em>np.ndarray</em>) – Stratum indicators.</p></li>
+<li><p><strong>covariates</strong> – Pre-treatment covariates.</p></li>
+<li><p><strong>treatment_arms</strong> – Treatment assignment variable (Z).</p></li>
+<li><p><strong>treatment_indicator</strong> – Treatment indicator variable (D).</p></li>
+<li><p><strong>outcomes</strong> – Scalar-valued observed outcome.</p></li>
+<li><p><strong>strata</strong> – Stratum indicators.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -216,16 +216,16 @@ providing precise estimates of treatment effects that are weighted by treatment 
 within each stratum. It uses cross-fitting to avoid overfitting issues.</p>
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AdjustedLocalDistributionEstimator</span></span></span><a class="reference internal" href="../_modules/dte_adj/local.html#AdjustedLocalDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_arms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AdjustedLocalDistributionEstimator</span></span></span><a class="reference internal" href="../_modules/dte_adj/local.html#AdjustedLocalDistributionEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Train the AdjustedLocalDistributionEstimator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>covariates</strong> (<em>np.ndarray</em>) – Pre-treatment covariates.</p></li>
-<li><p><strong>treatment_arms</strong> (<em>np.ndarray</em>) – Treatment assignment variable (Z).</p></li>
-<li><p><strong>treatment_indicator</strong> (<em>np.ndarray</em>) – Treatment indicator variable (D).</p></li>
-<li><p><strong>outcomes</strong> (<em>np.ndarray</em>) – Scalar-valued observed outcome.</p></li>
-<li><p><strong>strata</strong> (<em>np.ndarray</em>) – Stratum indicators.</p></li>
+<li><p><strong>covariates</strong> – Pre-treatment covariates.</p></li>
+<li><p><strong>treatment_arms</strong> – Treatment assignment variable (Z).</p></li>
+<li><p><strong>treatment_indicator</strong> – Treatment indicator variable (D).</p></li>
+<li><p><strong>outcomes</strong> – Scalar-valued observed outcome.</p></li>
+<li><p><strong>strata</strong> – Stratum indicators.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
