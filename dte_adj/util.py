@@ -1,12 +1,35 @@
+from __future__ import annotations
+
 import numpy as np
 from scipy.stats import norm
-from typing import Tuple, TYPE_CHECKING
+from typing import Tuple, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import pandas as pd
+    import polars as pl
+
     from dte_adj.local import (
         SimpleStratifiedDistributionEstimator,
         AdjustedLocalDistributionEstimator,
     )
+
+ArrayLike = Union[
+    np.ndarray,
+    list,
+    tuple,
+    "pd.DataFrame",
+    "pd.Series",
+    "pl.DataFrame",
+    "pl.Series",
+]
+
+def _convert_to_ndarray(data: ArrayLike) -> np.ndarray:
+    """Convert array-like data to np.ndarray if needed."""
+    if isinstance(data, np.ndarray):
+        return data
+    if hasattr(data, "to_numpy"):
+        return data.to_numpy()
+    return np.asarray(data)
 
 
 def compute_confidence_intervals(

@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import numpy as np
 from typing import Tuple, Any
 from copy import deepcopy
 from dte_adj.base import DistributionEstimatorBase
+from dte_adj.util import ArrayLike, _convert_to_ndarray
 
 
 class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
@@ -9,22 +12,28 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
 
     def fit(
         self,
-        covariates: np.ndarray,
-        treatment_arms: np.ndarray,
-        outcomes: np.ndarray,
-        strata: np.ndarray,
-    ) -> "DistributionEstimatorBase":
+        covariates: ArrayLike,
+        treatment_arms: ArrayLike,
+        outcomes: ArrayLike,
+        strata: ArrayLike,
+    ) -> DistributionEstimatorBase:
         """
         Train the DistributionEstimatorBase.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
+            covariates: Pre-treatment covariates.
+            treatment_arms: The index of the treatment arm.
+            outcomes: Scalar-valued observed outcome.
+            strata: Stratum indicators.
 
         Returns:
             DistributionEstimatorBase: The fitted estimator.
         """
+        covariates = _convert_to_ndarray(covariates)
+        treatment_arms = _convert_to_ndarray(treatment_arms)
+        outcomes = _convert_to_ndarray(outcomes)
+        strata = _convert_to_ndarray(strata)
+
         if covariates.shape[0] != treatment_arms.shape[0]:
             raise ValueError("The shape of covariates and treatment_arm should be same")
 
@@ -168,22 +177,28 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
 
     def fit(
         self,
-        covariates: np.ndarray,
-        treatment_arms: np.ndarray,
-        outcomes: np.ndarray,
-        strata: np.ndarray,
-    ) -> "DistributionEstimatorBase":
+        covariates: ArrayLike,
+        treatment_arms: ArrayLike,
+        outcomes: ArrayLike,
+        strata: ArrayLike,
+    ) -> DistributionEstimatorBase:
         """
         Train the DistributionEstimatorBase.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
+            covariates: Pre-treatment covariates.
+            treatment_arms: The index of the treatment arm.
+            outcomes: Scalar-valued observed outcome.
+            strata: Stratum indicators.
 
         Returns:
             DistributionEstimatorBase: The fitted estimator.
         """
+        covariates = _convert_to_ndarray(covariates)
+        treatment_arms = _convert_to_ndarray(treatment_arms)
+        outcomes = _convert_to_ndarray(outcomes)
+        strata = _convert_to_ndarray(strata)
+
         if covariates.shape[0] != treatment_arms.shape[0]:
             raise ValueError("The shape of covariates and treatment_arm should be same")
 
