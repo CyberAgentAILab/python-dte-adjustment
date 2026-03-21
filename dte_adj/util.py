@@ -145,6 +145,7 @@ def _compute_local_treatment_effects_core(
     locations: np.ndarray,
     alpha: float,
     use_intervals: bool = False,
+    verbose: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Core computation logic shared between LDTE and LPTE.
@@ -156,6 +157,7 @@ def _compute_local_treatment_effects_core(
         locations (np.ndarray): Scalar values to be used for computing the distribution.
         alpha (float): Significance level of the confidence bound.
         use_intervals (bool): If True, compute interval probabilities (LPTE), else cumulative (LDTE).
+        verbose (bool): Whether to display a progress bar.
 
     Returns:
         Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -187,18 +189,18 @@ def _compute_local_treatment_effects_core(
     # Compute outcome distributions (different for LDTE vs LPTE)
     if use_intervals:
         y_t_prediction, y_t_psi, y_t_mu = estimator._compute_interval_probability(
-            target_treatment_arm, locations, X, Z, Y
+            target_treatment_arm, locations, X, Z, Y, verbose=verbose
         )
         y_c_prediction, y_c_psi, y_c_mu = estimator._compute_interval_probability(
-            control_treatment_arm, locations, X, Z, Y
+            control_treatment_arm, locations, X, Z, Y, verbose=verbose
         )
         output_size = len(locations) - 1
     else:
         y_t_prediction, y_t_psi, y_t_mu = estimator._compute_cumulative_distribution(
-            target_treatment_arm, locations, X, Z, Y
+            target_treatment_arm, locations, X, Z, Y, verbose=verbose
         )
         y_c_prediction, y_c_psi, y_c_mu = estimator._compute_cumulative_distribution(
-            control_treatment_arm, locations, X, Z, Y
+            control_treatment_arm, locations, X, Z, Y, verbose=verbose
         )
         output_size = len(locations)
 
@@ -291,6 +293,7 @@ def compute_ldte(
     control_treatment_arm: int,
     locations: np.ndarray,
     alpha: float = 0.05,
+    verbose: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Compute Local Distribution Treatment Effects (LDTE) using the provided formula.
@@ -301,6 +304,7 @@ def compute_ldte(
         control_treatment_arm (int): The index of the treatment arm of the control group.
         locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
         alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+        verbose (bool, optional): Whether to display a progress bar. Defaults to False.
 
     Returns:
         Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -315,6 +319,7 @@ def compute_ldte(
         locations,
         alpha,
         use_intervals=False,
+        verbose=verbose,
     )
 
 
@@ -324,6 +329,7 @@ def compute_lpte(
     control_treatment_arm: int,
     locations: np.ndarray,
     alpha: float = 0.05,
+    verbose: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Compute Local Probability Treatment Effects (LPTE) using the provided formula.
@@ -334,6 +340,7 @@ def compute_lpte(
         control_treatment_arm (int): The index of the treatment arm of the control group.
         locations (np.ndarray): Scalar values to be used for computing the interval probabilities.
         alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+        verbose (bool, optional): Whether to display a progress bar. Defaults to False.
 
     Returns:
         Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -348,4 +355,5 @@ def compute_lpte(
         locations,
         alpha,
         use_intervals=True,
+        verbose=verbose,
     )
