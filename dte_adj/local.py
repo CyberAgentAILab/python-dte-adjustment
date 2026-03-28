@@ -61,7 +61,7 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
         control_treatment_arm: int,
         locations: np.ndarray,
         alpha: float = 0.05,
-        verbose: bool = True,
+        display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute Local Distribution Treatment Effects (LDTE).
@@ -75,7 +75,7 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
             control_treatment_arm (int): The index of the treatment arm of the control group.
             locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
-            verbose (bool, optional): Whether to display a progress bar. Defaults to True.
+            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -119,7 +119,7 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
             control_treatment_arm,
             locations,
             alpha,
-            verbose,
+            display_progress,
         )
 
     def predict_lpte(
@@ -128,7 +128,7 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
         control_treatment_arm: int,
         locations: np.ndarray,
         alpha: float = 0.05,
-        verbose: bool = True,
+        display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute Local Probability Treatment Effects (LPTE).
@@ -143,7 +143,7 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
             locations (np.ndarray): Scalar values defining interval boundaries for probability computation.
                 For each interval (locations[i], locations[i+1]], the LPTE is computed.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
-            verbose (bool, optional): Whether to display a progress bar. Defaults to True.
+            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -189,7 +189,7 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
             control_treatment_arm,
             locations,
             alpha,
-            verbose,
+            display_progress,
         )
 
 
@@ -236,7 +236,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         control_treatment_arm: int,
         locations: np.ndarray,
         alpha: float = 0.05,
-        verbose: bool = True,
+        display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute Local Distribution Treatment Effects (LDTE) using ML adjustment.
@@ -249,7 +249,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
             control_treatment_arm (int): The index of the treatment arm of the control group.
             locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
-            verbose (bool, optional): Whether to display a progress bar. Defaults to True.
+            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -295,7 +295,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
             control_treatment_arm,
             locations,
             alpha,
-            verbose,
+            display_progress,
         )
 
     def predict_lpte(
@@ -304,7 +304,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         control_treatment_arm: int,
         locations: np.ndarray,
         alpha: float = 0.05,
-        verbose: bool = True,
+        display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute Local Probability Treatment Effects (LPTE) using ML adjustment.
@@ -318,7 +318,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
             locations (np.ndarray): Scalar values defining interval boundaries for probability computation.
                 For each interval (locations[i], locations[i+1]], the LPTE is computed.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
-            verbose (bool, optional): Whether to display a progress bar. Defaults to True.
+            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -367,5 +367,5 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
             control_treatment_arm,
             locations,
             alpha,
-            verbose,
+            display_progress,
         )
