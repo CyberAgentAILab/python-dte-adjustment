@@ -100,6 +100,7 @@
         <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute Local Distribution Treatment Effects (LDTE).</span>
@@ -113,6 +114,7 @@
 <span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
 <span class="sd">            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
 <span class="sd">            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
+<span class="sd">            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
@@ -156,6 +158,7 @@
             <span class="n">control_treatment_arm</span><span class="p">,</span>
             <span class="n">locations</span><span class="p">,</span>
             <span class="n">alpha</span><span class="p">,</span>
+            <span class="n">display_progress</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -167,6 +170,7 @@
         <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute Local Probability Treatment Effects (LPTE).</span>
@@ -181,6 +185,7 @@
 <span class="sd">            locations (np.ndarray): Scalar values defining interval boundaries for probability computation.</span>
 <span class="sd">                For each interval (locations[i], locations[i+1]], the LPTE is computed.</span>
 <span class="sd">            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
+<span class="sd">            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
@@ -226,6 +231,7 @@
             <span class="n">control_treatment_arm</span><span class="p">,</span>
             <span class="n">locations</span><span class="p">,</span>
             <span class="n">alpha</span><span class="p">,</span>
+            <span class="n">display_progress</span><span class="p">,</span>
         <span class="p">)</span></div>
 </div>
 
@@ -281,6 +287,7 @@
         <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute Local Distribution Treatment Effects (LDTE) using ML adjustment.</span>
@@ -293,6 +300,7 @@
 <span class="sd">            control_treatment_arm (int): The index of the treatment arm of the control group.</span>
 <span class="sd">            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
 <span class="sd">            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
+<span class="sd">            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
@@ -338,6 +346,7 @@
             <span class="n">control_treatment_arm</span><span class="p">,</span>
             <span class="n">locations</span><span class="p">,</span>
             <span class="n">alpha</span><span class="p">,</span>
+            <span class="n">display_progress</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -349,6 +358,7 @@
         <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute Local Probability Treatment Effects (LPTE) using ML adjustment.</span>
@@ -362,6 +372,7 @@
 <span class="sd">            locations (np.ndarray): Scalar values defining interval boundaries for probability computation.</span>
 <span class="sd">                For each interval (locations[i], locations[i+1]], the LPTE is computed.</span>
 <span class="sd">            alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
+<span class="sd">            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
@@ -410,6 +421,7 @@
             <span class="n">control_treatment_arm</span><span class="p">,</span>
             <span class="n">locations</span><span class="p">,</span>
             <span class="n">alpha</span><span class="p">,</span>
+            <span class="n">display_progress</span><span class="p">,</span>
         <span class="p">)</span></div>
 </div>
 
