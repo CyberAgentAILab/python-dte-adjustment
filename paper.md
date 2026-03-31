@@ -38,9 +38,9 @@ bibliography: paper.bib
 
 # Statement of Need
 
-Randomized experiments have been fundamental to scientific inquiry since the pioneering work of @Fisher:1935, providing the gold standard for causal inference. While most experimental analyses focus on average treatment effects (ATEs), many research questions require understanding how treatments affect the entire distribution of outcomes, not just the mean. Distributional treatment effects (DTEs) capture these richer patterns, revealing heterogeneous impacts across different outcome levels that averages can mask.
+Randomized experiments (RCTs, also known as A/B tests) have been fundamental to scientific inquiry since the pioneering work of @fisher1935design, providing the gold standard for causal inference. While most experimental analyses focus on average treatment effects (ATEs), many research questions require understanding how treatments affect the entire distribution of outcomes, not just the mean. Distributional treatment effects (DTEs) capture these richer patterns, revealing heterogeneous impacts across different outcome levels that averages can mask.
 
-Despite the growing importance of distributional analysis in fields ranging from economics to medicine, the Python ecosystem lacks comprehensive tools for DTE estimation. While SciPy provides basic empirical cumulative distribution functions, it offers no specialized functionality for treatment effect estimation, variance reduction, or confidence interval construction in experimental settings. Existing R packages like `RDDtools` focus on regression discontinuity rather than randomized experiments, and lack modern machine learning integration.
+Despite the growing importance of distributional analysis in fields ranging from economics to medicine, the Python ecosystem lacks comprehensive tools for DTE estimation. While SciPy provides basic empirical cumulative distribution functions, it offers no specialized functionality for treatment effect estimation, variance reduction, or confidence interval construction in experimental settings. Existing Python packages for causal inference, such as DoWhy [@dowhy] and EconML [@econml], focus primarily on average treatment effects and conditional average treatment effects (CATE), with EconML incorporating machine learning for heterogeneous treatment effect estimation. However, these packages do not address distributional treatment effects, which capture how treatments affect the entire outcome distribution rather than just the mean. Existing R packages like `RDDtools` focus on regression discontinuity rather than randomized experiments, and lack modern machine learning integration.
 
 `dte_adj` addresses this gap by providing a comprehensive Python framework for distributional treatment effect analysis. The package implements state-of-the-art variance reduction techniques using machine learning models for regression adjustment [@byambadalai2024estimatingdistributionaltreatmenteffects], enabling more precise DTE estimates with smaller sample sizes. It supports multiple experimental designs including covariate-adaptive randomization [@byambadalai2025efficientestimationdistributionaltreatment] and local treatment effects, with a scikit-learn [@scikit-learn] compatible API that integrates seamlessly into existing machine learning workflows. This makes advanced distributional analysis accessible to the broader Python research community, supporting more nuanced causal inference in experimental studies.
 
@@ -60,9 +60,9 @@ The package implements multiple estimator classes following a hierarchical desig
 - `SimpleStratifiedDistributionEstimator`: Handles stratified block randomization designs
 - `AdjustedStratifiedDistributionEstimator`: Combines stratification with ML-based variance reduction
 
-**Local Distribution Estimators:**
-- `SimpleLocalDistributionEstimator`: Estimates local distributional treatment effects (LDTE)
-- `AdjustedLocalDistributionEstimator`: LDTE estimation with ML adjustment for improved precision
+**Local Distribution Estimators (for Imperfect Compliance):**
+- `SimpleLocalDistributionEstimator`: Estimates local distributional treatment effects (LDTE) for settings with imperfect compliance
+- `AdjustedLocalDistributionEstimator`: LDTE estimation with ML adjustment for improved precision [@byambadalai2025imperfectcompliance]
 
 ## Core Methods
 
