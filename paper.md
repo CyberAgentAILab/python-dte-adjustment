@@ -10,16 +10,13 @@ tags:
 authors:
   - name: Tomu Hirata
     orcid: 0009-0006-3140-291X
-    equal-contrib: true
+    corresponding: true
     affiliation: "1, 3"
   - name: Undral Byambadalai
-    corresponding: true
     affiliation: 1
   - name: Tatsushi Oka
-    corresponding: true
     affiliation: "1, 2"
   - name: Shota Yasui
-    corresponding: true
     affiliation: 1
 affiliations:
  - name: CyberAgent, Inc., Japan
