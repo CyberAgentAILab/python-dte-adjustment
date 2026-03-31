@@ -69,6 +69,7 @@ class MockDistributionEstimator(DistributionEstimatorBase):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
+        display_progress: bool = False,
     ) -> np.ndarray:
         return self.compute_cumulative_distribution(
             target_treatment_arms, locations, covariates, treatment_arms, outcomes
@@ -81,6 +82,7 @@ class MockDistributionEstimator(DistributionEstimatorBase):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
+        display_progress: bool = False,
     ) -> np.ndarray:
         return self.compute_interval_probability(
             target_treatment_arms, locations, covariates, treatment_arms, outcomes
