@@ -159,7 +159,7 @@
 <span class="n">pte_women_ctrl</span><span class="p">,</span> <span class="n">pte_lower_women_ctrl</span><span class="p">,</span> <span class="n">pte_upper_women_ctrl</span> <span class="o">=</span> <span class="n">simple_estimator</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
     <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># Women&#39;s email</span>
     <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># No email control</span>
-    <span class="n">locations</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">revenue_locations</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">revenue_locations</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
     <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
 <span class="p">)</span>
 
@@ -167,7 +167,7 @@
 <span class="n">pte_men_ctrl</span><span class="p">,</span> <span class="n">pte_lower_men_ctrl</span><span class="p">,</span> <span class="n">pte_upper_men_ctrl</span> <span class="o">=</span> <span class="n">simple_estimator</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
     <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Men&#39;s email</span>
     <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># No email control</span>
-    <span class="n">locations</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">revenue_locations</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">revenue_locations</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
     <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
 <span class="p">)</span>
 
@@ -265,14 +265,14 @@ This time we estimate the distribution treatment effects with regression adjustm
 <span class="n">pte_simple</span><span class="p">,</span> <span class="n">pte_lower_simple</span><span class="p">,</span> <span class="n">pte_upper_simple</span> <span class="o">=</span> <span class="n">simple_estimator</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
     <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Women&#39;s email</span>
     <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># Men&#39;s email</span>
-    <span class="n">locations</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">revenue_locations</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">revenue_locations</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
     <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
 <span class="p">)</span>
 
 <span class="n">pte_ml</span><span class="p">,</span> <span class="n">pte_lower_ml</span><span class="p">,</span> <span class="n">pte_upper_ml</span> <span class="o">=</span> <span class="n">ml_estimator</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
     <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Women&#39;s email</span>
     <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># Men&#39;s email</span>
-    <span class="n">locations</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">revenue_locations</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">revenue_locations</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
     <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
 <span class="p">)</span>
 
