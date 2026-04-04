@@ -218,13 +218,13 @@ Cost Analysis with Local PTE
     lpte_simple, lpte_lower_simple, lpte_upper_simple = simple_local_estimator.predict_lpte(
         target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
         control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
-        locations=[-1] + outcome_ed_costs_locations
+        locations=np.insert(outcome_ed_costs_locations, 0, -1)
     )
 
     lpte_ml, lpte_lower_ml, lpte_upper_ml = ml_local_estimator.predict_lpte(
         target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
         control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
-        locations=[-1] + outcome_ed_costs_locations
+        locations=np.insert(outcome_ed_costs_locations, 0, -1)
     )
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
@@ -351,13 +351,13 @@ Visits Analysis with Local PTE
     lpte_simple, lpte_lower_simple, lpte_upper_simple = simple_local_estimator.predict_lpte(
         target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
         control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
-        locations=[-1] + outcome_ed_visits_locations
+        locations=np.insert(outcome_ed_visits_locations, 0, -1)
     )
 
     lpte_ml, lpte_lower_ml, lpte_upper_ml = ml_local_estimator.predict_lpte(
         target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
         control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
-        locations=[-1] + outcome_ed_visits_locations
+        locations=np.insert(outcome_ed_visits_locations, 0, -1)
     )
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
