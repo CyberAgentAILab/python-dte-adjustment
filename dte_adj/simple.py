@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import numpy as np
 from dte_adj.stratified import (
     SimpleStratifiedDistributionEstimator,
     AdjustedStratifiedDistributionEstimator,
 )
+from dte_adj.util import ArrayLike, _convert_to_ndarray
 
 
 class SimpleDistributionEstimator(SimpleStratifiedDistributionEstimator):
@@ -45,19 +48,23 @@ class SimpleDistributionEstimator(SimpleStratifiedDistributionEstimator):
         super().__init__()
 
     def fit(
-        self, covariates: np.ndarray, treatment_arms: np.ndarray, outcomes: np.ndarray
-    ) -> "SimpleDistributionEstimator":
+        self, covariates: ArrayLike, treatment_arms: ArrayLike, outcomes: ArrayLike
+    ) -> SimpleDistributionEstimator:
         """
         Set parameters.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
+            covariates: Pre-treatment covariates.
+            treatment_arms: The index of the treatment arm.
+            outcomes: Scalar-valued observed outcome.
 
         Returns:
             SimpleDistributionEstimator: The fitted estimator.
         """
+        covariates = _convert_to_ndarray(covariates)
+        treatment_arms = _convert_to_ndarray(treatment_arms)
+        outcomes = _convert_to_ndarray(outcomes)
+
         if covariates.shape[0] != treatment_arms.shape[0]:
             raise ValueError("The shape of covariates and treatment_arm should be same")
 
@@ -105,19 +112,23 @@ class AdjustedDistributionEstimator(AdjustedStratifiedDistributionEstimator):
     """
 
     def fit(
-        self, covariates: np.ndarray, treatment_arms: np.ndarray, outcomes: np.ndarray
-    ) -> "AdjustedDistributionEstimator":
+        self, covariates: ArrayLike, treatment_arms: ArrayLike, outcomes: ArrayLike
+    ) -> AdjustedDistributionEstimator:
         """
         Set parameters.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
+            covariates: Pre-treatment covariates.
+            treatment_arms: The index of the treatment arm.
+            outcomes: Scalar-valued observed outcome.
 
         Returns:
             AdjustedDistributionEstimator: The fitted estimator.
         """
+        covariates = _convert_to_ndarray(covariates)
+        treatment_arms = _convert_to_ndarray(treatment_arms)
+        outcomes = _convert_to_ndarray(outcomes)
+
         if covariates.shape[0] != treatment_arms.shape[0]:
             raise ValueError("The shape of covariates and treatment_arm should be same")
 

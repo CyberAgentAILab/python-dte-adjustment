@@ -21,16 +21,19 @@ classifiers = [
 dependencies = [
   "numpy>=1.26",
   "matplotlib>=3.7",
-  "scipy>=1.13.1"
+  "scipy>=1.13.1",
+  "tqdm>=4.60"
 ]
 
 [project.optional-dependencies]
 dev = [
   "build>=1.2.2,<1.5.0",
-  "ruff>=0.12.2,<0.15.0",
+  "ruff>=0.12.2,<0.16.0",
   "sphinx>=7.3.7,<8.2.0",
   "scikit-learn>=1.5,<1.9",
-  "pre-commit>=4.0.1,<4.6.0"
+  "pre-commit>=4.0.1,<4.6.0",
+  "pandas>=2.0",
+  "polars>=1.0"
 ]
 
 [tool.setuptools.packages.find]
@@ -44,10 +47,13 @@ homepage = "https://github.com/CyberAgentAILab/python-dte-adjustment"
 [tool.uv]
 dev-dependencies = [
   "build>=1.2.2,<1.5.0",
-  "ruff>=0.12.2,<0.15.0",
+  "build>=1.2.2,<1.4.0",
+  "ruff>=0.12.2,<0.16.0",
   "sphinx>=7.3.7,<8.2.0",
   "scikit-learn>=1.5,<1.9",
-  "pre-commit>=4.0.1,<4.6.0"
+  "pre-commit>=4.0.1,<4.6.0",
+  "pandas>=2.0",
+  "polars>=1.0"
 ]
 
 [tool.ruff.lint]

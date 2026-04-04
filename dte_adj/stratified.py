@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import numpy as np
 from typing import Tuple, Any
 from copy import deepcopy
+from tqdm.auto import tqdm
 from dte_adj.base import DistributionEstimatorBase
+from dte_adj.util import ArrayLike, _convert_to_ndarray
 
 
 class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
@@ -9,22 +13,28 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
 
     def fit(
         self,
-        covariates: np.ndarray,
-        treatment_arms: np.ndarray,
-        outcomes: np.ndarray,
-        strata: np.ndarray,
-    ) -> "DistributionEstimatorBase":
+        covariates: ArrayLike,
+        treatment_arms: ArrayLike,
+        outcomes: ArrayLike,
+        strata: ArrayLike,
+    ) -> DistributionEstimatorBase:
         """
         Train the DistributionEstimatorBase.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
+            covariates: Pre-treatment covariates.
+            treatment_arms: The index of the treatment arm.
+            outcomes: Scalar-valued observed outcome.
+            strata: Stratum indicators.
 
         Returns:
             DistributionEstimatorBase: The fitted estimator.
         """
+        covariates = _convert_to_ndarray(covariates)
+        treatment_arms = _convert_to_ndarray(treatment_arms)
+        outcomes = _convert_to_ndarray(outcomes)
+        strata = _convert_to_ndarray(strata)
+
         if covariates.shape[0] != treatment_arms.shape[0]:
             raise ValueError("The shape of covariates and treatment_arm should be same")
 
@@ -45,6 +55,7 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
+        display_progress: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute the cumulative distribution values.
@@ -55,6 +66,7 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
             covariates: (np.ndarray): An array of covariates variables in the observed data.
             treatment_arm (np.ndarray): An array of treatment arms in the observed data.
             outcomes (np.ndarray): An array of outcomes in the observed data
+            display_progress (bool): Whether to display a progress bar.
 
         Returns:
             Tuple of numpy arrays:
@@ -93,6 +105,7 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
+        display_progress: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute the interval probabilities.
 
@@ -102,6 +115,7 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
             covariates: (np.ndarray): An array of covariates variables in the observed data.
             treatment_arm (np.ndarray): An array of treatment arms in the observed data.
             outcomes (np.ndarray): An array of outcomes in the observed data
+            display_progress (bool): Whether to display a progress bar.
 
         Returns:
             Tuple of numpy arrays:
@@ -168,22 +182,28 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
 
     def fit(
         self,
-        covariates: np.ndarray,
-        treatment_arms: np.ndarray,
-        outcomes: np.ndarray,
-        strata: np.ndarray,
-    ) -> "DistributionEstimatorBase":
+        covariates: ArrayLike,
+        treatment_arms: ArrayLike,
+        outcomes: ArrayLike,
+        strata: ArrayLike,
+    ) -> DistributionEstimatorBase:
         """
         Train the DistributionEstimatorBase.
 
         Args:
-            covariates (np.ndarray): Pre-treatment covariates.
-            treatment_arms (np.ndarray): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar-valued observed outcome.
+            covariates: Pre-treatment covariates.
+            treatment_arms: The index of the treatment arm.
+            outcomes: Scalar-valued observed outcome.
+            strata: Stratum indicators.
 
         Returns:
             DistributionEstimatorBase: The fitted estimator.
         """
+        covariates = _convert_to_ndarray(covariates)
+        treatment_arms = _convert_to_ndarray(treatment_arms)
+        outcomes = _convert_to_ndarray(outcomes)
+        strata = _convert_to_ndarray(strata)
+
         if covariates.shape[0] != treatment_arms.shape[0]:
             raise ValueError("The shape of covariates and treatment_arm should be same")
 
@@ -204,6 +224,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
+        display_progress: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute the cumulative distribution values.
@@ -214,6 +235,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
             covariates: (np.ndarray): An array of covariates variables in the observed data.
             treatment_arm (np.ndarray): An array of treatment arms in the observed data.
             outcomes (np.ndarray): An array of outcomes in the observed data
+            display_progress (bool): Whether to display a progress bar.
 
         Returns:
             Tuple of numpy arrays:
@@ -231,7 +253,10 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         s_list = np.unique(strata)
         if self.is_multi_task:
             binomial = (outcomes.reshape(-1, 1) <= locations) * 1  # (n_records, n_loc)
-            for fold in range(self.folds):
+            fold_iter = range(self.folds)
+            if display_progress:
+                fold_iter = tqdm(fold_iter, desc="Cross-fitting (multi-task)")
+            for fold in fold_iter:
                 fold_mask = (folds != fold) & treatment_mask
                 for s in s_list:
                     s_mask = strata == s
@@ -255,7 +280,10 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                     )
                     superset_prediction[superset_mask] = pred
         else:
-            for i, location in enumerate(locations):
+            loc_iter = enumerate(locations)
+            if display_progress:
+                loc_iter = tqdm(loc_iter, total=len(locations), desc="Computing CDF")
+            for i, location in loc_iter:
                 binomial = (outcomes <= location) * 1  # (n_records)
                 for fold in range(self.folds):
                     fold_mask = (folds != fold) & treatment_mask
@@ -307,6 +335,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
+        display_progress: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute the interval probabilities.
@@ -317,6 +346,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
             covariates: (np.ndarray): An array of covariates variables in the observed data.
             treatment_arm (np.ndarray): An array of treatment arms in the observed data.
             outcomes (np.ndarray): An array of outcomes in the observed data
+            display_progress (bool): Whether to display a progress bar.
 
         Returns:
             Tuple of numpy arrays:
@@ -333,7 +363,10 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         strata = self.strata
         s_list = np.unique(strata)
         binominals = (outcomes[:, np.newaxis] <= locations) * 1  # (n_records, n_loc)
-        for i in range(len(locations) - 1):
+        interval_iter = range(len(locations) - 1)
+        if display_progress:
+            interval_iter = tqdm(interval_iter, desc="Computing interval prob.")
+        for i in interval_iter:
             binomial = binominals[:, i + 1] - binominals[:, i]
             for fold in range(self.folds):
                 fold_mask = (folds != fold) & treatment_mask

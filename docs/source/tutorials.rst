@@ -10,5 +10,6 @@ Available Tutorials
    :maxdepth: 1
 
    tutorials/hillstrom
+   tutorials/oregon
 
 The tutorials demonstrate practical applications of the ``dte_adj`` library using real-world datasets from famous randomized experiments. Each tutorial provides complete code examples, visualizations, and interpretations of distributional treatment effects.

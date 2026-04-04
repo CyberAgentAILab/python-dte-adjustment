@@ -2,6 +2,7 @@ import numpy as np
 from typing import Tuple, Optional
 from scipy.stats import norm
 from abc import ABC
+from tqdm.auto import tqdm
 import dte_adj
 
 
@@ -27,6 +28,7 @@ class DistributionEstimatorBase(ABC):
         alpha: float = 0.05,
         variance_type="moment",
         n_bootstrap=500,
+        display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute Distribution Treatment Effects (DTE) based on the estimator for the distribution function.
@@ -43,6 +45,7 @@ class DistributionEstimatorBase(ABC):
             variance_type (str, optional): Variance type to be used to compute confidence intervals.
                 Available values are "moment", "simple", and "uniform". Defaults to "moment".
             n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.
+            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -84,6 +87,7 @@ class DistributionEstimatorBase(ABC):
             alpha,
             variance_type,
             n_bootstrap,
+            display_progress,
         )
 
     def predict_pte(
@@ -94,6 +98,7 @@ class DistributionEstimatorBase(ABC):
         alpha: float = 0.05,
         variance_type="moment",
         n_bootstrap=500,
+        display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute Probability Treatment Effects (PTE) based on the estimator for the distribution function.
@@ -111,6 +116,7 @@ class DistributionEstimatorBase(ABC):
             variance_type (str, optional): Variance type to be used to compute confidence intervals.
                 Available values are "moment", "simple", and "uniform". Defaults to "moment".
             n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.
+            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -155,6 +161,7 @@ class DistributionEstimatorBase(ABC):
             alpha,
             variance_type,
             n_bootstrap,
+            display_progress,
         )
 
     def predict_qte(
@@ -164,6 +171,7 @@ class DistributionEstimatorBase(ABC):
         quantiles: Optional[np.ndarray] = None,
         alpha: float = 0.05,
         n_bootstrap=500,
+        display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute Quantile Treatment Effects (QTE) based on the estimator for the distribution function.
@@ -178,6 +186,7 @@ class DistributionEstimatorBase(ABC):
             quantiles (np.ndarray, optional): Quantiles used for QTE. Defaults to [0.1, 0.2, ..., 0.9].
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
             n_bootstrap (int, optional): Number of bootstrap samples. Defaults to 500.
+            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -226,7 +235,10 @@ class DistributionEstimatorBase(ABC):
         indexes = np.arange(n_obs)
 
         qtes = np.zeros((n_bootstrap, qte.shape[0]))
-        for b in range(n_bootstrap):
+        bootstrap_iter = range(n_bootstrap)
+        if display_progress:
+            bootstrap_iter = tqdm(bootstrap_iter, desc="Bootstrap QTE")
+        for b in bootstrap_iter:
             bootstrap_indexes = np.random.choice(indexes, size=n_obs, replace=True)
 
             qtes[b] = self._compute_qtes(
@@ -254,6 +266,7 @@ class DistributionEstimatorBase(ABC):
         alpha: float,
         variance_type: str,
         n_bootstrap: int,
+        display_progress: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute expected DTEs."""
         treatment_cdf, treatment_cdf_mat, _ = self._compute_cumulative_distribution(
@@ -262,6 +275,7 @@ class DistributionEstimatorBase(ABC):
             self.covariates,
             self.treatment_arms,
             self.outcomes,
+            display_progress=display_progress,
         )
         control_cdf, control_cdf_mat, _ = self._compute_cumulative_distribution(
             control_treatment_arm,
@@ -269,6 +283,7 @@ class DistributionEstimatorBase(ABC):
             self.covariates,
             self.treatment_arms,
             self.outcomes,
+            display_progress=display_progress,
         )
 
         dte = treatment_cdf - control_cdf
@@ -305,6 +320,7 @@ class DistributionEstimatorBase(ABC):
         alpha: float,
         variance_type: str,
         n_bootstrap: int,
+        display_progress: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Compute expected PTEs."""
         treatment_pdf, treatment_pdf_mat, _ = self._compute_interval_probability(
@@ -313,6 +329,7 @@ class DistributionEstimatorBase(ABC):
             self.covariates,
             self.treatment_arms,
             self.outcomes,
+            display_progress=display_progress,
         )
         control_pdf, control_pdf_mat, _ = self._compute_interval_probability(
             control_treatment_arm,
@@ -320,6 +337,7 @@ class DistributionEstimatorBase(ABC):
             self.covariates,
             self.treatment_arms,
             self.outcomes,
+            display_progress=display_progress,
         )
 
         pte = treatment_pdf - control_pdf
@@ -398,13 +416,16 @@ class DistributionEstimatorBase(ABC):
 
         return result
 
-    def predict(self, treatment_arm: int, locations: np.ndarray) -> np.ndarray:
+    def predict(
+        self, treatment_arm: int, locations: np.ndarray, display_progress: bool = True
+    ) -> np.ndarray:
         """
         Compute cumulative distribution values.
 
         Args:
             treatment_arm (int): The index of the treatment arm.
             outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
             np.ndarray: Estimated cumulative distribution values for the input.
@@ -425,6 +446,7 @@ class DistributionEstimatorBase(ABC):
             self.covariates,
             self.treatment_arms,
             self.outcomes,
+            display_progress=display_progress,
         )[0]
 
     def _compute_cumulative_distribution(
@@ -434,6 +456,7 @@ class DistributionEstimatorBase(ABC):
         covariates: np.ndarray,
         treatment_arms: np.ndarray,
         outcomes: np.array,
+        display_progress: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute the cumulative distribution values.
@@ -444,6 +467,7 @@ class DistributionEstimatorBase(ABC):
             covariates: (np.ndarray): An array of covariates variables in the observed data.
             treatment_arms (np.ndarray): An array of treatment arms in the observed data.
             outcomes (np.ndarray): An array of outcomes in the observed data.
+            display_progress (bool): Whether to display a progress bar.
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: Estimated cumulative distribution values, prediction for each observation, and superset prediction for each observation.
