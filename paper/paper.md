@@ -23,7 +23,7 @@ affiliations:
    index: 1
  - name: Keio University, Japan
    index: 2
- - name: Databricks Japan, Japan
+ - name: Databricks, Inc., United States
    index: 3
 date: 24 August 2025
 bibliography: paper.bib
