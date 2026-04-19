@@ -66,7 +66,7 @@ All estimators implement a consistent API with three primary methods: `predict_d
 
 # Research Impact Statement
 
-The methods implemented in `dte_adj` have been published at top machine learning venues: ICML 2024 [@byambadalai2024estimatingdistributionaltreatmenteffects] and ICML 2025 [@byambadalai2025efficientestimationdistributionaltreatment]. The package has been used internally at CyberAgent, Inc. for analyzing A/B tests where distributional impacts are critical, such as evaluating interventions on user engagement metrics where tail behavior matters more than averages. The documentation includes tutorials demonstrating applications to the Hillstrom email marketing dataset (Figure 1) and the Oregon Health Insurance Experiment (Figure 2), facilitating adoption by researchers in economics, marketing, and healthcare.
+The methods implemented in `dte_adj` have been published across machine learning and econometrics venues: ICML 2024 [@byambadalai2024estimatingdistributionaltreatmenteffects], Econometric Reviews [@oka2025regression], ICML 2025 [@byambadalai2025efficientestimationdistributionaltreatment], and NeurIPS 2025 [@byambadalai2025imperfectcompliance]. The package has been applied in industry settings, including analyzing the distributional impact of content promotion on user engagement at ABEMA, a major video streaming platform [@yasui2026abema]. The documentation includes tutorials demonstrating applications to the Hillstrom email marketing dataset (Figure 1) and the Oregon Health Insurance Experiment (Figure 2), facilitating adoption by researchers in economics, marketing, and healthcare.
 
 # AI Usage Disclosure
 
