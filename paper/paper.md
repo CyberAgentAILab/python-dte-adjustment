@@ -11,7 +11,7 @@ authors:
   - name: Tomu Hirata
     orcid: 0009-0006-3140-291X
     corresponding: true
-    affiliation: "1, 3"
+    affiliation: 3
   - name: Undral Byambadalai
     affiliation: 1
   - name: Tatsushi Oka
