@@ -400,7 +400,7 @@ Expected output::
 These results reveal important patterns:
 
 - **Women's Email Campaign**: Shows 2× stronger effect for female purchasers ($0.54) vs male purchasers ($0.26)
-- **Men's Email Campaign**: Demonstrates consistent strong effects across both segments ($0.84-$0.90)
+- **Men's Email Campaign**: Demonstrates consistent strong effects across both segments ($0.84-$0.89)
 
 While these averages provide a useful summary, they don't tell us *how* customer spending distributions change. The distributional and probability treatment effect analyses that follow reveal the complete picture of campaign effectiveness.
 
@@ -558,7 +558,7 @@ While DTE shows how cumulative distributions shift, Probability Treatment Effect
    :width: 800px
    :align: center
 
-**Interval-Specific Insights**: The PTE bar charts show that for female purchasers (right panel), women's emails increase the probability of higher spending intervals (positive PTE at higher categories) while decreasing the probability of zero or low spending (negative PTE at lower categories). For male purchasers (left panel), the effects are much smaller and less consistent, confirming the limited impact suggested by the ATE and DTE analyses.
+**Interval-Specific Insights**: The PTE bar charts reveal the mechanism behind the average treatment effect. For female purchasers (right panel), women's emails significantly reduce the probability of zero spending (non-purchasers converting to purchasers), which is the primary driver of the positive ATE. However, no significant increase in high spending categories is observed. For male purchasers (left panel), the effects are much smaller and less consistent, confirming the limited impact suggested by the ATE and DTE analyses.
 
 Probability Treatment Effects: Men's Email Campaign
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -607,7 +607,7 @@ Let's examine which spending categories are most affected by men's email campaig
    :width: 800px
    :align: center
 
-**Interval-Specific Insights**: Men's email campaigns show similar PTE patterns across both segments (left and right panels), with reduced probability of zero/low spending and increased probability in mid-to-high spending categories. This confirms the broad effectiveness of men's campaigns across different customer segments.
+**Interval-Specific Insights**: Men's email campaigns show similar PTE patterns across both segments (left and right panels). The key mechanism is twofold: (1) significant reduction in zero spending probability (converting non-purchasers to purchasers), and (2) increased probability in the $40-100 spending range. This dual effect—both purchase conversion and mid-range spending increases—occurs consistently across both male and female purchaser segments, confirming the broad effectiveness of men's campaigns.
 
 Key Insights from Subgroup Analysis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -617,7 +617,7 @@ Combining Average Treatment Effects (ATE), Distribution Treatment Effects (DTE),
 **1. Campaign Targeting Effectiveness (from ATE)**
 
 - Women's email campaigns show 2× stronger average effects for female purchasers ($0.54) vs male purchasers ($0.26)
-- Men's email campaigns demonstrate consistent strong effects across both segments ($0.84-$0.90)
+- Men's email campaigns demonstrate consistent strong effects across both segments ($0.89-$0.84)
 - This suggests women's campaigns benefit from precise targeting, while men's campaigns have broader appeal
 
 **2. Distributional Shifts Beyond Averages (from DTE)**
@@ -628,16 +628,18 @@ Combining Average Treatment Effects (ATE), Distribution Treatment Effects (DTE),
 
 **3. Spending Category Changes (from PTE)**
 
-- PTE analysis reveals *which specific spending intervals* change in response to campaigns
-- Women's emails increase probability of higher spending categories for female purchasers while reducing zero/low spending probability
-- Men's emails shift probability mass from low to mid-high spending categories consistently across both segments
-- PTE bar charts provide the most granular view of where behavioral changes occur
+- PTE analysis reveals *which specific spending intervals* change in response to campaigns, particularly identifying the mechanisms behind average effects
+- **Women's emails**: For female purchasers, the primary effect is converting non-purchasers to purchasers (significant reduction in zero spending probability). No significant increase in high spending categories was observed.
+- **Men's emails**: Show a dual mechanism across both segments: (1) converting non-purchasers to purchasers (zero spending reduction), and (2) increasing purchases in the $40-100 range
+- PTE enables identification of behavioral change mechanisms that are invisible in average treatment effects alone—specifically revealing that lift comes primarily from purchase conversion (0→1 effect) rather than spending increases among existing purchasers
 
 **4. Strategic Implications**
 
-- **For Women's Campaigns**: Target customers with history of purchasing women's merchandise to maximize ROI. The PTE analysis shows these customers shift toward higher spending categories when exposed to women's email content.
-- **For Men's Campaigns**: Deploy broadly as they produce consistent positive effects across diverse customer segments. Both male and female purchasers show similar probability shifts toward higher spending.
-- **Resource Allocation**: Prioritize precise targeting for gender-specific content (women's emails) but invest confidently in broad deployment for broadly appealing content (men's emails).
+Based on these findings, several practical implications emerge:
+
+- **For Women's Campaigns**: Target customers with history of purchasing women's merchandise to maximize ROI. The PTE analysis reveals that effectiveness comes primarily from converting non-purchasers to purchasers among female purchaser segments, rather than increasing spending among existing buyers.
+- **For Men's Campaigns**: Deploy broadly as they produce consistent positive effects across diverse customer segments. Both male and female purchasers show both purchase conversion and mid-range spending increases, suggesting broader appeal.
+- **Resource Allocation**: One practical implication is to prioritize precise targeting for gender-specific content (women's emails) but invest confidently in broad deployment for broadly appealing content (men's emails).
 
 **5. Methodological Value**
 
