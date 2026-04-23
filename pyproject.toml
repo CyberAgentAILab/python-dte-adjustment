@@ -31,7 +31,7 @@ dev = [
   "ruff>=0.12.2,<0.16.0",
   "sphinx>=7.3.7,<8.2.0",
   "scikit-learn>=1.5,<1.9",
-  "pre-commit>=4.0.1,<4.6.0",
+  "pre-commit>=4.0.1,<4.7.0",
   "pandas>=2.0",
   "polars>=1.0"
 ]
@@ -51,7 +51,7 @@ dev-dependencies = [
   "ruff>=0.12.2,<0.16.0",
   "sphinx>=7.3.7,<8.2.0",
   "scikit-learn>=1.5,<1.9",
-  "pre-commit>=4.0.1,<4.6.0",
+  "pre-commit>=4.0.1,<4.7.0",
   "pandas>=2.0",
   "polars>=1.0"
 ]
