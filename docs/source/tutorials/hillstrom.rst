@@ -337,8 +337,8 @@ Subgroup Analysis by Purchase History
 
 Beyond comparing email campaigns overall, we can examine how campaign effectiveness varies by customer purchase history. This analysis segments customers based on their past purchasing behavior:
 
-- **Male Purchaser Segment** (``mens=1``): Customers who previously purchased men's merchandise (35,266 customers, 55.1%)
-- **Female Purchaser Segment** (``womens=1``): Customers who previously purchased women's merchandise (35,182 customers, 55.0%)
+- **Men's merchandise purchasers** (``mens=1``): Customers who previously purchased men's merchandise (35,266 customers, 55.1%)
+- **Women's merchandise purchasers** (``womens=1``): Customers who previously purchased women's merchandise (35,182 customers, 55.0%)
 
 Note that these segments overlap (6,448 customers purchased both categories), so a customer can appear in both analyses.
 
