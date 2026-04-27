@@ -332,6 +332,327 @@ The side-by-side bar charts show probability treatment effects across different 
 
 **Conclusion**: Using the real Hillstrom dataset with 64,000 customers, the distributional analysis reveals nuanced patterns in how email campaigns affect customer spending. The analysis goes beyond simple average comparisons to show how treatment effects vary across the entire spending distribution, providing insights into which customer segments respond best to different campaign types. This demonstrates the power of distribution treatment effect analysis for understanding heterogeneous responses in digital marketing experiments.
 
+Subgroup Analysis by Purchase History
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Beyond comparing email campaigns overall, we can examine how campaign effectiveness varies by customer purchase history. This analysis segments customers based on their past purchasing behavior:
+
+- **Men's merchandise purchasers** (``mens=1``): Customers who previously purchased men's merchandise (35,266 customers, 55.1%)
+- **Women's merchandise purchasers** (``womens=1``): Customers who previously purchased women's merchandise (35,182 customers, 55.0%)
+
+Note that these segments overlap (6,448 customers purchased both categories), so a customer can appear in both analyses.
+
+**Research Question**: Does the effectiveness of men's vs women's email campaigns vary by the type of merchandise customers have historically purchased?
+
+Defining Subgroups
+^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    # Define subgroup masks based on purchase history
+    mens_purchasers = (df['mens'] == 1)
+    womens_purchasers = (df['womens'] == 1)
+
+    print(f"Men's merchandise purchaser segment: {mens_purchasers.sum():,} customers")
+    print(f"Women's merchandise purchaser segment: {womens_purchasers.sum():,} customers")
+    print(f"Overlap: {(mens_purchasers & womens_purchasers).sum():,} customers")
+
+Average Treatment Effects by Subgroup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Let's first compute the average treatment effects (ATEs) to quantify the overall impact:
+
+.. code-block:: python
+
+    # Compute ATEs for each campaign-subgroup combination
+    # Women's Email Campaign
+    ate_women_male = (revenue[(D==2) & mens_purchasers].mean() -
+                      revenue[(D==0) & mens_purchasers].mean())
+    ate_women_female = (revenue[(D==2) & womens_purchasers].mean() -
+                        revenue[(D==0) & womens_purchasers].mean())
+
+    # Men's Email Campaign
+    ate_men_male = (revenue[(D==1) & mens_purchasers].mean() -
+                    revenue[(D==0) & mens_purchasers].mean())
+    ate_men_female = (revenue[(D==1) & womens_purchasers].mean() -
+                      revenue[(D==0) & womens_purchasers].mean())
+
+    print("Average Treatment Effects by Subgroup:")
+    print("\nWomen's Email Campaign:")
+    print(f"  Men's Merch. Purchasers:   ATE = ${ate_women_male:.4f}")
+    print(f"  Women's Merch. Purchasers: ATE = ${ate_women_female:.4f}")
+    print("\nMen's Email Campaign:")
+    print(f"  Men's Merch. Purchasers:   ATE = ${ate_men_male:.4f}")
+    print(f"  Women's Merch. Purchasers: ATE = ${ate_men_female:.4f}")
+
+Expected output::
+
+    Average Treatment Effects by Subgroup:
+
+    Women's Email Campaign:
+      Men's Merch. Purchasers:   ATE = $0.2564
+      Women's Merch. Purchasers: ATE = $0.5442
+
+    Men's Email Campaign:
+      Men's Merch. Purchasers:   ATE = $0.8966
+      Women's Merch. Purchasers: ATE = $0.8412
+
+These results reveal important patterns:
+
+- **Women's Email Campaign**: Shows 2× stronger effect for women's merchandise purchasers ($0.54) vs men's merchandise purchasers ($0.26)
+- **Men's Email Campaign**: Demonstrates consistent strong effects across both segments ($0.84-$0.89)
+
+While these averages provide a useful summary, they don't tell us *how* customer spending distributions change. The distributional and probability treatment effect analyses that follow reveal the complete picture of campaign effectiveness.
+
+Distribution Treatment Effects: Women's Email Campaign
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Beyond the average effects, let's examine how the Women's Email campaign shifts the entire spending distribution for each subgroup:
+
+.. code-block:: python
+
+    # Analyze men's merchandise purchaser segment
+    estimator_male = dte_adj.SimpleDistributionEstimator()
+    estimator_male.fit(X[mens_purchasers], D[mens_purchasers], revenue[mens_purchasers])
+
+    # Analyze women's merchandise purchaser segment
+    estimator_female = dte_adj.SimpleDistributionEstimator()
+    estimator_female.fit(X[womens_purchasers], D[womens_purchasers], revenue[womens_purchasers])
+
+    # Define evaluation points
+    locations = np.linspace(0, 500, 51)
+
+    # Compute DTE for Women's Email vs Control in each subgroup
+    dte_women_male, lower_women_male, upper_women_male = estimator_male.predict_dte(
+        target_treatment_arm=2,  # Women's Email
+        control_treatment_arm=0,  # No Email
+        locations=locations,
+        variance_type="moment"
+    )
+
+    dte_women_female, lower_women_female, upper_women_female = estimator_female.predict_dte(
+        target_treatment_arm=2,  # Women's Email
+        control_treatment_arm=0,  # No Email
+        locations=locations,
+        variance_type="moment"
+    )
+
+    # Visualize side-by-side
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+
+    plot(locations, dte_women_male, lower_women_male, upper_women_male,
+         title="Women's Email vs Control\nMen's Merch. Purchasers",
+         xlabel="Spending ($)", ylabel="Distribution Treatment Effect",
+         color="purple", ax=ax1)
+    ax1.axhline(y=0, color='black', linestyle='--', linewidth=0.8, alpha=0.5)
+
+    plot(locations, dte_women_female, lower_women_female, upper_women_female,
+         title="Women's Email vs Control\nWomen's Merch. Purchasers",
+         xlabel="Spending ($)", ylabel="Distribution Treatment Effect",
+         color="green", ax=ax2)
+    ax2.axhline(y=0, color='black', linestyle='--', linewidth=0.8, alpha=0.5)
+
+    plt.tight_layout()
+    plt.show()
+
+.. image:: ../_static/hillstorm_subgroup_women_dte.png
+   :alt: Women's Email Campaign Subgroup Analysis
+   :width: 800px
+   :align: center
+
+**Key Finding for Women's Email Campaign**: The distributional treatment effects reveal that women's email campaigns are significantly more effective for the women's merchandise purchaser segment (right panel) compared to the men's merchandise purchaser segment (left panel). The DTE curves show that women's emails reduce the probability of low spending levels (negative DTE at lower thresholds) for women's merchandise purchasers, indicating a shift toward higher spending. In contrast, the men's merchandise purchaser segment shows minimal or non-significant effects across most of the spending distribution, with confidence intervals overlapping zero.
+
+Distribution Treatment Effects: Men's Email Campaign
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Now let's examine how the Men's Email campaign affects spending distributions:
+
+.. code-block:: python
+
+    # Compute DTE for Men's Email vs Control in each subgroup
+    dte_men_male, lower_men_male, upper_men_male = estimator_male.predict_dte(
+        target_treatment_arm=1,  # Men's Email
+        control_treatment_arm=0,  # No Email
+        locations=locations,
+        variance_type="moment"
+    )
+
+    dte_men_female, lower_men_female, upper_men_female = estimator_female.predict_dte(
+        target_treatment_arm=1,  # Men's Email
+        control_treatment_arm=0,  # No Email
+        locations=locations,
+        variance_type="moment"
+    )
+
+    # Visualize side-by-side
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+
+    plot(locations, dte_men_male, lower_men_male, upper_men_male,
+         title="Men's Email vs Control\nMen's Merch. Purchasers",
+         xlabel="Spending ($)", ylabel="Distribution Treatment Effect",
+         color="purple", ax=ax1)
+    ax1.axhline(y=0, color='black', linestyle='--', linewidth=0.8, alpha=0.5)
+
+    plot(locations, dte_men_female, lower_men_female, upper_men_female,
+         title="Men's Email vs Control\nWomen's Merch. Purchasers",
+         xlabel="Spending ($)", ylabel="Distribution Treatment Effect",
+         color="green", ax=ax2)
+    ax2.axhline(y=0, color='black', linestyle='--', linewidth=0.8, alpha=0.5)
+
+    plt.tight_layout()
+    plt.show()
+
+.. image:: ../_static/hillstorm_subgroup_men_dte.png
+   :alt: Men's Email Campaign Subgroup Analysis
+   :width: 800px
+   :align: center
+
+**Key Finding for Men's Email Campaign**: In contrast to women's email campaigns, men's email campaigns show consistent effectiveness across both purchase history segments. The DTE curves in both panels show similar patterns, with negative values at lower spending levels indicating reduced probability of low spending for both male and women's merchandise purchasers. This suggests that men's emails have broad appeal regardless of whether customers historically purchased men's or women's merchandise.
+
+Probability Treatment Effects: Women's Email Campaign
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+While DTE shows how cumulative distributions shift, Probability Treatment Effects (PTE) reveal which specific spending intervals are most affected by the campaign. PTE measures the change in probability mass within each spending category:
+
+.. code-block:: python
+
+    # Compute PTE for Women's Email vs Control in each subgroup
+    pte_locations = np.insert(locations, 0, -1)  # Add -1 at beginning for intervals
+
+    pte_women_male, pte_lower_women_male, pte_upper_women_male = estimator_male.predict_pte(
+        target_treatment_arm=2,  # Women's Email
+        control_treatment_arm=0,  # No Email
+        locations=pte_locations,
+        variance_type="moment"
+    )
+
+    pte_women_female, pte_lower_women_female, pte_upper_women_female = estimator_female.predict_pte(
+        target_treatment_arm=2,  # Women's Email
+        control_treatment_arm=0,  # No Email
+        locations=pte_locations,
+        variance_type="moment"
+    )
+
+    # Visualize side-by-side with bar charts
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+
+    plot(locations, pte_women_male, pte_lower_women_male, pte_upper_women_male,
+         chart_type="bar",
+         title="Women's Email vs Control\nMen's Merch. Purchasers",
+         xlabel="Spending Category ($)", ylabel="Probability Treatment Effect",
+         color="purple", ax=ax1)
+    ax1.axhline(y=0, color='black', linestyle='--', linewidth=0.8, alpha=0.5)
+
+    plot(locations, pte_women_female, pte_lower_women_female, pte_upper_women_female,
+         chart_type="bar",
+         title="Women's Email vs Control\nWomen's Merch. Purchasers",
+         xlabel="Spending Category ($)", ylabel="Probability Treatment Effect",
+         color="green", ax=ax2)
+    ax2.axhline(y=0, color='black', linestyle='--', linewidth=0.8, alpha=0.5)
+
+    plt.tight_layout()
+    plt.show()
+
+.. image:: ../_static/hillstorm_subgroup_women_pte.png
+   :alt: Women's Email Campaign PTE Subgroup Analysis
+   :width: 800px
+   :align: center
+
+**Interval-Specific Insights**: The PTE bar charts reveal the mechanism behind the average treatment effect. For women's merchandise purchasers (right panel), women's emails significantly reduce the probability of zero spending (non-purchasers converting to purchasers), which is the primary driver of the positive ATE. However, no significant increase in high spending categories is observed. For men's merchandise purchasers (left panel), the effects are much smaller and less consistent, confirming the limited impact suggested by the ATE and DTE analyses.
+
+Probability Treatment Effects: Men's Email Campaign
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Let's examine which spending categories are most affected by men's email campaigns:
+
+.. code-block:: python
+
+    # Compute PTE for Men's Email vs Control in each subgroup
+    pte_men_male, pte_lower_men_male, pte_upper_men_male = estimator_male.predict_pte(
+        target_treatment_arm=1,  # Men's Email
+        control_treatment_arm=0,  # No Email
+        locations=pte_locations,
+        variance_type="moment"
+    )
+
+    pte_men_female, pte_lower_men_female, pte_upper_men_female = estimator_female.predict_pte(
+        target_treatment_arm=1,  # Men's Email
+        control_treatment_arm=0,  # No Email
+        locations=pte_locations,
+        variance_type="moment"
+    )
+
+    # Visualize side-by-side with bar charts
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+
+    plot(locations, pte_men_male, pte_lower_men_male, pte_upper_men_male,
+         chart_type="bar",
+         title="Men's Email vs Control\nMen's Merch. Purchasers",
+         xlabel="Spending Category ($)", ylabel="Probability Treatment Effect",
+         color="purple", ax=ax1)
+    ax1.axhline(y=0, color='black', linestyle='--', linewidth=0.8, alpha=0.5)
+
+    plot(locations, pte_men_female, pte_lower_men_female, pte_upper_men_female,
+         chart_type="bar",
+         title="Men's Email vs Control\nWomen's Merch. Purchasers",
+         xlabel="Spending Category ($)", ylabel="Probability Treatment Effect",
+         color="green", ax=ax2)
+    ax2.axhline(y=0, color='black', linestyle='--', linewidth=0.8, alpha=0.5)
+
+    plt.tight_layout()
+    plt.show()
+
+.. image:: ../_static/hillstorm_subgroup_men_pte.png
+   :alt: Men's Email Campaign PTE Subgroup Analysis
+   :width: 800px
+   :align: center
+
+**Interval-Specific Insights**: Men's email campaigns show similar PTE patterns across both segments (left and right panels). The key mechanism is twofold: (1) significant reduction in zero spending probability (converting non-purchasers to purchasers), and (2) increased probability in the $40-100 spending range. This dual effect—both purchase conversion and mid-range spending increases—occurs consistently across both male and women's merchandise purchaser segments, confirming the broad effectiveness of men's campaigns.
+
+Key Insights from Subgroup Analysis
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Combining Average Treatment Effects (ATE), Distribution Treatment Effects (DTE), and Probability Treatment Effects (PTE) provides a comprehensive understanding of campaign effectiveness:
+
+**1. Campaign Targeting Effectiveness (from ATE)**
+
+- Women's email campaigns show 2× stronger average effects for women's merchandise purchasers ($0.54) vs men's merchandise purchasers ($0.26)
+- Men's email campaigns demonstrate consistent strong effects across both segments ($0.89-$0.84)
+- This suggests women's campaigns benefit from precise targeting, while men's campaigns have broader appeal
+
+**2. Distributional Shifts Beyond Averages (from DTE)**
+
+- For women's emails, the women's merchandise purchaser segment shows negative DTE at lower spending thresholds, indicating a systematic shift away from low-spending behavior
+- Men's merchandise purchasers show minimal distributional changes from women's emails, with confidence intervals overlapping zero at most thresholds
+- Men's emails produce similar distributional patterns across both segments, confirming broad effectiveness
+
+**3. Spending Category Changes (from PTE)**
+
+- PTE analysis reveals *which specific spending intervals* change in response to campaigns, particularly identifying the mechanisms behind average effects
+- **Women's emails**: For women's merchandise purchasers, the primary effect is converting non-purchasers to purchasers (significant reduction in zero spending probability). No significant increase in high spending categories was observed.
+- **Men's emails**: Show a dual mechanism across both segments: (1) converting non-purchasers to purchasers (zero spending reduction), and (2) increasing purchases in the $40-100 range
+- PTE enables identification of behavioral change mechanisms that are invisible in average treatment effects alone—specifically revealing that lift comes primarily from purchase conversion (0→1 effect) rather than spending increases among existing purchasers
+
+**4. Strategic Implications**
+
+Based on these findings, several practical implications emerge:
+
+- **For Women's Campaigns**: Target customers with history of purchasing women's merchandise to maximize ROI. The PTE analysis reveals that effectiveness comes primarily from converting non-purchasers to purchasers among women's merchandise purchaser segments, rather than increasing spending among existing buyers.
+- **For Men's Campaigns**: Deploy broadly as they produce consistent positive effects across diverse customer segments. Both male and women's merchandise purchasers show both purchase conversion and mid-range spending increases, suggesting broader appeal.
+- **Resource Allocation**: One practical implication is to prioritize precise targeting for gender-specific content (women's emails) but invest confidently in broad deployment for broadly appealing content (men's emails).
+
+**5. Methodological Value**
+
+This three-tier analysis demonstrates why distributional methods matter:
+
+- **ATE alone** would show that both campaigns have positive effects, but with varying magnitudes across subgroups
+- **Adding DTE** reveals *how* spending distributions shift, not just average changes
+- **Adding PTE** pinpoints *which spending categories* are most affected, enabling precise business decisions
+
+By examining effects at average, distributional, and interval-specific levels, we gain actionable insights that would be invisible to traditional mean-comparison approaches. This demonstrates the power of distribution treatment effect methods for understanding heterogeneous responses in digital marketing experiments.
+
+For the complete reproducible code including helper functions and visualizations, see `example/hillstrom.ipynb <https://github.com/CyberAgentAILab/python-dte-adjustment/blob/main/example/hillstrom.ipynb>`_.
+
 Next Steps
 ~~~~~~~~~~
 
