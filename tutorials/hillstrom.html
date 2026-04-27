@@ -313,6 +313,292 @@ This time we estimate the distribution treatment effects with regression adjustm
 </ol>
 <p><strong>Conclusion</strong>: Using the real Hillstrom dataset with 64,000 customers, the distributional analysis reveals nuanced patterns in how email campaigns affect customer spending. The analysis goes beyond simple average comparisons to show how treatment effects vary across the entire spending distribution, providing insights into which customer segments respond best to different campaign types. This demonstrates the power of distribution treatment effect analysis for understanding heterogeneous responses in digital marketing experiments.</p>
 </section>
+<section id="subgroup-analysis-by-purchase-history">
+<h2>Subgroup Analysis by Purchase History<a class="headerlink" href="#subgroup-analysis-by-purchase-history" title="Link to this heading">¶</a></h2>
+<p>Beyond comparing email campaigns overall, we can examine how campaign effectiveness varies by customer purchase history. This analysis segments customers based on their past purchasing behavior:</p>
+<ul class="simple">
+<li><p><strong>Men’s merchandise purchasers</strong> (<code class="docutils literal notranslate"><span class="pre">mens=1</span></code>): Customers who previously purchased men’s merchandise (35,266 customers, 55.1%)</p></li>
+<li><p><strong>Women’s merchandise purchasers</strong> (<code class="docutils literal notranslate"><span class="pre">womens=1</span></code>): Customers who previously purchased women’s merchandise (35,182 customers, 55.0%)</p></li>
+</ul>
+<p>Note that these segments overlap (6,448 customers purchased both categories), so a customer can appear in both analyses.</p>
+<p><strong>Research Question</strong>: Does the effectiveness of men’s vs women’s email campaigns vary by the type of merchandise customers have historically purchased?</p>
+<section id="defining-subgroups">
+<h3>Defining Subgroups<a class="headerlink" href="#defining-subgroups" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define subgroup masks based on purchase history</span>
+<span class="n">mens_purchasers</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;mens&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">womens_purchasers</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;womens&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Men&#39;s merchandise purchaser segment: </span><span class="si">{</span><span class="n">mens_purchasers</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> customers&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Women&#39;s merchandise purchaser segment: </span><span class="si">{</span><span class="n">womens_purchasers</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> customers&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overlap: </span><span class="si">{</span><span class="p">(</span><span class="n">mens_purchasers</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">womens_purchasers</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> customers&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="average-treatment-effects-by-subgroup">
+<h3>Average Treatment Effects by Subgroup<a class="headerlink" href="#average-treatment-effects-by-subgroup" title="Link to this heading">¶</a></h3>
+<p>Let’s first compute the average treatment effects (ATEs) to quantify the overall impact:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute ATEs for each campaign-subgroup combination</span>
+<span class="c1"># Women&#39;s Email Campaign</span>
+<span class="n">ate_women_male</span> <span class="o">=</span> <span class="p">(</span><span class="n">revenue</span><span class="p">[(</span><span class="n">D</span><span class="o">==</span><span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">mens_purchasers</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span>
+                  <span class="n">revenue</span><span class="p">[(</span><span class="n">D</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">mens_purchasers</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="n">ate_women_female</span> <span class="o">=</span> <span class="p">(</span><span class="n">revenue</span><span class="p">[(</span><span class="n">D</span><span class="o">==</span><span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">womens_purchasers</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span>
+                    <span class="n">revenue</span><span class="p">[(</span><span class="n">D</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">womens_purchasers</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+
+<span class="c1"># Men&#39;s Email Campaign</span>
+<span class="n">ate_men_male</span> <span class="o">=</span> <span class="p">(</span><span class="n">revenue</span><span class="p">[(</span><span class="n">D</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">mens_purchasers</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span>
+                <span class="n">revenue</span><span class="p">[(</span><span class="n">D</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">mens_purchasers</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="n">ate_men_female</span> <span class="o">=</span> <span class="p">(</span><span class="n">revenue</span><span class="p">[(</span><span class="n">D</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">womens_purchasers</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span>
+                  <span class="n">revenue</span><span class="p">[(</span><span class="n">D</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">womens_purchasers</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Average Treatment Effects by Subgroup:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Women&#39;s Email Campaign:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Men&#39;s Merch. Purchasers:   ATE = $</span><span class="si">{</span><span class="n">ate_women_male</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Women&#39;s Merch. Purchasers: ATE = $</span><span class="si">{</span><span class="n">ate_women_female</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Men&#39;s Email Campaign:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Men&#39;s Merch. Purchasers:   ATE = $</span><span class="si">{</span><span class="n">ate_men_male</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Women&#39;s Merch. Purchasers: ATE = $</span><span class="si">{</span><span class="n">ate_men_female</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Expected output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Average</span> <span class="n">Treatment</span> <span class="n">Effects</span> <span class="n">by</span> <span class="n">Subgroup</span><span class="p">:</span>
+
+<span class="n">Women</span><span class="s1">&#39;s Email Campaign:</span>
+  <span class="n">Men</span><span class="s1">&#39;s Merch. Purchasers:   ATE = $0.2564</span>
+  <span class="n">Women</span><span class="s1">&#39;s Merch. Purchasers: ATE = $0.5442</span>
+
+<span class="n">Men</span><span class="s1">&#39;s Email Campaign:</span>
+  <span class="n">Men</span><span class="s1">&#39;s Merch. Purchasers:   ATE = $0.8966</span>
+  <span class="n">Women</span><span class="s1">&#39;s Merch. Purchasers: ATE = $0.8412</span>
+</pre></div>
+</div>
+<p>These results reveal important patterns:</p>
+<ul class="simple">
+<li><p><strong>Women’s Email Campaign</strong>: Shows 2× stronger effect for women’s merchandise purchasers ($0.54) vs men’s merchandise purchasers ($0.26)</p></li>
+<li><p><strong>Men’s Email Campaign</strong>: Demonstrates consistent strong effects across both segments ($0.84-$0.89)</p></li>
+</ul>
+<p>While these averages provide a useful summary, they don’t tell us <em>how</em> customer spending distributions change. The distributional and probability treatment effect analyses that follow reveal the complete picture of campaign effectiveness.</p>
+</section>
+<section id="distribution-treatment-effects-women-s-email-campaign">
+<h3>Distribution Treatment Effects: Women’s Email Campaign<a class="headerlink" href="#distribution-treatment-effects-women-s-email-campaign" title="Link to this heading">¶</a></h3>
+<p>Beyond the average effects, let’s examine how the Women’s Email campaign shifts the entire spending distribution for each subgroup:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Analyze men&#39;s merchandise purchaser segment</span>
+<span class="n">estimator_male</span> <span class="o">=</span> <span class="n">dte_adj</span><span class="o">.</span><span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator_male</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">mens_purchasers</span><span class="p">],</span> <span class="n">D</span><span class="p">[</span><span class="n">mens_purchasers</span><span class="p">],</span> <span class="n">revenue</span><span class="p">[</span><span class="n">mens_purchasers</span><span class="p">])</span>
+
+<span class="c1"># Analyze women&#39;s merchandise purchaser segment</span>
+<span class="n">estimator_female</span> <span class="o">=</span> <span class="n">dte_adj</span><span class="o">.</span><span class="n">SimpleDistributionEstimator</span><span class="p">()</span>
+<span class="n">estimator_female</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">womens_purchasers</span><span class="p">],</span> <span class="n">D</span><span class="p">[</span><span class="n">womens_purchasers</span><span class="p">],</span> <span class="n">revenue</span><span class="p">[</span><span class="n">womens_purchasers</span><span class="p">])</span>
+
+<span class="c1"># Define evaluation points</span>
+<span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">51</span><span class="p">)</span>
+
+<span class="c1"># Compute DTE for Women&#39;s Email vs Control in each subgroup</span>
+<span class="n">dte_women_male</span><span class="p">,</span> <span class="n">lower_women_male</span><span class="p">,</span> <span class="n">upper_women_male</span> <span class="o">=</span> <span class="n">estimator_male</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># Women&#39;s Email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># No Email</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="n">dte_women_female</span><span class="p">,</span> <span class="n">lower_women_female</span><span class="p">,</span> <span class="n">upper_women_female</span> <span class="o">=</span> <span class="n">estimator_female</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># Women&#39;s Email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># No Email</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Visualize side-by-side</span>
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">dte_women_male</span><span class="p">,</span> <span class="n">lower_women_male</span><span class="p">,</span> <span class="n">upper_women_male</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Women&#39;s Email vs Control</span><span class="se">\n</span><span class="s2">Men&#39;s Merch. Purchasers&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Distribution Treatment Effect&quot;</span><span class="p">,</span>
+     <span class="n">color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">dte_women_female</span><span class="p">,</span> <span class="n">lower_women_female</span><span class="p">,</span> <span class="n">upper_women_female</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Women&#39;s Email vs Control</span><span class="se">\n</span><span class="s2">Women&#39;s Merch. Purchasers&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Distribution Treatment Effect&quot;</span><span class="p">,</span>
+     <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/hillstorm_subgroup_women_dte.png"><img alt="Women's Email Campaign Subgroup Analysis" class="align-center" src="../_images/hillstorm_subgroup_women_dte.png" style="width: 800px;" />
+</a>
+<p><strong>Key Finding for Women’s Email Campaign</strong>: The distributional treatment effects reveal that women’s email campaigns are significantly more effective for the women’s merchandise purchaser segment (right panel) compared to the men’s merchandise purchaser segment (left panel). The DTE curves show that women’s emails reduce the probability of low spending levels (negative DTE at lower thresholds) for women’s merchandise purchasers, indicating a shift toward higher spending. In contrast, the men’s merchandise purchaser segment shows minimal or non-significant effects across most of the spending distribution, with confidence intervals overlapping zero.</p>
+</section>
+<section id="distribution-treatment-effects-men-s-email-campaign">
+<h3>Distribution Treatment Effects: Men’s Email Campaign<a class="headerlink" href="#distribution-treatment-effects-men-s-email-campaign" title="Link to this heading">¶</a></h3>
+<p>Now let’s examine how the Men’s Email campaign affects spending distributions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute DTE for Men&#39;s Email vs Control in each subgroup</span>
+<span class="n">dte_men_male</span><span class="p">,</span> <span class="n">lower_men_male</span><span class="p">,</span> <span class="n">upper_men_male</span> <span class="o">=</span> <span class="n">estimator_male</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Men&#39;s Email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># No Email</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="n">dte_men_female</span><span class="p">,</span> <span class="n">lower_men_female</span><span class="p">,</span> <span class="n">upper_men_female</span> <span class="o">=</span> <span class="n">estimator_female</span><span class="o">.</span><span class="n">predict_dte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Men&#39;s Email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># No Email</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Visualize side-by-side</span>
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">dte_men_male</span><span class="p">,</span> <span class="n">lower_men_male</span><span class="p">,</span> <span class="n">upper_men_male</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Men&#39;s Email vs Control</span><span class="se">\n</span><span class="s2">Men&#39;s Merch. Purchasers&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Distribution Treatment Effect&quot;</span><span class="p">,</span>
+     <span class="n">color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">dte_men_female</span><span class="p">,</span> <span class="n">lower_men_female</span><span class="p">,</span> <span class="n">upper_men_female</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Men&#39;s Email vs Control</span><span class="se">\n</span><span class="s2">Women&#39;s Merch. Purchasers&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Distribution Treatment Effect&quot;</span><span class="p">,</span>
+     <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/hillstorm_subgroup_men_dte.png"><img alt="Men's Email Campaign Subgroup Analysis" class="align-center" src="../_images/hillstorm_subgroup_men_dte.png" style="width: 800px;" />
+</a>
+<p><strong>Key Finding for Men’s Email Campaign</strong>: In contrast to women’s email campaigns, men’s email campaigns show consistent effectiveness across both purchase history segments. The DTE curves in both panels show similar patterns, with negative values at lower spending levels indicating reduced probability of low spending for both male and women’s merchandise purchasers. This suggests that men’s emails have broad appeal regardless of whether customers historically purchased men’s or women’s merchandise.</p>
+</section>
+<section id="probability-treatment-effects-women-s-email-campaign">
+<h3>Probability Treatment Effects: Women’s Email Campaign<a class="headerlink" href="#probability-treatment-effects-women-s-email-campaign" title="Link to this heading">¶</a></h3>
+<p>While DTE shows how cumulative distributions shift, Probability Treatment Effects (PTE) reveal which specific spending intervals are most affected by the campaign. PTE measures the change in probability mass within each spending category:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute PTE for Women&#39;s Email vs Control in each subgroup</span>
+<span class="n">pte_locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Add -1 at beginning for intervals</span>
+
+<span class="n">pte_women_male</span><span class="p">,</span> <span class="n">pte_lower_women_male</span><span class="p">,</span> <span class="n">pte_upper_women_male</span> <span class="o">=</span> <span class="n">estimator_male</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># Women&#39;s Email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># No Email</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">pte_locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="n">pte_women_female</span><span class="p">,</span> <span class="n">pte_lower_women_female</span><span class="p">,</span> <span class="n">pte_upper_women_female</span> <span class="o">=</span> <span class="n">estimator_female</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># Women&#39;s Email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># No Email</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">pte_locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Visualize side-by-side with bar charts</span>
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">pte_women_male</span><span class="p">,</span> <span class="n">pte_lower_women_male</span><span class="p">,</span> <span class="n">pte_upper_women_male</span><span class="p">,</span>
+     <span class="n">chart_type</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Women&#39;s Email vs Control</span><span class="se">\n</span><span class="s2">Men&#39;s Merch. Purchasers&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending Category ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Probability Treatment Effect&quot;</span><span class="p">,</span>
+     <span class="n">color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">pte_women_female</span><span class="p">,</span> <span class="n">pte_lower_women_female</span><span class="p">,</span> <span class="n">pte_upper_women_female</span><span class="p">,</span>
+     <span class="n">chart_type</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Women&#39;s Email vs Control</span><span class="se">\n</span><span class="s2">Women&#39;s Merch. Purchasers&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending Category ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Probability Treatment Effect&quot;</span><span class="p">,</span>
+     <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/hillstorm_subgroup_women_pte.png"><img alt="Women's Email Campaign PTE Subgroup Analysis" class="align-center" src="../_images/hillstorm_subgroup_women_pte.png" style="width: 800px;" />
+</a>
+<p><strong>Interval-Specific Insights</strong>: The PTE bar charts reveal the mechanism behind the average treatment effect. For women’s merchandise purchasers (right panel), women’s emails significantly reduce the probability of zero spending (non-purchasers converting to purchasers), which is the primary driver of the positive ATE. However, no significant increase in high spending categories is observed. For men’s merchandise purchasers (left panel), the effects are much smaller and less consistent, confirming the limited impact suggested by the ATE and DTE analyses.</p>
+</section>
+<section id="probability-treatment-effects-men-s-email-campaign">
+<h3>Probability Treatment Effects: Men’s Email Campaign<a class="headerlink" href="#probability-treatment-effects-men-s-email-campaign" title="Link to this heading">¶</a></h3>
+<p>Let’s examine which spending categories are most affected by men’s email campaigns:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute PTE for Men&#39;s Email vs Control in each subgroup</span>
+<span class="n">pte_men_male</span><span class="p">,</span> <span class="n">pte_lower_men_male</span><span class="p">,</span> <span class="n">pte_upper_men_male</span> <span class="o">=</span> <span class="n">estimator_male</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Men&#39;s Email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># No Email</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">pte_locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="n">pte_men_female</span><span class="p">,</span> <span class="n">pte_lower_men_female</span><span class="p">,</span> <span class="n">pte_upper_men_female</span> <span class="o">=</span> <span class="n">estimator_female</span><span class="o">.</span><span class="n">predict_pte</span><span class="p">(</span>
+    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Men&#39;s Email</span>
+    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># No Email</span>
+    <span class="n">locations</span><span class="o">=</span><span class="n">pte_locations</span><span class="p">,</span>
+    <span class="n">variance_type</span><span class="o">=</span><span class="s2">&quot;moment&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Visualize side-by-side with bar charts</span>
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">pte_men_male</span><span class="p">,</span> <span class="n">pte_lower_men_male</span><span class="p">,</span> <span class="n">pte_upper_men_male</span><span class="p">,</span>
+     <span class="n">chart_type</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Men&#39;s Email vs Control</span><span class="se">\n</span><span class="s2">Men&#39;s Merch. Purchasers&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending Category ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Probability Treatment Effect&quot;</span><span class="p">,</span>
+     <span class="n">color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">pte_men_female</span><span class="p">,</span> <span class="n">pte_lower_men_female</span><span class="p">,</span> <span class="n">pte_upper_men_female</span><span class="p">,</span>
+     <span class="n">chart_type</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Men&#39;s Email vs Control</span><span class="se">\n</span><span class="s2">Women&#39;s Merch. Purchasers&quot;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Spending Category ($)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Probability Treatment Effect&quot;</span><span class="p">,</span>
+     <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/hillstorm_subgroup_men_pte.png"><img alt="Men's Email Campaign PTE Subgroup Analysis" class="align-center" src="../_images/hillstorm_subgroup_men_pte.png" style="width: 800px;" />
+</a>
+<p><strong>Interval-Specific Insights</strong>: Men’s email campaigns show similar PTE patterns across both segments (left and right panels). The key mechanism is twofold: (1) significant reduction in zero spending probability (converting non-purchasers to purchasers), and (2) increased probability in the $40-100 spending range. This dual effect—both purchase conversion and mid-range spending increases—occurs consistently across both male and women’s merchandise purchaser segments, confirming the broad effectiveness of men’s campaigns.</p>
+</section>
+<section id="key-insights-from-subgroup-analysis">
+<h3>Key Insights from Subgroup Analysis<a class="headerlink" href="#key-insights-from-subgroup-analysis" title="Link to this heading">¶</a></h3>
+<p>Combining Average Treatment Effects (ATE), Distribution Treatment Effects (DTE), and Probability Treatment Effects (PTE) provides a comprehensive understanding of campaign effectiveness:</p>
+<p><strong>1. Campaign Targeting Effectiveness (from ATE)</strong></p>
+<ul class="simple">
+<li><p>Women’s email campaigns show 2× stronger average effects for women’s merchandise purchasers ($0.54) vs men’s merchandise purchasers ($0.26)</p></li>
+<li><p>Men’s email campaigns demonstrate consistent strong effects across both segments ($0.89-$0.84)</p></li>
+<li><p>This suggests women’s campaigns benefit from precise targeting, while men’s campaigns have broader appeal</p></li>
+</ul>
+<p><strong>2. Distributional Shifts Beyond Averages (from DTE)</strong></p>
+<ul class="simple">
+<li><p>For women’s emails, the women’s merchandise purchaser segment shows negative DTE at lower spending thresholds, indicating a systematic shift away from low-spending behavior</p></li>
+<li><p>Men’s merchandise purchasers show minimal distributional changes from women’s emails, with confidence intervals overlapping zero at most thresholds</p></li>
+<li><p>Men’s emails produce similar distributional patterns across both segments, confirming broad effectiveness</p></li>
+</ul>
+<p><strong>3. Spending Category Changes (from PTE)</strong></p>
+<ul class="simple">
+<li><p>PTE analysis reveals <em>which specific spending intervals</em> change in response to campaigns, particularly identifying the mechanisms behind average effects</p></li>
+<li><p><strong>Women’s emails</strong>: For women’s merchandise purchasers, the primary effect is converting non-purchasers to purchasers (significant reduction in zero spending probability). No significant increase in high spending categories was observed.</p></li>
+<li><p><strong>Men’s emails</strong>: Show a dual mechanism across both segments: (1) converting non-purchasers to purchasers (zero spending reduction), and (2) increasing purchases in the $40-100 range</p></li>
+<li><p>PTE enables identification of behavioral change mechanisms that are invisible in average treatment effects alone—specifically revealing that lift comes primarily from purchase conversion (0→1 effect) rather than spending increases among existing purchasers</p></li>
+</ul>
+<p><strong>4. Strategic Implications</strong></p>
+<p>Based on these findings, several practical implications emerge:</p>
+<ul class="simple">
+<li><p><strong>For Women’s Campaigns</strong>: Target customers with history of purchasing women’s merchandise to maximize ROI. The PTE analysis reveals that effectiveness comes primarily from converting non-purchasers to purchasers among women’s merchandise purchaser segments, rather than increasing spending among existing buyers.</p></li>
+<li><p><strong>For Men’s Campaigns</strong>: Deploy broadly as they produce consistent positive effects across diverse customer segments. Both male and women’s merchandise purchasers show both purchase conversion and mid-range spending increases, suggesting broader appeal.</p></li>
+<li><p><strong>Resource Allocation</strong>: One practical implication is to prioritize precise targeting for gender-specific content (women’s emails) but invest confidently in broad deployment for broadly appealing content (men’s emails).</p></li>
+</ul>
+<p><strong>5. Methodological Value</strong></p>
+<p>This three-tier analysis demonstrates why distributional methods matter:</p>
+<ul class="simple">
+<li><p><strong>ATE alone</strong> would show that both campaigns have positive effects, but with varying magnitudes across subgroups</p></li>
+<li><p><strong>Adding DTE</strong> reveals <em>how</em> spending distributions shift, not just average changes</p></li>
+<li><p><strong>Adding PTE</strong> pinpoints <em>which spending categories</em> are most affected, enabling precise business decisions</p></li>
+</ul>
+<p>By examining effects at average, distributional, and interval-specific levels, we gain actionable insights that would be invisible to traditional mean-comparison approaches. This demonstrates the power of distribution treatment effect methods for understanding heterogeneous responses in digital marketing experiments.</p>
+<p>For the complete reproducible code including helper functions and visualizations, see <a class="reference external" href="https://github.com/CyberAgentAILab/python-dte-adjustment/blob/main/example/hillstrom.ipynb">example/hillstrom.ipynb</a>.</p>
+</section>
+</section>
 <section id="next-steps">
 <h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">¶</a></h2>
 <ul class="simple">
