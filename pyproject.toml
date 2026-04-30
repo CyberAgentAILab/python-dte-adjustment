@@ -27,7 +27,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "build>=1.2.2,<1.5.0",
+  "build>=1.2.2,<1.6.0",
   "ruff>=0.12.2,<0.16.0",
   "sphinx>=7.3.7,<8.2.0",
   "scikit-learn>=1.5,<1.9",
@@ -46,7 +46,7 @@ homepage = "https://github.com/CyberAgentAILab/python-dte-adjustment"
 
 [tool.uv]
 dev-dependencies = [
-  "build>=1.2.2,<1.5.0",
+  "build>=1.2.2,<1.6.0",
   "build>=1.2.2,<1.4.0",
   "ruff>=0.12.2,<0.16.0",
   "sphinx>=7.3.7,<8.2.0",
