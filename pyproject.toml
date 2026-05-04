@@ -57,8 +57,11 @@ dev-dependencies = [
 ]
 
 [tool.ruff.lint]
+preview = true
 # TID252: Ban relative imports - enforce absolute imports for internal modules
-select = ["TID252"]
+# E225: Missing whitespace around operator (e.g. x=1 → x = 1)
+# E251: Unexpected spaces around keyword / parameter equals (e.g. def f(a =0) → def f(a=0))
+select = ["TID252", "E225", "E251"]
 
 [tool.ruff.lint.flake8-tidy-imports]
 # Ban all relative imports
