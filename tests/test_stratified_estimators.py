@@ -214,3 +214,67 @@ class TestStratifiedEstimators(unittest.TestCase):
         width_010 = upper_010 - lower_010
 
         self.assertTrue(np.all(width_010 < width_005))
+
+    def test_predict_qte_preserves_per_stratum_counts(self):
+        # Stratified bootstrap must preserve per-stratum sample counts in every
+        # bootstrap replicate. This would fail under a plain (unstratified) bootstrap.
+        estimator = SimpleStratifiedDistributionEstimator()
+        estimator.fit(self.X, self.W, self.Y, self.strata)
+
+        original_counts = np.bincount(self.strata.astype(int))
+
+        captured_strata = []
+        original_compute = estimator._compute_qtes
+
+        def spy_compute(*args, **kwargs):
+            captured_strata.append(args[-1])
+            return original_compute(*args, **kwargs)
+
+        estimator._compute_qtes = spy_compute
+        try:
+            estimator.predict_qte(
+                target_treatment_arm=1,
+                control_treatment_arm=0,
+                quantiles=np.array([0.5]),
+                n_bootstrap=5,
+                display_progress=False,
+            )
+        finally:
+            estimator._compute_qtes = original_compute
+
+        # 1 call for the point estimate + 5 bootstrap calls
+        self.assertEqual(len(captured_strata), 6)
+        for strata in captured_strata:
+            np.testing.assert_array_equal(
+                np.bincount(strata.astype(int)), original_counts
+            )
+
+    def test_predict_qte_default_quantiles(self):
+        # quantiles=None should default to [0.1, 0.2, ..., 0.9] without erroring.
+        estimator = SimpleStratifiedDistributionEstimator()
+        estimator.fit(self.X, self.W, self.Y, self.strata)
+
+        qte, lower, upper = estimator.predict_qte(
+            target_treatment_arm=1,
+            control_treatment_arm=0,
+            n_bootstrap=10,
+            display_progress=False,
+        )
+
+        self.assertEqual(qte.shape, (9,))
+        self.assertEqual(lower.shape, (9,))
+        self.assertEqual(upper.shape, (9,))
+        self.assertTrue(np.all(lower <= upper))
+
+    def test_predict_qte_rejects_out_of_range_quantiles(self):
+        estimator = SimpleStratifiedDistributionEstimator()
+        estimator.fit(self.X, self.W, self.Y, self.strata)
+
+        with self.assertRaises(ValueError):
+            estimator.predict_qte(
+                1, 0, quantiles=np.array([0.0, 0.5]), n_bootstrap=5, display_progress=False
+            )
+        with self.assertRaises(ValueError):
+            estimator.predict_qte(
+                1, 0, quantiles=np.array([0.5, 1.0]), n_bootstrap=5, display_progress=False
+            )
