@@ -253,6 +253,10 @@ shape (len(locations)-1,)</p></li>
 <p>The QTE measures the difference in quantiles between treatment groups, providing insights
 into how treatment affects different parts of the outcome distribution. For stratified
 estimators, the computation properly accounts for strata.</p>
+<p>Variance is estimated by stratified bootstrap: indices are resampled with replacement
+within each stratum independently, which preserves per-stratum sample sizes and reflects
+the covariate-adaptive randomization (CAR) design. For estimators without strata
+(single stratum), this degenerates to a plain bootstrap.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -522,6 +526,10 @@ shape (len(locations)-1,)</p></li>
 <p>The QTE measures the difference in quantiles between treatment groups, providing insights
 into how treatment affects different parts of the outcome distribution. For stratified
 estimators, the computation properly accounts for strata.</p>
+<p>Variance is estimated by stratified bootstrap: indices are resampled with replacement
+within each stratum independently, which preserves per-stratum sample sizes and reflects
+the covariate-adaptive randomization (CAR) design. For estimators without strata
+(single stratum), this degenerates to a plain bootstrap.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
