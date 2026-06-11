@@ -222,6 +222,11 @@ class DistributionEstimatorBase(ABC):
                 print(f"QTE at quantiles {quantiles}: {qte}")
                 print(f"Median effect (50th percentile): {qte[1]:.3f}")
         """
+        if quantiles is None:
+            quantiles = np.arange(1, 10) / 10
+        if np.any((quantiles <= 0) | (quantiles >= 1)):
+            raise ValueError("quantiles must be in the open interval (0, 1)")
+
         qte = self._compute_qtes(
             target_treatment_arm,
             control_treatment_arm,

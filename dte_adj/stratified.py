@@ -183,6 +183,11 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
                 - Lower bounds (np.ndarray): Lower confidence interval bounds
                 - Upper bounds (np.ndarray): Upper confidence interval bounds
         """
+        if quantiles is None:
+            quantiles = np.arange(1, 10) / 10
+        if np.any((quantiles <= 0) | (quantiles >= 1)):
+            raise ValueError("quantiles must be in the open interval (0, 1)")
+
         qte = self._compute_qtes(
             target_treatment_arm,
             control_treatment_arm,
@@ -506,6 +511,11 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                 - Lower bounds (np.ndarray): Lower confidence interval bounds
                 - Upper bounds (np.ndarray): Upper confidence interval bounds
         """
+        if quantiles is None:
+            quantiles = np.arange(1, 10) / 10
+        if np.any((quantiles <= 0) | (quantiles >= 1)):
+            raise ValueError("quantiles must be in the open interval (0, 1)")
+
         qte = self._compute_qtes(
             target_treatment_arm,
             control_treatment_arm,
