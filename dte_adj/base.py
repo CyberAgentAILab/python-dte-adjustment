@@ -180,6 +180,11 @@ class DistributionEstimatorBase(ABC):
         into how treatment affects different parts of the outcome distribution. For stratified
         estimators, the computation properly accounts for strata.
 
+        Variance is estimated by stratified bootstrap: indices are resampled with replacement
+        within each stratum independently, which preserves per-stratum sample sizes and reflects
+        the covariate-adaptive randomization (CAR) design. For estimators without strata
+        (single stratum), this degenerates to a plain bootstrap.
+
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
             control_treatment_arm (int): The index of the treatment arm of the control group.
@@ -222,6 +227,11 @@ class DistributionEstimatorBase(ABC):
                 print(f"QTE at quantiles {quantiles}: {qte}")
                 print(f"Median effect (50th percentile): {qte[1]:.3f}")
         """
+        if quantiles is None:
+            quantiles = np.arange(1, 10) / 10
+        if np.any((quantiles <= 0) | (quantiles >= 1)):
+            raise ValueError("quantiles must be in the open interval (0, 1)")
+
         qte = self._compute_qtes(
             target_treatment_arm,
             control_treatment_arm,
@@ -231,15 +241,23 @@ class DistributionEstimatorBase(ABC):
             self.outcomes,
             self.strata,
         )
-        n_obs = len(self.outcomes)
-        indexes = np.arange(n_obs)
+
+        # Precompute stratum indices for stratified bootstrap.
+        # When there is a single stratum this is equivalent to plain bootstrap.
+        unique_strata = np.unique(self.strata)
+        strata_indices = [np.where(self.strata == s)[0] for s in unique_strata]
 
         qtes = np.zeros((n_bootstrap, qte.shape[0]))
         bootstrap_iter = range(n_bootstrap)
         if display_progress:
             bootstrap_iter = tqdm(bootstrap_iter, desc="Bootstrap QTE")
         for b in bootstrap_iter:
-            bootstrap_indexes = np.random.choice(indexes, size=n_obs, replace=True)
+            bootstrap_indexes = np.concatenate(
+                [
+                    np.random.choice(idx, size=len(idx), replace=True)
+                    for idx in strata_indices
+                ]
+            )
 
             qtes[b] = self._compute_qtes(
                 target_treatment_arm,
