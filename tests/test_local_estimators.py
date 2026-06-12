@@ -265,6 +265,61 @@ class TestLocalEstimators(unittest.TestCase):
         self.assertTrue(np.all(lower_bound <= beta))
         self.assertTrue(np.all(beta <= upper_bound))
 
+    def test_simple_local_estimator_predict_ldte_without_locations(self):
+        """LDTE auto-infers locations from outcomes when none are passed."""
+        estimator = SimpleLocalDistributionEstimator()
+        estimator.fit(
+            self.covariates,
+            self.treatment_arms,
+            self.treatment_indicator,
+            self.outcomes,
+            self.strata,
+        )
+
+        beta, lower, upper = estimator.predict_ldte(
+            target_treatment_arm=1,
+            control_treatment_arm=0,
+            alpha=0.05,
+        )
+
+        n = estimator.last_locations.shape[0]
+        self.assertGreater(n, 1)
+        self.assertEqual(beta.shape, (n,))
+        self.assertEqual(lower.shape, (n,))
+        self.assertEqual(upper.shape, (n,))
+        self.assertAlmostEqual(
+            estimator.last_locations[0], float(self.outcomes.min())
+        )
+        self.assertAlmostEqual(
+            estimator.last_locations[-1], float(self.outcomes.max())
+        )
+
+    def test_simple_local_estimator_predict_lpte_without_locations(self):
+        """LPTE auto-infers interval boundaries, with left endpoint below min."""
+        estimator = SimpleLocalDistributionEstimator()
+        estimator.fit(
+            self.covariates,
+            self.treatment_arms,
+            self.treatment_indicator,
+            self.outcomes,
+            self.strata,
+        )
+
+        beta, lower, upper = estimator.predict_lpte(
+            target_treatment_arm=1,
+            control_treatment_arm=0,
+            alpha=0.05,
+        )
+
+        n = estimator.last_locations.shape[0]
+        # LPTE output length is len(locations) - 1
+        self.assertEqual(beta.shape, (n - 1,))
+        self.assertEqual(lower.shape, (n - 1,))
+        self.assertEqual(upper.shape, (n - 1,))
+        self.assertLess(
+            estimator.last_locations[0], float(self.outcomes.min())
+        )
+
     def test_adjusted_local_estimator_predict_lpte(self):
         """Test that AdjustedLocalDistributionEstimator can predict LPTE."""
         base_model = LogisticRegression(random_state=42)

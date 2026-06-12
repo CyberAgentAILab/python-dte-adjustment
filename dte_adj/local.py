@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 import numpy as np
-from typing import Tuple
+from typing import Optional, Tuple
 from dte_adj.stratified import (
     SimpleStratifiedDistributionEstimator,
     AdjustedStratifiedDistributionEstimator,
 )
-from dte_adj.util import ArrayLike, compute_ldte, compute_lpte, _convert_to_ndarray
+from dte_adj.util import (
+    ArrayLike,
+    compute_ldte,
+    compute_lpte,
+    _convert_to_ndarray,
+    _infer_default_locations,
+)
 
 
 class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
@@ -59,7 +65,7 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
         self,
         target_treatment_arm: int,
         control_treatment_arm: int,
-        locations: np.ndarray,
+        locations: Optional[np.ndarray] = None,
         alpha: float = 0.05,
         display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -73,7 +79,11 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
             control_treatment_arm (int): The index of the treatment arm of the control group.
-            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            locations (np.ndarray, optional): Scalar values to be used for computing the cumulative
+                distribution. If None, evenly-spaced locations spanning the observed outcome range
+                are generated automatically. The number of points is determined from data size and
+                distribution via ``np.histogram_bin_edges(outcomes, bins='auto')``. The actual
+                array used is stored on ``self.last_locations``.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
             display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
@@ -113,6 +123,11 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
                 print(f"LDTE shape: {ldte.shape}")  # Should match locations.shape
                 print(f"Average LDTE: {ldte.mean():.3f}")
         """
+        if locations is None:
+            locations = _infer_default_locations(
+                self.outcomes, for_intervals=False
+            )
+        self.last_locations = locations
         return compute_ldte(
             self,
             target_treatment_arm,
@@ -126,7 +141,7 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
         self,
         target_treatment_arm: int,
         control_treatment_arm: int,
-        locations: np.ndarray,
+        locations: Optional[np.ndarray] = None,
         alpha: float = 0.05,
         display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -140,8 +155,13 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
             control_treatment_arm (int): The index of the treatment arm of the control group.
-            locations (np.ndarray): Scalar values defining interval boundaries for probability computation.
-                For each interval (locations[i], locations[i+1]], the LPTE is computed.
+            locations (np.ndarray, optional): Scalar values defining interval boundaries for
+                probability computation. For each interval (locations[i], locations[i+1]], the LPTE
+                is computed. If None, boundaries spanning the observed outcome range are generated
+                automatically with the left endpoint placed just below ``outcomes.min()``. The
+                number of boundaries is determined from data size and distribution via
+                ``np.histogram_bin_edges(outcomes, bins='auto')``. The actual array used is stored
+                on ``self.last_locations``.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
             display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
@@ -183,6 +203,11 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
                 print(f"LPTE shape: {lpte.shape}")  # Should be (4,) for 4 intervals
                 print(f"Interval effects: {lpte}")
         """
+        if locations is None:
+            locations = _infer_default_locations(
+                self.outcomes, for_intervals=True
+            )
+        self.last_locations = locations
         return compute_lpte(
             self,
             target_treatment_arm,
@@ -234,7 +259,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         self,
         target_treatment_arm: int,
         control_treatment_arm: int,
-        locations: np.ndarray,
+        locations: Optional[np.ndarray] = None,
         alpha: float = 0.05,
         display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -247,7 +272,11 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
             control_treatment_arm (int): The index of the treatment arm of the control group.
-            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            locations (np.ndarray, optional): Scalar values to be used for computing the cumulative
+                distribution. If None, evenly-spaced locations spanning the observed outcome range
+                are generated automatically. The number of points is determined from data size and
+                distribution via ``np.histogram_bin_edges(outcomes, bins='auto')``. The actual
+                array used is stored on ``self.last_locations``.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
             display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
@@ -289,6 +318,11 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
 
                 print(f"Adjusted LDTE: {ldte.mean():.3f}")
         """
+        if locations is None:
+            locations = _infer_default_locations(
+                self.outcomes, for_intervals=False
+            )
+        self.last_locations = locations
         return compute_ldte(
             self,
             target_treatment_arm,
@@ -302,7 +336,7 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         self,
         target_treatment_arm: int,
         control_treatment_arm: int,
-        locations: np.ndarray,
+        locations: Optional[np.ndarray] = None,
         alpha: float = 0.05,
         display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -315,8 +349,13 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
             control_treatment_arm (int): The index of the treatment arm of the control group.
-            locations (np.ndarray): Scalar values defining interval boundaries for probability computation.
-                For each interval (locations[i], locations[i+1]], the LPTE is computed.
+            locations (np.ndarray, optional): Scalar values defining interval boundaries for
+                probability computation. For each interval (locations[i], locations[i+1]], the LPTE
+                is computed. If None, boundaries spanning the observed outcome range are generated
+                automatically with the left endpoint placed just below ``outcomes.min()``. The
+                number of boundaries is determined from data size and distribution via
+                ``np.histogram_bin_edges(outcomes, bins='auto')``. The actual array used is stored
+                on ``self.last_locations``.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
             display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
@@ -361,6 +400,11 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
 
                 print(f"Adjusted LPTE: {lpte}")
         """
+        if locations is None:
+            locations = _infer_default_locations(
+                self.outcomes, for_intervals=True
+            )
+        self.last_locations = locations
         return compute_lpte(
             self,
             target_treatment_arm,
