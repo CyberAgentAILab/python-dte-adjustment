@@ -32,6 +32,42 @@ def _convert_to_ndarray(data: ArrayLike) -> np.ndarray:
     return np.asarray(data)
 
 
+def _infer_default_locations(
+    outcomes: np.ndarray,
+    for_intervals: bool = False,
+) -> np.ndarray:
+    """Generate default locations from observed outcomes.
+
+    Bin edges are produced by ``np.histogram_bin_edges(outcomes, bins='auto')``,
+    which combines the Sturges and Freedman-Diaconis rules and scales with both
+    data size and distribution.
+
+    Args:
+        outcomes (np.ndarray): Observed outcomes used to determine the bin edges.
+        for_intervals (bool, optional): If True, the left endpoint is shifted
+            slightly below ``outcomes.min()`` so that observations equal to the
+            minimum fall inside the first interval ``(loc[0], loc[1]]``. Set
+            this for PTE/LPTE estimation. Defaults to False.
+
+    Returns:
+        np.ndarray: Locations array (the histogram bin edges).
+    """
+    edges = np.histogram_bin_edges(outcomes, bins="auto")
+
+    if for_intervals:
+        # Place the left endpoint strictly below y_min so that the smallest
+        # observation falls inside the first interval (loc[0], loc[1]]. The
+        # offset scales with the magnitude of the data so that ``y_min - eps``
+        # is representable even when the outcome range is zero.
+        y_min = float(outcomes.min())
+        y_max = float(outcomes.max())
+        scale = max(y_max - y_min, abs(y_min), abs(y_max), 1.0)
+        eps = scale * 1e-9
+        edges = edges.copy()
+        edges[0] = y_min - eps
+    return edges
+
+
 def compute_confidence_intervals(
     vec_y: np.ndarray,
     vec_d: np.ndarray,

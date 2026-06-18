@@ -193,6 +193,61 @@ class TestAdjustedEstimator(unittest.TestCase):
         )
 
 
+class TestAutoLocations(unittest.TestCase):
+    """Test auto-inference of locations when not provided to predict_dte/predict_pte."""
+
+    def setUp(self):
+        np.random.seed(0)
+        n = 200
+        self.covariates = np.random.randn(n, 3)
+        self.treatment_arms = np.random.binomial(1, 0.5, n)
+        self.outcomes = np.random.randn(n) + 0.5 * self.treatment_arms
+        self.estimator = SimpleDistributionEstimator().fit(
+            self.covariates, self.treatment_arms, self.outcomes
+        )
+
+    def test_predict_dte_without_locations(self):
+        dte, lower, upper = self.estimator.predict_dte(
+            1, 0, variance_type="simple", display_progress=False
+        )
+        self.assertIsNotNone(self.estimator.last_locations)
+        self.assertEqual(dte.shape, self.estimator.last_locations.shape)
+        self.assertEqual(lower.shape, dte.shape)
+        self.assertEqual(upper.shape, dte.shape)
+        self.assertAlmostEqual(
+            self.estimator.last_locations[0], float(self.outcomes.min())
+        )
+        self.assertAlmostEqual(
+            self.estimator.last_locations[-1], float(self.outcomes.max())
+        )
+
+    def test_predict_pte_without_locations(self):
+        pte, lower, upper = self.estimator.predict_pte(
+            1, 0, variance_type="simple", display_progress=False
+        )
+        # PTE returns len(locations)-1 outputs
+        self.assertEqual(pte.shape, (self.estimator.last_locations.shape[0] - 1,))
+        self.assertEqual(lower.shape, pte.shape)
+        self.assertEqual(upper.shape, pte.shape)
+        # Left endpoint should be strictly below outcomes.min() so the smallest
+        # observation is captured by the first interval.
+        self.assertLess(
+            self.estimator.last_locations[0], float(self.outcomes.min())
+        )
+
+    def test_explicit_locations_stored_on_last_locations(self):
+        locations = np.linspace(-2, 2, 7)
+        dte, _, _ = self.estimator.predict_dte(
+            1,
+            0,
+            locations=locations,
+            variance_type="simple",
+            display_progress=False,
+        )
+        self.assertEqual(dte.shape, (7,))
+        np.testing.assert_array_equal(self.estimator.last_locations, locations)
+
+
 class TestE2E(unittest.TestCase):
     def test_e2e(self):
         # Arrange

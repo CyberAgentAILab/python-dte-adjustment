@@ -4,6 +4,7 @@ from scipy.stats import norm
 from abc import ABC
 from tqdm.auto import tqdm
 import dte_adj
+from dte_adj.util import _infer_default_locations
 
 
 class DistributionEstimatorBase(ABC):
@@ -19,12 +20,13 @@ class DistributionEstimatorBase(ABC):
         self.covariates = None
         self.outcomes = None
         self.treatment_arms = None
+        self.last_locations = None
 
     def predict_dte(
         self,
         target_treatment_arm: int,
         control_treatment_arm: int,
-        locations: np.ndarray,
+        locations: Optional[np.ndarray] = None,
         alpha: float = 0.05,
         variance_type="moment",
         n_bootstrap=500,
@@ -40,7 +42,11 @@ class DistributionEstimatorBase(ABC):
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
             control_treatment_arm (int): The index of the treatment arm of the control group.
-            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            locations (np.ndarray, optional): Scalar values to be used for computing the cumulative
+                distribution. If None, evenly-spaced locations spanning the observed outcome range
+                are generated automatically. The number of points is determined from data size and
+                distribution via ``np.histogram_bin_edges(outcomes, bins='auto')``. The actual array
+                used is stored on ``self.last_locations``.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
             variance_type (str, optional): Variance type to be used to compute confidence intervals.
                 Available values are "moment", "simple", and "uniform". Defaults to "moment".
@@ -80,6 +86,11 @@ class DistributionEstimatorBase(ABC):
                 print(f"DTE shape: {dte.shape}")  # Should match locations.shape
                 print(f"Average DTE: {dte.mean():.3f}")
         """
+        if locations is None:
+            locations = _infer_default_locations(
+                self.outcomes, for_intervals=False
+            )
+        self.last_locations = locations
         return self._compute_dtes(
             target_treatment_arm,
             control_treatment_arm,
@@ -94,7 +105,7 @@ class DistributionEstimatorBase(ABC):
         self,
         target_treatment_arm: int,
         control_treatment_arm: int,
-        locations: np.ndarray,
+        locations: Optional[np.ndarray] = None,
         alpha: float = 0.05,
         variance_type="moment",
         n_bootstrap=500,
@@ -110,8 +121,14 @@ class DistributionEstimatorBase(ABC):
         Args:
             target_treatment_arm (int): The index of the treatment arm of the treatment group.
             control_treatment_arm (int): The index of the treatment arm of the control group.
-            locations (np.ndarray): Scalar values defining interval boundaries for probability computation.
-                For each interval (locations[i], locations[i+1]], the PTE is computed.
+            locations (np.ndarray, optional): Scalar values defining interval boundaries for
+                probability computation. For each interval (locations[i], locations[i+1]], the PTE
+                is computed. If None, boundaries spanning the observed outcome range are generated
+                automatically with the left endpoint placed just below ``outcomes.min()`` so that
+                minimum-valued samples fall inside the first interval. The number of boundaries is
+                determined from data size and distribution via
+                ``np.histogram_bin_edges(outcomes, bins='auto')``. The actual array used is stored
+                on ``self.last_locations``.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
             variance_type (str, optional): Variance type to be used to compute confidence intervals.
                 Available values are "moment", "simple", and "uniform". Defaults to "moment".
@@ -154,6 +171,11 @@ class DistributionEstimatorBase(ABC):
                 print(f"PTE shape: {pte.shape}")  # Should be (4,) for 4 intervals
                 print(f"Interval effects: {pte}")
         """
+        if locations is None:
+            locations = _infer_default_locations(
+                self.outcomes, for_intervals=True
+            )
+        self.last_locations = locations
         return self._compute_ptes(
             target_treatment_arm,
             control_treatment_arm,
