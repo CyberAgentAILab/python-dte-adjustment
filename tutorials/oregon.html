@@ -99,7 +99,7 @@
 
 <span class="c1"># Create strata based on household size</span>
 <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;numhh_list&#39;</span><span class="p">:</span> <span class="s1">&#39;strata&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;strata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;strata&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;strata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;strata&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span>
     <span class="s1">&#39;signed self up + 1 additional person&#39;</span><span class="p">:</span> <span class="s1">&#39;signed self up + others&#39;</span><span class="p">,</span>
     <span class="s1">&#39;signed self up + 2 additional people&#39;</span><span class="p">:</span> <span class="s1">&#39;signed self up + others&#39;</span>
 <span class="p">})</span>

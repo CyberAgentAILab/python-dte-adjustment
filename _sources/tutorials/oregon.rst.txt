@@ -80,7 +80,7 @@ Next, we prepare the data for the DTE analysis. This involves creating treatment
 
     # Create strata based on household size
     df.rename(columns={'numhh_list': 'strata'}, inplace=True)
-    df['strata'] = df['strata'].replace({
+    df['strata'] = df['strata'].astype(str).replace({
         'signed self up + 1 additional person': 'signed self up + others',
         'signed self up + 2 additional people': 'signed self up + others'
     })
