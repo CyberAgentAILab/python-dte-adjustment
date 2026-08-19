@@ -30,7 +30,7 @@ For theoretical foundations, see:
 * **Simple randomization**: Byambadalai et al. (2024) [#simple2024]_
 * **Covariate-adaptive randomization**: Byambadalai et al. (2025) [#car2025]_
 * **Multi-task learning**: Hirata et al. (2025) [#multitask2025]_
-* **Imperfect compliance**: Byambadalai et al. (2024) [#compliance2025]_
+* **Imperfect compliance**: Byambadalai et al. (2025) [#compliance2025]_
 
 .. [#simple2024] Byambadalai, U., Oka, T., & Yasui, S. (2024). Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction. In Proceedings of the 41st International Conference on Machine Learning (ICML'24). `arXiv:2407.16037 <https://arxiv.org/abs/2407.16037>`_.
 
