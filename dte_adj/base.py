@@ -424,7 +424,7 @@ class DistributionEstimatorBase(ABC):
 
         Args:
             treatment_arm (int): The index of the treatment arm.
-            outcomes (np.ndarray): Scalar values to be used for computing the cumulative distribution.
+            locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
             display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
