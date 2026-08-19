@@ -31,13 +31,15 @@ bibliography: paper.bib
 
 # Summary
 
-`dte_adj` is a Python package for estimating distributional treatment effects (DTEs) in randomized experiments (RCTs, also known as A/B tests). Unlike traditional approaches that focus on average treatment effects, `dte_adj` enables researchers to analyze the full distributional impact of interventions across different outcome levels. The package implements machine learning-enhanced regression adjustment methods for variance reduction, supports multiple experimental designs including simple randomization, covariate-adaptive randomization, and settings with imperfect compliance, and provides a scikit-learn compatible API with comprehensive functionality for computing distribution functions, probability treatment effects, and quantile treatment effects with confidence intervals.
+`dte_adj` is a Python package for analyzing how an intervention, such as a marketing campaign, a medical treatment, or a policy change, affects the entire range of an outcome, not just its average. Practitioners running randomized experiments (RCTs, also known as A/B tests) can use it to answer questions such as "did the treatment help the users who were struggling the most?" or "did it move the whole distribution, or only shift the top end?", together with rigorous confidence bands around those answers.
+
+More formally, `dte_adj` estimates distributional treatment effects (DTEs) in randomized experiments. Unlike traditional approaches that focus on average treatment effects, `dte_adj` enables researchers to analyze the full distributional impact of interventions across different outcome levels. The package implements machine learning-enhanced regression adjustment methods for variance reduction, supports multiple experimental designs including simple randomization, covariate-adaptive randomization, and settings with imperfect compliance, and provides a scikit-learn compatible API with comprehensive functionality for computing distribution functions, probability treatment effects, and quantile treatment effects with confidence intervals.
 
 # Statement of Need
 
 Randomized experiments have been fundamental to scientific inquiry since @fisher1935design, providing the gold standard for causal inference. While most experimental analyses focus on average treatment effects (ATEs), many research questions require understanding how treatments affect the entire distribution of outcomes. Distributional treatment effects (DTEs) capture these richer patterns, revealing heterogeneous impacts across different outcome levels that averages can mask. For example, a policy intervention might have no effect on average income while substantially reducing poverty rates at lower quantiles, or a medical treatment might benefit patients at the tails of the distribution differently than those near the median.
 
-Despite the growing importance of distributional analysis in economics, medicine, and technology, the Python ecosystem lacks comprehensive tools for DTE estimation with modern variance reduction techniques. Researchers often resort to basic empirical CDFs or manual implementations that lack statistical rigor. `dte_adj` fills this gap by providing a unified framework for distributional treatment effect analysis that integrates state-of-the-art machine learning methods for improved precision, rigorous confidence interval construction, and support for complex experimental designs.
+Despite the growing importance of distributional analysis in economics, medicine, and technology, the Python ecosystem lacks comprehensive tools for DTE estimation with modern variance reduction techniques. Applied researchers in economics, biostatistics, and the social sciences, along with data scientists and experimentation engineers running A/B tests in industry, are often left resorting to basic empirical CDFs or manual implementations that lack statistical rigor. `dte_adj` fills this gap for these users with a unified framework that integrates state-of-the-art machine learning methods for improved precision, rigorous confidence interval construction, and support for complex experimental designs. It complements general causal inference libraries such as `DoWhy` [@dowhy] and `EconML` [@econml], which target average or conditional average treatment effects, and the R package `qte`, which supports quantile treatment effects but without machine learning-based variance reduction.
 
 # State of the Field
 
@@ -50,6 +52,8 @@ Several Python packages address causal inference, but none focus on distribution
 
 In the R ecosystem, packages like `qte` provide quantile treatment effect estimation but lack machine learning integration for variance reduction. `dte_adj` uniquely combines: (1) distributional treatment effect estimation across the full outcome distribution, (2) machine learning-enhanced regression adjustment for precision gains, and (3) support for multiple experimental designs including covariate-adaptive randomization and imperfect compliance settings.
 
+A standalone package is warranted because existing libraries are organized around scalar estimands (ATEs in `DoWhy`, heterogeneous CATEs in `EconML`), whereas distributional estimation requires a distinct set of primitives: distribution functions evaluated over grids of locations, interval probabilities, quantile inversion, pointwise and uniform confidence bands, and cross-fitted distributional regression for variance reduction. These do not map cleanly onto point-estimate abstractions, and a focused package also allows the implementation to track a rapidly evolving methodological literature on covariate-adaptive randomization, imperfect compliance, and multi-task learning for DTEs.
+
 # Software Design
 
 `dte_adj` follows a class-based architecture with a template method pattern, where a base class defines the algorithm structure and subclasses implement design-specific computations:
@@ -59,6 +63,8 @@ In the R ecosystem, packages like `qte` provide quantile treatment effect estima
 - **`SimpleLocalDistributionEstimator`** and **`AdjustedLocalDistributionEstimator`**: For settings with imperfect compliance, implementing methods from @byambadalai2025imperfectcompliance.
 
 All estimators implement a consistent API with three primary methods: `predict_dte()` for distributional treatment effects, `predict_pte()` for probability treatment effects over intervals, and `predict_qte()` for quantile treatment effects. The adjusted estimators use K-fold cross-fitting to prevent overfitting and support both single-task and multi-task learning modes [@hirata2025efficientscalableestimationdistributional] for computational efficiency. Bootstrap methods provide confidence intervals with multiple variance estimation approaches.
+
+The template method pattern is a natural fit here because every estimator shares the same outer algorithm (evaluate a distribution function on a grid, difference across treatment arms, and construct confidence bands) and differs only in how the conditional distribution is estimated, which depends on the experimental design and on whether a plug-in or a cross-fitted machine learning estimator is used. Defining the outer algorithm once in the base class keeps its statistical invariants in one place, whereas a strategy-based configuration would push that structure into runtime flags and obscure them. For the same reason the estimators are exposed as distinct classes rather than a single configurable one: many flag combinations would be confusing (e.g., stratification without strata) or correspond to different estimands with different identifying assumptions, and separate classes make the required inputs explicit at construction time and let each estimator evolve independently.
 
 ![Distributional treatment effects for the Hillstrom email marketing dataset [@hillstrom2008], comparing Women's vs Men's email campaigns. The simple estimator (left, purple) and ML-adjusted estimator (right, green) show that adjustment substantially tightens confidence bands, demonstrating the variance reduction benefit of regression adjustment.](hillstorm_dte.png)
 
@@ -70,7 +76,7 @@ The methods implemented in `dte_adj` have been published across machine learning
 
 # AI Usage Disclosure
 
-Generative AI tools (Claude) were used to assist with documentation writing and code review during development. All AI-generated content was reviewed and validated by the human authors.
+Generative AI tools (Claude) were used to assist with documentation writing and code review during development, and with copy-editing this paper. All AI-generated content was reviewed and validated by the human authors.
 
 # Acknowledgements
 
