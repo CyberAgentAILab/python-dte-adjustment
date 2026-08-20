@@ -2,7 +2,12 @@
 # Allow dataset-specific column names from Hillstrom dataset
 womens = "womens"
 mens = "mens"
+# Domain term: subjects who comply with treatment assignment
+compliers = "compliers"
+complier = "complier"
 
 [default.extend-identifiers]
 # Author name in SciPy citation
 VanderPlas = "VanderPlas"
+# numpy function
+arange = "arange"
