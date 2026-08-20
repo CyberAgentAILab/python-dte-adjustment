@@ -60,36 +60,34 @@ class DistributionEstimatorBase(ABC):
                 - Upper bounds (np.ndarray): Upper confidence interval bounds
 
         Example:
-            .. code-block:: python
+            ```python
+            import numpy as np
+            from dte_adj import SimpleDistributionEstimator
 
-                import numpy as np
-                from dte_adj import SimpleDistributionEstimator
+            # Generate sample data
+            X = np.random.randn(1000, 5)
+            D = np.random.binomial(1, 0.5, 1000)
+            Y = X[:, 0] + 2 * D + np.random.randn(1000)
 
-                # Generate sample data
-                X = np.random.randn(1000, 5)
-                D = np.random.binomial(1, 0.5, 1000)
-                Y = X[:, 0] + 2 * D + np.random.randn(1000)
+            # Fit estimator
+            estimator = SimpleDistributionEstimator()
+            estimator.fit(X, D, Y)
 
-                # Fit estimator
-                estimator = SimpleDistributionEstimator()
-                estimator.fit(X, D, Y)
+            # Compute DTE
+            locations = np.linspace(Y.min(), Y.max(), 20)
+            dte, lower, upper = estimator.predict_dte(
+                target_treatment_arm=1,
+                control_treatment_arm=0,
+                locations=locations,
+                variance_type="moment"
+            )
 
-                # Compute DTE
-                locations = np.linspace(Y.min(), Y.max(), 20)
-                dte, lower, upper = estimator.predict_dte(
-                    target_treatment_arm=1,
-                    control_treatment_arm=0,
-                    locations=locations,
-                    variance_type="moment"
-                )
-
-                print(f"DTE shape: {dte.shape}")  # Should match locations.shape
-                print(f"Average DTE: {dte.mean():.3f}")
+            print(f"DTE shape: {dte.shape}")  # Should match locations.shape
+            print(f"Average DTE: {dte.mean():.3f}")
+            ```
         """
         if locations is None:
-            locations = _infer_default_locations(
-                self.outcomes, for_intervals=False
-            )
+            locations = _infer_default_locations(self.outcomes, for_intervals=False)
         self.last_locations = locations
         return self._compute_dtes(
             target_treatment_arm,
@@ -143,38 +141,36 @@ class DistributionEstimatorBase(ABC):
                 - Upper bounds (np.ndarray): Upper confidence interval bounds
 
         Example:
-            .. code-block:: python
+            ```python
+            import numpy as np
+            from dte_adj import SimpleDistributionEstimator
 
-                import numpy as np
-                from dte_adj import SimpleDistributionEstimator
+            # Generate sample data
+            X = np.random.randn(1000, 5)
+            D = np.random.binomial(1, 0.5, 1000)
+            Y = X[:, 0] + 2 * D + np.random.randn(1000)
 
-                # Generate sample data
-                X = np.random.randn(1000, 5)
-                D = np.random.binomial(1, 0.5, 1000)
-                Y = X[:, 0] + 2 * D + np.random.randn(1000)
+            # Fit estimator
+            estimator = SimpleDistributionEstimator()
+            estimator.fit(X, D, Y)
 
-                # Fit estimator
-                estimator = SimpleDistributionEstimator()
-                estimator.fit(X, D, Y)
+            # Define interval boundaries
+            locations = np.array([-2, -1, 0, 1, 2])  # Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]
 
-                # Define interval boundaries
-                locations = np.array([-2, -1, 0, 1, 2])  # Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]
+            # Compute PTE
+            pte, lower, upper = estimator.predict_pte(
+                target_treatment_arm=1,
+                control_treatment_arm=0,
+                locations=locations,
+                variance_type="moment"
+            )
 
-                # Compute PTE
-                pte, lower, upper = estimator.predict_pte(
-                    target_treatment_arm=1,
-                    control_treatment_arm=0,
-                    locations=locations,
-                    variance_type="moment"
-                )
-
-                print(f"PTE shape: {pte.shape}")  # Should be (4,) for 4 intervals
-                print(f"Interval effects: {pte}")
+            print(f"PTE shape: {pte.shape}")  # Should be (4,) for 4 intervals
+            print(f"Interval effects: {pte}")
+            ```
         """
         if locations is None:
-            locations = _infer_default_locations(
-                self.outcomes, for_intervals=True
-            )
+            locations = _infer_default_locations(self.outcomes, for_intervals=True)
         self.last_locations = locations
         return self._compute_ptes(
             target_treatment_arm,
@@ -222,32 +218,32 @@ class DistributionEstimatorBase(ABC):
                 - Upper bounds (np.ndarray): Upper confidence interval bounds
 
         Example:
-            .. code-block:: python
+            ```python
+            import numpy as np
+            from dte_adj import SimpleStratifiedDistributionEstimator
 
-                import numpy as np
-                from dte_adj import SimpleStratifiedDistributionEstimator
+            # Generate stratified sample data
+            X = np.random.randn(1000, 5)
+            strata = np.random.choice([0, 1, 2], size=1000)
+            D = np.random.binomial(1, 0.5, 1000)
+            Y = X[:, 0] + 2 * D + 0.5 * strata + np.random.randn(1000)
 
-                # Generate stratified sample data
-                X = np.random.randn(1000, 5)
-                strata = np.random.choice([0, 1, 2], size=1000)
-                D = np.random.binomial(1, 0.5, 1000)
-                Y = X[:, 0] + 2 * D + 0.5 * strata + np.random.randn(1000)
+            # Fit stratified estimator
+            estimator = SimpleStratifiedDistributionEstimator()
+            estimator.fit(X, D, Y, strata)
 
-                # Fit stratified estimator
-                estimator = SimpleStratifiedDistributionEstimator()
-                estimator.fit(X, D, Y, strata)
+            # Compute QTE at specific quantiles
+            quantiles = np.array([0.25, 0.5, 0.75])  # 25th, 50th, 75th percentiles
+            qte, lower, upper = estimator.predict_qte(
+                target_treatment_arm=1,
+                control_treatment_arm=0,
+                quantiles=quantiles,
+                n_bootstrap=100
+            )
 
-                # Compute QTE at specific quantiles
-                quantiles = np.array([0.25, 0.5, 0.75])  # 25th, 50th, 75th percentiles
-                qte, lower, upper = estimator.predict_qte(
-                    target_treatment_arm=1,
-                    control_treatment_arm=0,
-                    quantiles=quantiles,
-                    n_bootstrap=100
-                )
-
-                print(f"QTE at quantiles {quantiles}: {qte}")
-                print(f"Median effect (50th percentile): {qte[1]:.3f}")
+            print(f"QTE at quantiles {quantiles}: {qte}")
+            print(f"Median effect (50th percentile): {qte[1]:.3f}")
+            ```
         """
         if quantiles is None:
             quantiles = np.arange(1, 10) / 10

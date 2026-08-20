@@ -94,39 +94,37 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
                 - Upper bounds (np.ndarray): Upper confidence interval bounds
 
         Example:
-            .. code-block:: python
+            ```python
+            import numpy as np
+            from sklearn.linear_model import LogisticRegression
+            from dte_adj import AdjustedLocalDistributionEstimator
 
-                import numpy as np
-                from sklearn.linear_model import LogisticRegression
-                from dte_adj import AdjustedLocalDistributionEstimator
+            # Generate sample data with strata
+            np.random.seed(42)
+            X = np.random.randn(1000, 5)
+            strata = np.random.choice([0, 1], size=1000)  # Binary strata
+            D = np.random.binomial(1, 0.3 + 0.4 * strata, 1000)  # Treatment depends on strata
+            Y = X[:, 0] + 2 * D + strata + np.random.randn(1000)
 
-                # Generate sample data with strata
-                np.random.seed(42)
-                X = np.random.randn(1000, 5)
-                strata = np.random.choice([0, 1], size=1000)  # Binary strata
-                D = np.random.binomial(1, 0.3 + 0.4 * strata, 1000)  # Treatment depends on strata
-                Y = X[:, 0] + 2 * D + strata + np.random.randn(1000)
+            # Fit local estimator
+            base_model = LogisticRegression()
+            estimator = AdjustedLocalDistributionEstimator(base_model)
+            estimator.fit(X, D, D, Y, strata)  # treatment_arms = treatment_indicator for binary case
 
-                # Fit local estimator
-                base_model = LogisticRegression()
-                estimator = AdjustedLocalDistributionEstimator(base_model)
-                estimator.fit(X, D, D, Y, strata)  # treatment_arms = treatment_indicator for binary case
+            # Compute LDTE
+            locations = np.linspace(Y.min(), Y.max(), 20)
+            ldte, lower, upper = estimator.predict_ldte(
+                target_treatment_arm=1,
+                control_treatment_arm=0,
+                locations=locations
+            )
 
-                # Compute LDTE
-                locations = np.linspace(Y.min(), Y.max(), 20)
-                ldte, lower, upper = estimator.predict_ldte(
-                    target_treatment_arm=1,
-                    control_treatment_arm=0,
-                    locations=locations
-                )
-
-                print(f"LDTE shape: {ldte.shape}")  # Should match locations.shape
-                print(f"Average LDTE: {ldte.mean():.3f}")
+            print(f"LDTE shape: {ldte.shape}")  # Should match locations.shape
+            print(f"Average LDTE: {ldte.mean():.3f}")
+            ```
         """
         if locations is None:
-            locations = _infer_default_locations(
-                self.outcomes, for_intervals=False
-            )
+            locations = _infer_default_locations(self.outcomes, for_intervals=False)
         self.last_locations = locations
         return compute_ldte(
             self,
@@ -173,40 +171,38 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
                 - Upper bounds (np.ndarray): Upper confidence interval bounds
 
         Example:
-            .. code-block:: python
+            ```python
+            import numpy as np
+            from dte_adj import SimpleLocalDistributionEstimator
 
-                import numpy as np
-                from dte_adj import SimpleLocalDistributionEstimator
+            # Generate sample data with strata
+            np.random.seed(42)
+            X = np.random.randn(1000, 5)
+            strata = np.random.choice([0, 1], size=1000)  # Binary strata
+            Z = np.random.binomial(1, 0.5, 1000)  # Treatment assignment
+            D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)  # Treatment receipt
+            Y = X[:, 0] + 2 * D + strata + np.random.randn(1000)
 
-                # Generate sample data with strata
-                np.random.seed(42)
-                X = np.random.randn(1000, 5)
-                strata = np.random.choice([0, 1], size=1000)  # Binary strata
-                Z = np.random.binomial(1, 0.5, 1000)  # Treatment assignment
-                D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)  # Treatment receipt
-                Y = X[:, 0] + 2 * D + strata + np.random.randn(1000)
+            # Fit local estimator
+            estimator = SimpleLocalDistributionEstimator()
+            estimator.fit(X, Z, D, Y, strata)
 
-                # Fit local estimator
-                estimator = SimpleLocalDistributionEstimator()
-                estimator.fit(X, Z, D, Y, strata)
+            # Define interval boundaries
+            locations = np.array([-2, -1, 0, 1, 2])  # Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]
 
-                # Define interval boundaries
-                locations = np.array([-2, -1, 0, 1, 2])  # Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]
+            # Compute LPTE
+            lpte, lower, upper = estimator.predict_lpte(
+                target_treatment_arm=1,
+                control_treatment_arm=0,
+                locations=locations
+            )
 
-                # Compute LPTE
-                lpte, lower, upper = estimator.predict_lpte(
-                    target_treatment_arm=1,
-                    control_treatment_arm=0,
-                    locations=locations
-                )
-
-                print(f"LPTE shape: {lpte.shape}")  # Should be (4,) for 4 intervals
-                print(f"Interval effects: {lpte}")
+            print(f"LPTE shape: {lpte.shape}")  # Should be (4,) for 4 intervals
+            print(f"Interval effects: {lpte}")
+            ```
         """
         if locations is None:
-            locations = _infer_default_locations(
-                self.outcomes, for_intervals=True
-            )
+            locations = _infer_default_locations(self.outcomes, for_intervals=True)
         self.last_locations = locations
         return compute_lpte(
             self,
@@ -287,41 +283,39 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
                 - Upper bounds (np.ndarray): Upper confidence interval bounds
 
         Example:
-            .. code-block:: python
+            ```python
+            import numpy as np
+            from sklearn.ensemble import RandomForestClassifier
+            from dte_adj import AdjustedLocalDistributionEstimator
 
-                import numpy as np
-                from sklearn.ensemble import RandomForestClassifier
-                from dte_adj import AdjustedLocalDistributionEstimator
+            # Generate confounded data with strata
+            np.random.seed(42)
+            X = np.random.randn(1000, 5)
+            strata = np.random.choice([0, 1], size=1000)
+            # Treatment assignment depends on covariates
+            Z_prob = 1 / (1 + np.exp(-(X[:, 0] + X[:, 1] + strata)))
+            Z = np.random.binomial(1, Z_prob, 1000)
+            D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)
+            Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)
 
-                # Generate confounded data with strata
-                np.random.seed(42)
-                X = np.random.randn(1000, 5)
-                strata = np.random.choice([0, 1], size=1000)
-                # Treatment assignment depends on covariates
-                Z_prob = 1 / (1 + np.exp(-(X[:, 0] + X[:, 1] + strata)))
-                Z = np.random.binomial(1, Z_prob, 1000)
-                D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)
-                Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)
+            # Fit adjusted local estimator
+            base_model = RandomForestClassifier(n_estimators=100)
+            estimator = AdjustedLocalDistributionEstimator(base_model, folds=3)
+            estimator.fit(X, Z, D, Y, strata)
 
-                # Fit adjusted local estimator
-                base_model = RandomForestClassifier(n_estimators=100)
-                estimator = AdjustedLocalDistributionEstimator(base_model, folds=3)
-                estimator.fit(X, Z, D, Y, strata)
+            # Compute LDTE with ML adjustment
+            locations = np.linspace(Y.min(), Y.max(), 20)
+            ldte, lower, upper = estimator.predict_ldte(
+                target_treatment_arm=1,
+                control_treatment_arm=0,
+                locations=locations
+            )
 
-                # Compute LDTE with ML adjustment
-                locations = np.linspace(Y.min(), Y.max(), 20)
-                ldte, lower, upper = estimator.predict_ldte(
-                    target_treatment_arm=1,
-                    control_treatment_arm=0,
-                    locations=locations
-                )
-
-                print(f"Adjusted LDTE: {ldte.mean():.3f}")
+            print(f"Adjusted LDTE: {ldte.mean():.3f}")
+            ```
         """
         if locations is None:
-            locations = _infer_default_locations(
-                self.outcomes, for_intervals=False
-            )
+            locations = _infer_default_locations(self.outcomes, for_intervals=False)
         self.last_locations = locations
         return compute_ldte(
             self,
@@ -367,43 +361,41 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
                 - Upper bounds (np.ndarray): Upper confidence interval bounds
 
         Example:
-            .. code-block:: python
+            ```python
+            import numpy as np
+            from sklearn.linear_model import LogisticRegression
+            from dte_adj import AdjustedLocalDistributionEstimator
 
-                import numpy as np
-                from sklearn.linear_model import LogisticRegression
-                from dte_adj import AdjustedLocalDistributionEstimator
+            # Generate confounded data with strata
+            np.random.seed(42)
+            X = np.random.randn(1000, 5)
+            strata = np.random.choice([0, 1], size=1000)
+            # Treatment assignment depends on covariates
+            Z_prob = 1 / (1 + np.exp(-(X[:, 0] + strata)))
+            Z = np.random.binomial(1, Z_prob, 1000)
+            D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)
+            Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)
 
-                # Generate confounded data with strata
-                np.random.seed(42)
-                X = np.random.randn(1000, 5)
-                strata = np.random.choice([0, 1], size=1000)
-                # Treatment assignment depends on covariates
-                Z_prob = 1 / (1 + np.exp(-(X[:, 0] + strata)))
-                Z = np.random.binomial(1, Z_prob, 1000)
-                D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)
-                Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)
+            # Fit adjusted local estimator
+            base_model = LogisticRegression()
+            estimator = AdjustedLocalDistributionEstimator(base_model, folds=3)
+            estimator.fit(X, Z, D, Y, strata)
 
-                # Fit adjusted local estimator
-                base_model = LogisticRegression()
-                estimator = AdjustedLocalDistributionEstimator(base_model, folds=3)
-                estimator.fit(X, Z, D, Y, strata)
+            # Define interval boundaries
+            locations = np.array([-2, -1, 0, 1, 2])
 
-                # Define interval boundaries
-                locations = np.array([-2, -1, 0, 1, 2])
+            # Compute LPTE with ML adjustment
+            lpte, lower, upper = estimator.predict_lpte(
+                target_treatment_arm=1,
+                control_treatment_arm=0,
+                locations=locations
+            )
 
-                # Compute LPTE with ML adjustment
-                lpte, lower, upper = estimator.predict_lpte(
-                    target_treatment_arm=1,
-                    control_treatment_arm=0,
-                    locations=locations
-                )
-
-                print(f"Adjusted LPTE: {lpte}")
+            print(f"Adjusted LPTE: {lpte}")
+            ```
         """
         if locations is None:
-            locations = _infer_default_locations(
-                self.outcomes, for_intervals=True
-            )
+            locations = _infer_default_locations(self.outcomes, for_intervals=True)
         self.last_locations = locations
         return compute_lpte(
             self,
