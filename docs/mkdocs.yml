@@ -52,7 +52,6 @@ nav:
       - Covariate Adaptive Randomization: api/stratified.md
       - Local Distribution: api/local.md
       - Plotting: api/plot.md
-  - Contributing: contributing.md
 
 plugins:
   - search
