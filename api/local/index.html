@@ -1293,34 +1293,33 @@ locally robust to treatment assignment heterogeneity across strata.</p>
         - Lower bounds (np.ndarray): Lower confidence interval bounds
         - Upper bounds (np.ndarray): Upper confidence interval bounds</p>
 <p>Example:
-    .. code-block:: python</p>
-<div class="highlight"><pre><span></span><code>    import numpy as np
-    from sklearn.linear_model import LogisticRegression
-    from dte_adj import AdjustedLocalDistributionEstimator
-
-    # Generate sample data with strata
-    np.random.seed(42)
-    X = np.random.randn(1000, 5)
-    strata = np.random.choice([0, 1], size=1000)  # Binary strata
-    D = np.random.binomial(1, 0.3 + 0.4 * strata, 1000)  # Treatment depends on strata
-    Y = X[:, 0] + 2 * D + strata + np.random.randn(1000)
-
-    # Fit local estimator
-    base_model = LogisticRegression()
-    estimator = AdjustedLocalDistributionEstimator(base_model)
-    estimator.fit(X, D, D, Y, strata)  # treatment_arms = treatment_indicator for binary case
-
-    # Compute LDTE
-    locations = np.linspace(Y.min(), Y.max(), 20)
-    ldte, lower, upper = estimator.predict_ldte(
-        target_treatment_arm=1,
-        control_treatment_arm=0,
-        locations=locations
-    )
-
-    print(f&quot;LDTE shape: {ldte.shape}&quot;)  # Should match locations.shape
-    print(f&quot;Average LDTE: {ldte.mean():.3f}&quot;)
-</code></pre></div>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdjustedLocalDistributionEstimator</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Generate sample data with strata</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Binary strata</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.3</span> <span class="o">+</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">strata</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Treatment depends on strata</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="c1"># Fit local estimator</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">base_model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">estimator</span> <span class="o">=</span> <span class="n">AdjustedLocalDistributionEstimator</span><span class="p">(</span><span class="n">base_model</span><span class="p">)</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>  <span class="c1"># treatment_arms = treatment_indicator for binary case</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="c1"># Compute LDTE</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="n">ldte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_ldte</span><span class="p">(</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="p">)</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LDTE shape: </span><span class="si">{</span><span class="n">ldte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should match locations.shape</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average LDTE: </span><span class="si">{</span><span class="n">ldte</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div></p>
 
 
             <details class="quote">
@@ -1397,9 +1396,7 @@ locally robust to treatment assignment heterogeneity across strata.</p>
 <span class="normal"><a href="#__codelineno-0-133">133</a></span>
 <span class="normal"><a href="#__codelineno-0-134">134</a></span>
 <span class="normal"><a href="#__codelineno-0-135">135</a></span>
-<span class="normal"><a href="#__codelineno-0-136">136</a></span>
-<span class="normal"><a href="#__codelineno-0-137">137</a></span>
-<span class="normal"><a href="#__codelineno-0-138">138</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict_ldte</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-136">136</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict_ldte</span><span class="p">(</span>
 <a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="bp">self</span><span class="p">,</span>
 <a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 <a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1432,48 +1429,46 @@ locally robust to treatment assignment heterogeneity across strata.</p>
 <a id="__codelineno-0-94" name="__codelineno-0-94"></a><span class="sd">            - Upper bounds (np.ndarray): Upper confidence interval bounds</span>
 <a id="__codelineno-0-95" name="__codelineno-0-95"></a>
 <a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">    Example:</span>
-<a id="__codelineno-0-97" name="__codelineno-0-97"></a><span class="sd">        .. code-block:: python</span>
-<a id="__codelineno-0-98" name="__codelineno-0-98"></a>
-<a id="__codelineno-0-99" name="__codelineno-0-99"></a><span class="sd">            import numpy as np</span>
-<a id="__codelineno-0-100" name="__codelineno-0-100"></a><span class="sd">            from sklearn.linear_model import LogisticRegression</span>
-<a id="__codelineno-0-101" name="__codelineno-0-101"></a><span class="sd">            from dte_adj import AdjustedLocalDistributionEstimator</span>
-<a id="__codelineno-0-102" name="__codelineno-0-102"></a>
-<a id="__codelineno-0-103" name="__codelineno-0-103"></a><span class="sd">            # Generate sample data with strata</span>
-<a id="__codelineno-0-104" name="__codelineno-0-104"></a><span class="sd">            np.random.seed(42)</span>
-<a id="__codelineno-0-105" name="__codelineno-0-105"></a><span class="sd">            X = np.random.randn(1000, 5)</span>
-<a id="__codelineno-0-106" name="__codelineno-0-106"></a><span class="sd">            strata = np.random.choice([0, 1], size=1000)  # Binary strata</span>
-<a id="__codelineno-0-107" name="__codelineno-0-107"></a><span class="sd">            D = np.random.binomial(1, 0.3 + 0.4 * strata, 1000)  # Treatment depends on strata</span>
-<a id="__codelineno-0-108" name="__codelineno-0-108"></a><span class="sd">            Y = X[:, 0] + 2 * D + strata + np.random.randn(1000)</span>
-<a id="__codelineno-0-109" name="__codelineno-0-109"></a>
-<a id="__codelineno-0-110" name="__codelineno-0-110"></a><span class="sd">            # Fit local estimator</span>
-<a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="sd">            base_model = LogisticRegression()</span>
-<a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="sd">            estimator = AdjustedLocalDistributionEstimator(base_model)</span>
-<a id="__codelineno-0-113" name="__codelineno-0-113"></a><span class="sd">            estimator.fit(X, D, D, Y, strata)  # treatment_arms = treatment_indicator for binary case</span>
-<a id="__codelineno-0-114" name="__codelineno-0-114"></a>
-<a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">            # Compute LDTE</span>
-<a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">            locations = np.linspace(Y.min(), Y.max(), 20)</span>
-<a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="sd">            ldte, lower, upper = estimator.predict_ldte(</span>
-<a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="sd">                target_treatment_arm=1,</span>
-<a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="sd">                control_treatment_arm=0,</span>
-<a id="__codelineno-0-120" name="__codelineno-0-120"></a><span class="sd">                locations=locations</span>
-<a id="__codelineno-0-121" name="__codelineno-0-121"></a><span class="sd">            )</span>
-<a id="__codelineno-0-122" name="__codelineno-0-122"></a>
-<a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="sd">            print(f&quot;LDTE shape: {ldte.shape}&quot;)  # Should match locations.shape</span>
-<a id="__codelineno-0-124" name="__codelineno-0-124"></a><span class="sd">            print(f&quot;Average LDTE: {ldte.mean():.3f}&quot;)</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a><span class="sd">        ```python</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a><span class="sd">        import numpy as np</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a><span class="sd">        from sklearn.linear_model import LogisticRegression</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a><span class="sd">        from dte_adj import AdjustedLocalDistributionEstimator</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a><span class="sd">        # Generate sample data with strata</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a><span class="sd">        np.random.seed(42)</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a><span class="sd">        X = np.random.randn(1000, 5)</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a><span class="sd">        strata = np.random.choice([0, 1], size=1000)  # Binary strata</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a><span class="sd">        D = np.random.binomial(1, 0.3 + 0.4 * strata, 1000)  # Treatment depends on strata</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a><span class="sd">        Y = X[:, 0] + 2 * D + strata + np.random.randn(1000)</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a><span class="sd">        # Fit local estimator</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a><span class="sd">        base_model = LogisticRegression()</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="sd">        estimator = AdjustedLocalDistributionEstimator(base_model)</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="sd">        estimator.fit(X, D, D, Y, strata)  # treatment_arms = treatment_indicator for binary case</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">        # Compute LDTE</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">        locations = np.linspace(Y.min(), Y.max(), 20)</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">        ldte, lower, upper = estimator.predict_ldte(</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="sd">            target_treatment_arm=1,</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="sd">            control_treatment_arm=0,</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="sd">            locations=locations</span>
+<a id="__codelineno-0-120" name="__codelineno-0-120"></a><span class="sd">        )</span>
+<a id="__codelineno-0-121" name="__codelineno-0-121"></a>
+<a id="__codelineno-0-122" name="__codelineno-0-122"></a><span class="sd">        print(f&quot;LDTE shape: {ldte.shape}&quot;)  # Should match locations.shape</span>
+<a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="sd">        print(f&quot;Average LDTE: {ldte.mean():.3f}&quot;)</span>
+<a id="__codelineno-0-124" name="__codelineno-0-124"></a><span class="sd">        ```</span>
 <a id="__codelineno-0-125" name="__codelineno-0-125"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-126" name="__codelineno-0-126"></a>    <span class="k">if</span> <span class="n">locations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-127" name="__codelineno-0-127"></a>        <span class="n">locations</span> <span class="o">=</span> <span class="n">_infer_default_locations</span><span class="p">(</span>
-<a id="__codelineno-0-128" name="__codelineno-0-128"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">for_intervals</span><span class="o">=</span><span class="kc">False</span>
-<a id="__codelineno-0-129" name="__codelineno-0-129"></a>        <span class="p">)</span>
-<a id="__codelineno-0-130" name="__codelineno-0-130"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">last_locations</span> <span class="o">=</span> <span class="n">locations</span>
-<a id="__codelineno-0-131" name="__codelineno-0-131"></a>    <span class="k">return</span> <span class="n">compute_ldte</span><span class="p">(</span>
-<a id="__codelineno-0-132" name="__codelineno-0-132"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-133" name="__codelineno-0-133"></a>        <span class="n">target_treatment_arm</span><span class="p">,</span>
-<a id="__codelineno-0-134" name="__codelineno-0-134"></a>        <span class="n">control_treatment_arm</span><span class="p">,</span>
-<a id="__codelineno-0-135" name="__codelineno-0-135"></a>        <span class="n">locations</span><span class="p">,</span>
-<a id="__codelineno-0-136" name="__codelineno-0-136"></a>        <span class="n">alpha</span><span class="p">,</span>
-<a id="__codelineno-0-137" name="__codelineno-0-137"></a>        <span class="n">display_progress</span><span class="p">,</span>
-<a id="__codelineno-0-138" name="__codelineno-0-138"></a>    <span class="p">)</span>
+<a id="__codelineno-0-127" name="__codelineno-0-127"></a>        <span class="n">locations</span> <span class="o">=</span> <span class="n">_infer_default_locations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">for_intervals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-0-128" name="__codelineno-0-128"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">last_locations</span> <span class="o">=</span> <span class="n">locations</span>
+<a id="__codelineno-0-129" name="__codelineno-0-129"></a>    <span class="k">return</span> <span class="n">compute_ldte</span><span class="p">(</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-131" name="__codelineno-0-131"></a>        <span class="n">target_treatment_arm</span><span class="p">,</span>
+<a id="__codelineno-0-132" name="__codelineno-0-132"></a>        <span class="n">control_treatment_arm</span><span class="p">,</span>
+<a id="__codelineno-0-133" name="__codelineno-0-133"></a>        <span class="n">locations</span><span class="p">,</span>
+<a id="__codelineno-0-134" name="__codelineno-0-134"></a>        <span class="n">alpha</span><span class="p">,</span>
+<a id="__codelineno-0-135" name="__codelineno-0-135"></a>        <span class="n">display_progress</span><span class="p">,</span>
+<a id="__codelineno-0-136" name="__codelineno-0-136"></a>    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1522,40 +1517,41 @@ This provides locally robust estimates of treatment effects on interval probabil
         - Lower bounds (np.ndarray): Lower confidence interval bounds
         - Upper bounds (np.ndarray): Upper confidence interval bounds</p>
 <p>Example:
-    .. code-block:: python</p>
-<div class="highlight"><pre><span></span><code>    import numpy as np
-    from dte_adj import SimpleLocalDistributionEstimator
-
-    # Generate sample data with strata
-    np.random.seed(42)
-    X = np.random.randn(1000, 5)
-    strata = np.random.choice([0, 1], size=1000)  # Binary strata
-    Z = np.random.binomial(1, 0.5, 1000)  # Treatment assignment
-    D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)  # Treatment receipt
-    Y = X[:, 0] + 2 * D + strata + np.random.randn(1000)
-
-    # Fit local estimator
-    estimator = SimpleLocalDistributionEstimator()
-    estimator.fit(X, Z, D, Y, strata)
-
-    # Define interval boundaries
-    locations = np.array([-2, -1, 0, 1, 2])  # Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]
-
-    # Compute LPTE
-    lpte, lower, upper = estimator.predict_lpte(
-        target_treatment_arm=1,
-        control_treatment_arm=0,
-        locations=locations
-    )
-
-    print(f&quot;LPTE shape: {lpte.shape}&quot;)  # Should be (4,) for 4 intervals
-    print(f&quot;Interval effects: {lpte}&quot;)
-</code></pre></div>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleLocalDistributionEstimator</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Generate sample data with strata</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Binary strata</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Treatment assignment</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.3</span> <span class="o">+</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">Z</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Treatment receipt</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="c1"># Fit local estimator</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">estimator</span> <span class="o">=</span> <span class="n">SimpleLocalDistributionEstimator</span><span class="p">()</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="c1"># Define interval boundaries</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="c1"># Compute LPTE</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="n">lpte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_lpte</span><span class="p">(</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="p">)</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LPTE shape: </span><span class="si">{</span><span class="n">lpte</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should be (4,) for 4 intervals</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interval effects: </span><span class="si">{</span><span class="n">lpte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div></p>
 
 
             <details class="quote">
               <summary>Source code in <code>dte_adj/local.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-140">140</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-138">138</a></span>
+<span class="normal"><a href="#__codelineno-0-139">139</a></span>
+<span class="normal"><a href="#__codelineno-0-140">140</a></span>
 <span class="normal"><a href="#__codelineno-0-141">141</a></span>
 <span class="normal"><a href="#__codelineno-0-142">142</a></span>
 <span class="normal"><a href="#__codelineno-0-143">143</a></span>
@@ -1629,89 +1625,83 @@ This provides locally robust estimates of treatment effects on interval probabil
 <span class="normal"><a href="#__codelineno-0-211">211</a></span>
 <span class="normal"><a href="#__codelineno-0-212">212</a></span>
 <span class="normal"><a href="#__codelineno-0-213">213</a></span>
-<span class="normal"><a href="#__codelineno-0-214">214</a></span>
-<span class="normal"><a href="#__codelineno-0-215">215</a></span>
-<span class="normal"><a href="#__codelineno-0-216">216</a></span>
-<span class="normal"><a href="#__codelineno-0-217">217</a></span>
-<span class="normal"><a href="#__codelineno-0-218">218</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-140" name="__codelineno-0-140"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict_lpte</span><span class="p">(</span>
-<a id="__codelineno-0-141" name="__codelineno-0-141"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-142" name="__codelineno-0-142"></a>    <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<a id="__codelineno-0-143" name="__codelineno-0-143"></a>    <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<a id="__codelineno-0-144" name="__codelineno-0-144"></a>    <span class="n">locations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-145" name="__codelineno-0-145"></a>    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
-<a id="__codelineno-0-146" name="__codelineno-0-146"></a>    <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-0-147" name="__codelineno-0-147"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<a id="__codelineno-0-148" name="__codelineno-0-148"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-149" name="__codelineno-0-149"></a><span class="sd">    Compute Local Probability Treatment Effects (LPTE).</span>
-<a id="__codelineno-0-150" name="__codelineno-0-150"></a>
-<a id="__codelineno-0-151" name="__codelineno-0-151"></a><span class="sd">    LPTE measures the difference in probability mass between treatment groups for intervals</span>
-<a id="__codelineno-0-152" name="__codelineno-0-152"></a><span class="sd">    defined by consecutive location pairs, weighted by treatment propensity within each stratum.</span>
-<a id="__codelineno-0-153" name="__codelineno-0-153"></a><span class="sd">    This provides locally robust estimates of treatment effects on interval probabilities.</span>
-<a id="__codelineno-0-154" name="__codelineno-0-154"></a>
-<a id="__codelineno-0-155" name="__codelineno-0-155"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-156" name="__codelineno-0-156"></a><span class="sd">        target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
-<a id="__codelineno-0-157" name="__codelineno-0-157"></a><span class="sd">        control_treatment_arm (int): The index of the treatment arm of the control group.</span>
-<a id="__codelineno-0-158" name="__codelineno-0-158"></a><span class="sd">        locations (np.ndarray, optional): Scalar values defining interval boundaries for</span>
-<a id="__codelineno-0-159" name="__codelineno-0-159"></a><span class="sd">            probability computation. For each interval (locations[i], locations[i+1]], the LPTE</span>
-<a id="__codelineno-0-160" name="__codelineno-0-160"></a><span class="sd">            is computed. If None, boundaries spanning the observed outcome range are generated</span>
-<a id="__codelineno-0-161" name="__codelineno-0-161"></a><span class="sd">            automatically with the left endpoint placed just below ``outcomes.min()``. The</span>
-<a id="__codelineno-0-162" name="__codelineno-0-162"></a><span class="sd">            number of boundaries is determined from data size and distribution via</span>
-<a id="__codelineno-0-163" name="__codelineno-0-163"></a><span class="sd">            ``np.histogram_bin_edges(outcomes, bins=&#39;auto&#39;)``. The actual array used is stored</span>
-<a id="__codelineno-0-164" name="__codelineno-0-164"></a><span class="sd">            on ``self.last_locations``.</span>
-<a id="__codelineno-0-165" name="__codelineno-0-165"></a><span class="sd">        alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
-<a id="__codelineno-0-166" name="__codelineno-0-166"></a><span class="sd">        display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
-<a id="__codelineno-0-167" name="__codelineno-0-167"></a>
-<a id="__codelineno-0-168" name="__codelineno-0-168"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-169" name="__codelineno-0-169"></a><span class="sd">        Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
-<a id="__codelineno-0-170" name="__codelineno-0-170"></a><span class="sd">            - Expected LPTEs (np.ndarray): Local treatment effect estimates for each interval,</span>
-<a id="__codelineno-0-171" name="__codelineno-0-171"></a><span class="sd">              shape (len(locations)-1,)</span>
-<a id="__codelineno-0-172" name="__codelineno-0-172"></a><span class="sd">            - Lower bounds (np.ndarray): Lower confidence interval bounds</span>
-<a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">            - Upper bounds (np.ndarray): Upper confidence interval bounds</span>
-<a id="__codelineno-0-174" name="__codelineno-0-174"></a>
-<a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">    Example:</span>
-<a id="__codelineno-0-176" name="__codelineno-0-176"></a><span class="sd">        .. code-block:: python</span>
+<span class="normal"><a href="#__codelineno-0-214">214</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-138" name="__codelineno-0-138"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict_lpte</span><span class="p">(</span>
+<a id="__codelineno-0-139" name="__codelineno-0-139"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-140" name="__codelineno-0-140"></a>    <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<a id="__codelineno-0-141" name="__codelineno-0-141"></a>    <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<a id="__codelineno-0-142" name="__codelineno-0-142"></a>    <span class="n">locations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-143" name="__codelineno-0-143"></a>    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+<a id="__codelineno-0-144" name="__codelineno-0-144"></a>    <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-145" name="__codelineno-0-145"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<a id="__codelineno-0-146" name="__codelineno-0-146"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-147" name="__codelineno-0-147"></a><span class="sd">    Compute Local Probability Treatment Effects (LPTE).</span>
+<a id="__codelineno-0-148" name="__codelineno-0-148"></a>
+<a id="__codelineno-0-149" name="__codelineno-0-149"></a><span class="sd">    LPTE measures the difference in probability mass between treatment groups for intervals</span>
+<a id="__codelineno-0-150" name="__codelineno-0-150"></a><span class="sd">    defined by consecutive location pairs, weighted by treatment propensity within each stratum.</span>
+<a id="__codelineno-0-151" name="__codelineno-0-151"></a><span class="sd">    This provides locally robust estimates of treatment effects on interval probabilities.</span>
+<a id="__codelineno-0-152" name="__codelineno-0-152"></a>
+<a id="__codelineno-0-153" name="__codelineno-0-153"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-154" name="__codelineno-0-154"></a><span class="sd">        target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
+<a id="__codelineno-0-155" name="__codelineno-0-155"></a><span class="sd">        control_treatment_arm (int): The index of the treatment arm of the control group.</span>
+<a id="__codelineno-0-156" name="__codelineno-0-156"></a><span class="sd">        locations (np.ndarray, optional): Scalar values defining interval boundaries for</span>
+<a id="__codelineno-0-157" name="__codelineno-0-157"></a><span class="sd">            probability computation. For each interval (locations[i], locations[i+1]], the LPTE</span>
+<a id="__codelineno-0-158" name="__codelineno-0-158"></a><span class="sd">            is computed. If None, boundaries spanning the observed outcome range are generated</span>
+<a id="__codelineno-0-159" name="__codelineno-0-159"></a><span class="sd">            automatically with the left endpoint placed just below ``outcomes.min()``. The</span>
+<a id="__codelineno-0-160" name="__codelineno-0-160"></a><span class="sd">            number of boundaries is determined from data size and distribution via</span>
+<a id="__codelineno-0-161" name="__codelineno-0-161"></a><span class="sd">            ``np.histogram_bin_edges(outcomes, bins=&#39;auto&#39;)``. The actual array used is stored</span>
+<a id="__codelineno-0-162" name="__codelineno-0-162"></a><span class="sd">            on ``self.last_locations``.</span>
+<a id="__codelineno-0-163" name="__codelineno-0-163"></a><span class="sd">        alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
+<a id="__codelineno-0-164" name="__codelineno-0-164"></a><span class="sd">        display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
+<a id="__codelineno-0-165" name="__codelineno-0-165"></a>
+<a id="__codelineno-0-166" name="__codelineno-0-166"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-167" name="__codelineno-0-167"></a><span class="sd">        Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
+<a id="__codelineno-0-168" name="__codelineno-0-168"></a><span class="sd">            - Expected LPTEs (np.ndarray): Local treatment effect estimates for each interval,</span>
+<a id="__codelineno-0-169" name="__codelineno-0-169"></a><span class="sd">              shape (len(locations)-1,)</span>
+<a id="__codelineno-0-170" name="__codelineno-0-170"></a><span class="sd">            - Lower bounds (np.ndarray): Lower confidence interval bounds</span>
+<a id="__codelineno-0-171" name="__codelineno-0-171"></a><span class="sd">            - Upper bounds (np.ndarray): Upper confidence interval bounds</span>
+<a id="__codelineno-0-172" name="__codelineno-0-172"></a>
+<a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">    Example:</span>
+<a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="sd">        ```python</span>
+<a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">        import numpy as np</span>
+<a id="__codelineno-0-176" name="__codelineno-0-176"></a><span class="sd">        from dte_adj import SimpleLocalDistributionEstimator</span>
 <a id="__codelineno-0-177" name="__codelineno-0-177"></a>
-<a id="__codelineno-0-178" name="__codelineno-0-178"></a><span class="sd">            import numpy as np</span>
-<a id="__codelineno-0-179" name="__codelineno-0-179"></a><span class="sd">            from dte_adj import SimpleLocalDistributionEstimator</span>
-<a id="__codelineno-0-180" name="__codelineno-0-180"></a>
-<a id="__codelineno-0-181" name="__codelineno-0-181"></a><span class="sd">            # Generate sample data with strata</span>
-<a id="__codelineno-0-182" name="__codelineno-0-182"></a><span class="sd">            np.random.seed(42)</span>
-<a id="__codelineno-0-183" name="__codelineno-0-183"></a><span class="sd">            X = np.random.randn(1000, 5)</span>
-<a id="__codelineno-0-184" name="__codelineno-0-184"></a><span class="sd">            strata = np.random.choice([0, 1], size=1000)  # Binary strata</span>
-<a id="__codelineno-0-185" name="__codelineno-0-185"></a><span class="sd">            Z = np.random.binomial(1, 0.5, 1000)  # Treatment assignment</span>
-<a id="__codelineno-0-186" name="__codelineno-0-186"></a><span class="sd">            D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)  # Treatment receipt</span>
-<a id="__codelineno-0-187" name="__codelineno-0-187"></a><span class="sd">            Y = X[:, 0] + 2 * D + strata + np.random.randn(1000)</span>
-<a id="__codelineno-0-188" name="__codelineno-0-188"></a>
-<a id="__codelineno-0-189" name="__codelineno-0-189"></a><span class="sd">            # Fit local estimator</span>
-<a id="__codelineno-0-190" name="__codelineno-0-190"></a><span class="sd">            estimator = SimpleLocalDistributionEstimator()</span>
-<a id="__codelineno-0-191" name="__codelineno-0-191"></a><span class="sd">            estimator.fit(X, Z, D, Y, strata)</span>
+<a id="__codelineno-0-178" name="__codelineno-0-178"></a><span class="sd">        # Generate sample data with strata</span>
+<a id="__codelineno-0-179" name="__codelineno-0-179"></a><span class="sd">        np.random.seed(42)</span>
+<a id="__codelineno-0-180" name="__codelineno-0-180"></a><span class="sd">        X = np.random.randn(1000, 5)</span>
+<a id="__codelineno-0-181" name="__codelineno-0-181"></a><span class="sd">        strata = np.random.choice([0, 1], size=1000)  # Binary strata</span>
+<a id="__codelineno-0-182" name="__codelineno-0-182"></a><span class="sd">        Z = np.random.binomial(1, 0.5, 1000)  # Treatment assignment</span>
+<a id="__codelineno-0-183" name="__codelineno-0-183"></a><span class="sd">        D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)  # Treatment receipt</span>
+<a id="__codelineno-0-184" name="__codelineno-0-184"></a><span class="sd">        Y = X[:, 0] + 2 * D + strata + np.random.randn(1000)</span>
+<a id="__codelineno-0-185" name="__codelineno-0-185"></a>
+<a id="__codelineno-0-186" name="__codelineno-0-186"></a><span class="sd">        # Fit local estimator</span>
+<a id="__codelineno-0-187" name="__codelineno-0-187"></a><span class="sd">        estimator = SimpleLocalDistributionEstimator()</span>
+<a id="__codelineno-0-188" name="__codelineno-0-188"></a><span class="sd">        estimator.fit(X, Z, D, Y, strata)</span>
+<a id="__codelineno-0-189" name="__codelineno-0-189"></a>
+<a id="__codelineno-0-190" name="__codelineno-0-190"></a><span class="sd">        # Define interval boundaries</span>
+<a id="__codelineno-0-191" name="__codelineno-0-191"></a><span class="sd">        locations = np.array([-2, -1, 0, 1, 2])  # Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]</span>
 <a id="__codelineno-0-192" name="__codelineno-0-192"></a>
-<a id="__codelineno-0-193" name="__codelineno-0-193"></a><span class="sd">            # Define interval boundaries</span>
-<a id="__codelineno-0-194" name="__codelineno-0-194"></a><span class="sd">            locations = np.array([-2, -1, 0, 1, 2])  # Creates intervals: (-2,-1], (-1,0], (0,1], (1,2]</span>
-<a id="__codelineno-0-195" name="__codelineno-0-195"></a>
-<a id="__codelineno-0-196" name="__codelineno-0-196"></a><span class="sd">            # Compute LPTE</span>
-<a id="__codelineno-0-197" name="__codelineno-0-197"></a><span class="sd">            lpte, lower, upper = estimator.predict_lpte(</span>
-<a id="__codelineno-0-198" name="__codelineno-0-198"></a><span class="sd">                target_treatment_arm=1,</span>
-<a id="__codelineno-0-199" name="__codelineno-0-199"></a><span class="sd">                control_treatment_arm=0,</span>
-<a id="__codelineno-0-200" name="__codelineno-0-200"></a><span class="sd">                locations=locations</span>
-<a id="__codelineno-0-201" name="__codelineno-0-201"></a><span class="sd">            )</span>
-<a id="__codelineno-0-202" name="__codelineno-0-202"></a>
-<a id="__codelineno-0-203" name="__codelineno-0-203"></a><span class="sd">            print(f&quot;LPTE shape: {lpte.shape}&quot;)  # Should be (4,) for 4 intervals</span>
-<a id="__codelineno-0-204" name="__codelineno-0-204"></a><span class="sd">            print(f&quot;Interval effects: {lpte}&quot;)</span>
-<a id="__codelineno-0-205" name="__codelineno-0-205"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-206" name="__codelineno-0-206"></a>    <span class="k">if</span> <span class="n">locations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-207" name="__codelineno-0-207"></a>        <span class="n">locations</span> <span class="o">=</span> <span class="n">_infer_default_locations</span><span class="p">(</span>
-<a id="__codelineno-0-208" name="__codelineno-0-208"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">for_intervals</span><span class="o">=</span><span class="kc">True</span>
-<a id="__codelineno-0-209" name="__codelineno-0-209"></a>        <span class="p">)</span>
-<a id="__codelineno-0-210" name="__codelineno-0-210"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">last_locations</span> <span class="o">=</span> <span class="n">locations</span>
-<a id="__codelineno-0-211" name="__codelineno-0-211"></a>    <span class="k">return</span> <span class="n">compute_lpte</span><span class="p">(</span>
-<a id="__codelineno-0-212" name="__codelineno-0-212"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-213" name="__codelineno-0-213"></a>        <span class="n">target_treatment_arm</span><span class="p">,</span>
-<a id="__codelineno-0-214" name="__codelineno-0-214"></a>        <span class="n">control_treatment_arm</span><span class="p">,</span>
-<a id="__codelineno-0-215" name="__codelineno-0-215"></a>        <span class="n">locations</span><span class="p">,</span>
-<a id="__codelineno-0-216" name="__codelineno-0-216"></a>        <span class="n">alpha</span><span class="p">,</span>
-<a id="__codelineno-0-217" name="__codelineno-0-217"></a>        <span class="n">display_progress</span><span class="p">,</span>
-<a id="__codelineno-0-218" name="__codelineno-0-218"></a>    <span class="p">)</span>
+<a id="__codelineno-0-193" name="__codelineno-0-193"></a><span class="sd">        # Compute LPTE</span>
+<a id="__codelineno-0-194" name="__codelineno-0-194"></a><span class="sd">        lpte, lower, upper = estimator.predict_lpte(</span>
+<a id="__codelineno-0-195" name="__codelineno-0-195"></a><span class="sd">            target_treatment_arm=1,</span>
+<a id="__codelineno-0-196" name="__codelineno-0-196"></a><span class="sd">            control_treatment_arm=0,</span>
+<a id="__codelineno-0-197" name="__codelineno-0-197"></a><span class="sd">            locations=locations</span>
+<a id="__codelineno-0-198" name="__codelineno-0-198"></a><span class="sd">        )</span>
+<a id="__codelineno-0-199" name="__codelineno-0-199"></a>
+<a id="__codelineno-0-200" name="__codelineno-0-200"></a><span class="sd">        print(f&quot;LPTE shape: {lpte.shape}&quot;)  # Should be (4,) for 4 intervals</span>
+<a id="__codelineno-0-201" name="__codelineno-0-201"></a><span class="sd">        print(f&quot;Interval effects: {lpte}&quot;)</span>
+<a id="__codelineno-0-202" name="__codelineno-0-202"></a><span class="sd">        ```</span>
+<a id="__codelineno-0-203" name="__codelineno-0-203"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-204" name="__codelineno-0-204"></a>    <span class="k">if</span> <span class="n">locations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-205" name="__codelineno-0-205"></a>        <span class="n">locations</span> <span class="o">=</span> <span class="n">_infer_default_locations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">for_intervals</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-206" name="__codelineno-0-206"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">last_locations</span> <span class="o">=</span> <span class="n">locations</span>
+<a id="__codelineno-0-207" name="__codelineno-0-207"></a>    <span class="k">return</span> <span class="n">compute_lpte</span><span class="p">(</span>
+<a id="__codelineno-0-208" name="__codelineno-0-208"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-209" name="__codelineno-0-209"></a>        <span class="n">target_treatment_arm</span><span class="p">,</span>
+<a id="__codelineno-0-210" name="__codelineno-0-210"></a>        <span class="n">control_treatment_arm</span><span class="p">,</span>
+<a id="__codelineno-0-211" name="__codelineno-0-211"></a>        <span class="n">locations</span><span class="p">,</span>
+<a id="__codelineno-0-212" name="__codelineno-0-212"></a>        <span class="n">alpha</span><span class="p">,</span>
+<a id="__codelineno-0-213" name="__codelineno-0-213"></a>        <span class="n">display_progress</span><span class="p">,</span>
+<a id="__codelineno-0-214" name="__codelineno-0-214"></a>    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1841,7 +1831,11 @@ within each stratum. It uses cross-fitting to avoid overfitting issues.</p>
 
             <details class="quote">
               <summary>Source code in <code>dte_adj/local.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-231">231</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-227">227</a></span>
+<span class="normal"><a href="#__codelineno-0-228">228</a></span>
+<span class="normal"><a href="#__codelineno-0-229">229</a></span>
+<span class="normal"><a href="#__codelineno-0-230">230</a></span>
+<span class="normal"><a href="#__codelineno-0-231">231</a></span>
 <span class="normal"><a href="#__codelineno-0-232">232</a></span>
 <span class="normal"><a href="#__codelineno-0-233">233</a></span>
 <span class="normal"><a href="#__codelineno-0-234">234</a></span>
@@ -1862,36 +1856,32 @@ within each stratum. It uses cross-fitting to avoid overfitting issues.</p>
 <span class="normal"><a href="#__codelineno-0-249">249</a></span>
 <span class="normal"><a href="#__codelineno-0-250">250</a></span>
 <span class="normal"><a href="#__codelineno-0-251">251</a></span>
-<span class="normal"><a href="#__codelineno-0-252">252</a></span>
-<span class="normal"><a href="#__codelineno-0-253">253</a></span>
-<span class="normal"><a href="#__codelineno-0-254">254</a></span>
-<span class="normal"><a href="#__codelineno-0-255">255</a></span>
-<span class="normal"><a href="#__codelineno-0-256">256</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-231" name="__codelineno-0-231"></a><span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
-<a id="__codelineno-0-232" name="__codelineno-0-232"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-233" name="__codelineno-0-233"></a>    <span class="n">covariates</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
-<a id="__codelineno-0-234" name="__codelineno-0-234"></a>    <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
-<a id="__codelineno-0-235" name="__codelineno-0-235"></a>    <span class="n">treatment_indicator</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
-<a id="__codelineno-0-236" name="__codelineno-0-236"></a>    <span class="n">outcomes</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
-<a id="__codelineno-0-237" name="__codelineno-0-237"></a>    <span class="n">strata</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
-<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdjustedLocalDistributionEstimator</span><span class="p">:</span>
-<a id="__codelineno-0-239" name="__codelineno-0-239"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">    Train the AdjustedLocalDistributionEstimator.</span>
-<a id="__codelineno-0-241" name="__codelineno-0-241"></a>
-<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-243" name="__codelineno-0-243"></a><span class="sd">        covariates: Pre-treatment covariates.</span>
-<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">        treatment_arms: Treatment assignment variable (Z).</span>
-<a id="__codelineno-0-245" name="__codelineno-0-245"></a><span class="sd">        treatment_indicator: Treatment indicator variable (D).</span>
-<a id="__codelineno-0-246" name="__codelineno-0-246"></a><span class="sd">        outcomes: Scalar-valued observed outcome.</span>
-<a id="__codelineno-0-247" name="__codelineno-0-247"></a><span class="sd">        strata: Stratum indicators.</span>
-<a id="__codelineno-0-248" name="__codelineno-0-248"></a>
-<a id="__codelineno-0-249" name="__codelineno-0-249"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-250" name="__codelineno-0-250"></a><span class="sd">        AdjustedLocalDistributionEstimator: The fitted estimator.</span>
-<a id="__codelineno-0-251" name="__codelineno-0-251"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-252" name="__codelineno-0-252"></a>    <span class="n">treatment_indicator</span> <span class="o">=</span> <span class="n">_convert_to_ndarray</span><span class="p">(</span><span class="n">treatment_indicator</span><span class="p">)</span>
-<a id="__codelineno-0-253" name="__codelineno-0-253"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">covariates</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
-<a id="__codelineno-0-254" name="__codelineno-0-254"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">treatment_indicator</span> <span class="o">=</span> <span class="n">treatment_indicator</span>
-<a id="__codelineno-0-255" name="__codelineno-0-255"></a>
-<a id="__codelineno-0-256" name="__codelineno-0-256"></a>    <span class="k">return</span> <span class="bp">self</span>
+<span class="normal"><a href="#__codelineno-0-252">252</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-227" name="__codelineno-0-227"></a><span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+<a id="__codelineno-0-228" name="__codelineno-0-228"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-229" name="__codelineno-0-229"></a>    <span class="n">covariates</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+<a id="__codelineno-0-230" name="__codelineno-0-230"></a>    <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+<a id="__codelineno-0-231" name="__codelineno-0-231"></a>    <span class="n">treatment_indicator</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+<a id="__codelineno-0-232" name="__codelineno-0-232"></a>    <span class="n">outcomes</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+<a id="__codelineno-0-233" name="__codelineno-0-233"></a>    <span class="n">strata</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+<a id="__codelineno-0-234" name="__codelineno-0-234"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdjustedLocalDistributionEstimator</span><span class="p">:</span>
+<a id="__codelineno-0-235" name="__codelineno-0-235"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-236" name="__codelineno-0-236"></a><span class="sd">    Train the AdjustedLocalDistributionEstimator.</span>
+<a id="__codelineno-0-237" name="__codelineno-0-237"></a>
+<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-239" name="__codelineno-0-239"></a><span class="sd">        covariates: Pre-treatment covariates.</span>
+<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">        treatment_arms: Treatment assignment variable (Z).</span>
+<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">        treatment_indicator: Treatment indicator variable (D).</span>
+<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">        outcomes: Scalar-valued observed outcome.</span>
+<a id="__codelineno-0-243" name="__codelineno-0-243"></a><span class="sd">        strata: Stratum indicators.</span>
+<a id="__codelineno-0-244" name="__codelineno-0-244"></a>
+<a id="__codelineno-0-245" name="__codelineno-0-245"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-246" name="__codelineno-0-246"></a><span class="sd">        AdjustedLocalDistributionEstimator: The fitted estimator.</span>
+<a id="__codelineno-0-247" name="__codelineno-0-247"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-248" name="__codelineno-0-248"></a>    <span class="n">treatment_indicator</span> <span class="o">=</span> <span class="n">_convert_to_ndarray</span><span class="p">(</span><span class="n">treatment_indicator</span><span class="p">)</span>
+<a id="__codelineno-0-249" name="__codelineno-0-249"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">covariates</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+<a id="__codelineno-0-250" name="__codelineno-0-250"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">treatment_indicator</span> <span class="o">=</span> <span class="n">treatment_indicator</span>
+<a id="__codelineno-0-251" name="__codelineno-0-251"></a>
+<a id="__codelineno-0-252" name="__codelineno-0-252"></a>    <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1936,41 +1926,44 @@ to provide precise, locally robust estimates of distributional treatment effects
         - Lower bounds (np.ndarray): Lower confidence interval bounds
         - Upper bounds (np.ndarray): Upper confidence interval bounds</p>
 <p>Example:
-    .. code-block:: python</p>
-<div class="highlight"><pre><span></span><code>    import numpy as np
-    from sklearn.ensemble import RandomForestClassifier
-    from dte_adj import AdjustedLocalDistributionEstimator
-
-    # Generate confounded data with strata
-    np.random.seed(42)
-    X = np.random.randn(1000, 5)
-    strata = np.random.choice([0, 1], size=1000)
-    # Treatment assignment depends on covariates
-    Z_prob = 1 / (1 + np.exp(-(X[:, 0] + X[:, 1] + strata)))
-    Z = np.random.binomial(1, Z_prob, 1000)
-    D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)
-    Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)
-
-    # Fit adjusted local estimator
-    base_model = RandomForestClassifier(n_estimators=100)
-    estimator = AdjustedLocalDistributionEstimator(base_model, folds=3)
-    estimator.fit(X, Z, D, Y, strata)
-
-    # Compute LDTE with ML adjustment
-    locations = np.linspace(Y.min(), Y.max(), 20)
-    ldte, lower, upper = estimator.predict_ldte(
-        target_treatment_arm=1,
-        control_treatment_arm=0,
-        locations=locations
-    )
-
-    print(f&quot;Adjusted LDTE: {ldte.mean():.3f}&quot;)
-</code></pre></div>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdjustedLocalDistributionEstimator</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Generate confounded data with strata</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># Treatment assignment depends on covariates</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">Z_prob</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">strata</span><span class="p">)))</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Z_prob</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.3</span> <span class="o">+</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">Z</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="c1"># Fit adjusted local estimator</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">base_model</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="n">estimator</span> <span class="o">=</span> <span class="n">AdjustedLocalDistributionEstimator</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="c1"># Compute LDTE with ML adjustment</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">20</span><span class="p">)</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="n">ldte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_ldte</span><span class="p">(</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="p">)</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adjusted LDTE: </span><span class="si">{</span><span class="n">ldte</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div></p>
 
 
             <details class="quote">
               <summary>Source code in <code>dte_adj/local.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-258">258</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-254">254</a></span>
+<span class="normal"><a href="#__codelineno-0-255">255</a></span>
+<span class="normal"><a href="#__codelineno-0-256">256</a></span>
+<span class="normal"><a href="#__codelineno-0-257">257</a></span>
+<span class="normal"><a href="#__codelineno-0-258">258</a></span>
 <span class="normal"><a href="#__codelineno-0-259">259</a></span>
 <span class="normal"><a href="#__codelineno-0-260">260</a></span>
 <span class="normal"><a href="#__codelineno-0-261">261</a></span>
@@ -2039,88 +2032,80 @@ to provide precise, locally robust estimates of distributional treatment effects
 <span class="normal"><a href="#__codelineno-0-324">324</a></span>
 <span class="normal"><a href="#__codelineno-0-325">325</a></span>
 <span class="normal"><a href="#__codelineno-0-326">326</a></span>
-<span class="normal"><a href="#__codelineno-0-327">327</a></span>
-<span class="normal"><a href="#__codelineno-0-328">328</a></span>
-<span class="normal"><a href="#__codelineno-0-329">329</a></span>
-<span class="normal"><a href="#__codelineno-0-330">330</a></span>
-<span class="normal"><a href="#__codelineno-0-331">331</a></span>
-<span class="normal"><a href="#__codelineno-0-332">332</a></span>
-<span class="normal"><a href="#__codelineno-0-333">333</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-258" name="__codelineno-0-258"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict_ldte</span><span class="p">(</span>
-<a id="__codelineno-0-259" name="__codelineno-0-259"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-260" name="__codelineno-0-260"></a>    <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<a id="__codelineno-0-261" name="__codelineno-0-261"></a>    <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<a id="__codelineno-0-262" name="__codelineno-0-262"></a>    <span class="n">locations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-263" name="__codelineno-0-263"></a>    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
-<a id="__codelineno-0-264" name="__codelineno-0-264"></a>    <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-0-265" name="__codelineno-0-265"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">    Compute Local Distribution Treatment Effects (LDTE) using ML adjustment.</span>
-<a id="__codelineno-0-268" name="__codelineno-0-268"></a>
-<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">    This method combines machine learning adjustment with local treatment effect estimation</span>
-<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">    to provide precise, locally robust estimates of distributional treatment effects.</span>
-<a id="__codelineno-0-271" name="__codelineno-0-271"></a>
-<a id="__codelineno-0-272" name="__codelineno-0-272"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">        target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
-<a id="__codelineno-0-274" name="__codelineno-0-274"></a><span class="sd">        control_treatment_arm (int): The index of the treatment arm of the control group.</span>
-<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">        locations (np.ndarray, optional): Scalar values to be used for computing the cumulative</span>
-<a id="__codelineno-0-276" name="__codelineno-0-276"></a><span class="sd">            distribution. If None, evenly-spaced locations spanning the observed outcome range</span>
-<a id="__codelineno-0-277" name="__codelineno-0-277"></a><span class="sd">            are generated automatically. The number of points is determined from data size and</span>
-<a id="__codelineno-0-278" name="__codelineno-0-278"></a><span class="sd">            distribution via ``np.histogram_bin_edges(outcomes, bins=&#39;auto&#39;)``. The actual</span>
-<a id="__codelineno-0-279" name="__codelineno-0-279"></a><span class="sd">            array used is stored on ``self.last_locations``.</span>
-<a id="__codelineno-0-280" name="__codelineno-0-280"></a><span class="sd">        alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
-<a id="__codelineno-0-281" name="__codelineno-0-281"></a><span class="sd">        display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
-<a id="__codelineno-0-282" name="__codelineno-0-282"></a>
-<a id="__codelineno-0-283" name="__codelineno-0-283"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-284" name="__codelineno-0-284"></a><span class="sd">        Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
-<a id="__codelineno-0-285" name="__codelineno-0-285"></a><span class="sd">            - Expected LDTEs (np.ndarray): Local treatment effect estimates at each location</span>
-<a id="__codelineno-0-286" name="__codelineno-0-286"></a><span class="sd">            - Lower bounds (np.ndarray): Lower confidence interval bounds</span>
-<a id="__codelineno-0-287" name="__codelineno-0-287"></a><span class="sd">            - Upper bounds (np.ndarray): Upper confidence interval bounds</span>
-<a id="__codelineno-0-288" name="__codelineno-0-288"></a>
-<a id="__codelineno-0-289" name="__codelineno-0-289"></a><span class="sd">    Example:</span>
-<a id="__codelineno-0-290" name="__codelineno-0-290"></a><span class="sd">        .. code-block:: python</span>
-<a id="__codelineno-0-291" name="__codelineno-0-291"></a>
-<a id="__codelineno-0-292" name="__codelineno-0-292"></a><span class="sd">            import numpy as np</span>
-<a id="__codelineno-0-293" name="__codelineno-0-293"></a><span class="sd">            from sklearn.ensemble import RandomForestClassifier</span>
-<a id="__codelineno-0-294" name="__codelineno-0-294"></a><span class="sd">            from dte_adj import AdjustedLocalDistributionEstimator</span>
-<a id="__codelineno-0-295" name="__codelineno-0-295"></a>
-<a id="__codelineno-0-296" name="__codelineno-0-296"></a><span class="sd">            # Generate confounded data with strata</span>
-<a id="__codelineno-0-297" name="__codelineno-0-297"></a><span class="sd">            np.random.seed(42)</span>
-<a id="__codelineno-0-298" name="__codelineno-0-298"></a><span class="sd">            X = np.random.randn(1000, 5)</span>
-<a id="__codelineno-0-299" name="__codelineno-0-299"></a><span class="sd">            strata = np.random.choice([0, 1], size=1000)</span>
-<a id="__codelineno-0-300" name="__codelineno-0-300"></a><span class="sd">            # Treatment assignment depends on covariates</span>
-<a id="__codelineno-0-301" name="__codelineno-0-301"></a><span class="sd">            Z_prob = 1 / (1 + np.exp(-(X[:, 0] + X[:, 1] + strata)))</span>
-<a id="__codelineno-0-302" name="__codelineno-0-302"></a><span class="sd">            Z = np.random.binomial(1, Z_prob, 1000)</span>
-<a id="__codelineno-0-303" name="__codelineno-0-303"></a><span class="sd">            D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)</span>
-<a id="__codelineno-0-304" name="__codelineno-0-304"></a><span class="sd">            Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)</span>
+<span class="normal"><a href="#__codelineno-0-327">327</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-254" name="__codelineno-0-254"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict_ldte</span><span class="p">(</span>
+<a id="__codelineno-0-255" name="__codelineno-0-255"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-256" name="__codelineno-0-256"></a>    <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<a id="__codelineno-0-257" name="__codelineno-0-257"></a>    <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<a id="__codelineno-0-258" name="__codelineno-0-258"></a>    <span class="n">locations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-259" name="__codelineno-0-259"></a>    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+<a id="__codelineno-0-260" name="__codelineno-0-260"></a>    <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-261" name="__codelineno-0-261"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">    Compute Local Distribution Treatment Effects (LDTE) using ML adjustment.</span>
+<a id="__codelineno-0-264" name="__codelineno-0-264"></a>
+<a id="__codelineno-0-265" name="__codelineno-0-265"></a><span class="sd">    This method combines machine learning adjustment with local treatment effect estimation</span>
+<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">    to provide precise, locally robust estimates of distributional treatment effects.</span>
+<a id="__codelineno-0-267" name="__codelineno-0-267"></a>
+<a id="__codelineno-0-268" name="__codelineno-0-268"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">        target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
+<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">        control_treatment_arm (int): The index of the treatment arm of the control group.</span>
+<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">        locations (np.ndarray, optional): Scalar values to be used for computing the cumulative</span>
+<a id="__codelineno-0-272" name="__codelineno-0-272"></a><span class="sd">            distribution. If None, evenly-spaced locations spanning the observed outcome range</span>
+<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">            are generated automatically. The number of points is determined from data size and</span>
+<a id="__codelineno-0-274" name="__codelineno-0-274"></a><span class="sd">            distribution via ``np.histogram_bin_edges(outcomes, bins=&#39;auto&#39;)``. The actual</span>
+<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">            array used is stored on ``self.last_locations``.</span>
+<a id="__codelineno-0-276" name="__codelineno-0-276"></a><span class="sd">        alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
+<a id="__codelineno-0-277" name="__codelineno-0-277"></a><span class="sd">        display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
+<a id="__codelineno-0-278" name="__codelineno-0-278"></a>
+<a id="__codelineno-0-279" name="__codelineno-0-279"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-280" name="__codelineno-0-280"></a><span class="sd">        Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
+<a id="__codelineno-0-281" name="__codelineno-0-281"></a><span class="sd">            - Expected LDTEs (np.ndarray): Local treatment effect estimates at each location</span>
+<a id="__codelineno-0-282" name="__codelineno-0-282"></a><span class="sd">            - Lower bounds (np.ndarray): Lower confidence interval bounds</span>
+<a id="__codelineno-0-283" name="__codelineno-0-283"></a><span class="sd">            - Upper bounds (np.ndarray): Upper confidence interval bounds</span>
+<a id="__codelineno-0-284" name="__codelineno-0-284"></a>
+<a id="__codelineno-0-285" name="__codelineno-0-285"></a><span class="sd">    Example:</span>
+<a id="__codelineno-0-286" name="__codelineno-0-286"></a><span class="sd">        ```python</span>
+<a id="__codelineno-0-287" name="__codelineno-0-287"></a><span class="sd">        import numpy as np</span>
+<a id="__codelineno-0-288" name="__codelineno-0-288"></a><span class="sd">        from sklearn.ensemble import RandomForestClassifier</span>
+<a id="__codelineno-0-289" name="__codelineno-0-289"></a><span class="sd">        from dte_adj import AdjustedLocalDistributionEstimator</span>
+<a id="__codelineno-0-290" name="__codelineno-0-290"></a>
+<a id="__codelineno-0-291" name="__codelineno-0-291"></a><span class="sd">        # Generate confounded data with strata</span>
+<a id="__codelineno-0-292" name="__codelineno-0-292"></a><span class="sd">        np.random.seed(42)</span>
+<a id="__codelineno-0-293" name="__codelineno-0-293"></a><span class="sd">        X = np.random.randn(1000, 5)</span>
+<a id="__codelineno-0-294" name="__codelineno-0-294"></a><span class="sd">        strata = np.random.choice([0, 1], size=1000)</span>
+<a id="__codelineno-0-295" name="__codelineno-0-295"></a><span class="sd">        # Treatment assignment depends on covariates</span>
+<a id="__codelineno-0-296" name="__codelineno-0-296"></a><span class="sd">        Z_prob = 1 / (1 + np.exp(-(X[:, 0] + X[:, 1] + strata)))</span>
+<a id="__codelineno-0-297" name="__codelineno-0-297"></a><span class="sd">        Z = np.random.binomial(1, Z_prob, 1000)</span>
+<a id="__codelineno-0-298" name="__codelineno-0-298"></a><span class="sd">        D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)</span>
+<a id="__codelineno-0-299" name="__codelineno-0-299"></a><span class="sd">        Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)</span>
+<a id="__codelineno-0-300" name="__codelineno-0-300"></a>
+<a id="__codelineno-0-301" name="__codelineno-0-301"></a><span class="sd">        # Fit adjusted local estimator</span>
+<a id="__codelineno-0-302" name="__codelineno-0-302"></a><span class="sd">        base_model = RandomForestClassifier(n_estimators=100)</span>
+<a id="__codelineno-0-303" name="__codelineno-0-303"></a><span class="sd">        estimator = AdjustedLocalDistributionEstimator(base_model, folds=3)</span>
+<a id="__codelineno-0-304" name="__codelineno-0-304"></a><span class="sd">        estimator.fit(X, Z, D, Y, strata)</span>
 <a id="__codelineno-0-305" name="__codelineno-0-305"></a>
-<a id="__codelineno-0-306" name="__codelineno-0-306"></a><span class="sd">            # Fit adjusted local estimator</span>
-<a id="__codelineno-0-307" name="__codelineno-0-307"></a><span class="sd">            base_model = RandomForestClassifier(n_estimators=100)</span>
-<a id="__codelineno-0-308" name="__codelineno-0-308"></a><span class="sd">            estimator = AdjustedLocalDistributionEstimator(base_model, folds=3)</span>
-<a id="__codelineno-0-309" name="__codelineno-0-309"></a><span class="sd">            estimator.fit(X, Z, D, Y, strata)</span>
-<a id="__codelineno-0-310" name="__codelineno-0-310"></a>
-<a id="__codelineno-0-311" name="__codelineno-0-311"></a><span class="sd">            # Compute LDTE with ML adjustment</span>
-<a id="__codelineno-0-312" name="__codelineno-0-312"></a><span class="sd">            locations = np.linspace(Y.min(), Y.max(), 20)</span>
-<a id="__codelineno-0-313" name="__codelineno-0-313"></a><span class="sd">            ldte, lower, upper = estimator.predict_ldte(</span>
-<a id="__codelineno-0-314" name="__codelineno-0-314"></a><span class="sd">                target_treatment_arm=1,</span>
-<a id="__codelineno-0-315" name="__codelineno-0-315"></a><span class="sd">                control_treatment_arm=0,</span>
-<a id="__codelineno-0-316" name="__codelineno-0-316"></a><span class="sd">                locations=locations</span>
-<a id="__codelineno-0-317" name="__codelineno-0-317"></a><span class="sd">            )</span>
-<a id="__codelineno-0-318" name="__codelineno-0-318"></a>
-<a id="__codelineno-0-319" name="__codelineno-0-319"></a><span class="sd">            print(f&quot;Adjusted LDTE: {ldte.mean():.3f}&quot;)</span>
-<a id="__codelineno-0-320" name="__codelineno-0-320"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-321" name="__codelineno-0-321"></a>    <span class="k">if</span> <span class="n">locations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-322" name="__codelineno-0-322"></a>        <span class="n">locations</span> <span class="o">=</span> <span class="n">_infer_default_locations</span><span class="p">(</span>
-<a id="__codelineno-0-323" name="__codelineno-0-323"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">for_intervals</span><span class="o">=</span><span class="kc">False</span>
-<a id="__codelineno-0-324" name="__codelineno-0-324"></a>        <span class="p">)</span>
-<a id="__codelineno-0-325" name="__codelineno-0-325"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">last_locations</span> <span class="o">=</span> <span class="n">locations</span>
-<a id="__codelineno-0-326" name="__codelineno-0-326"></a>    <span class="k">return</span> <span class="n">compute_ldte</span><span class="p">(</span>
-<a id="__codelineno-0-327" name="__codelineno-0-327"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-328" name="__codelineno-0-328"></a>        <span class="n">target_treatment_arm</span><span class="p">,</span>
-<a id="__codelineno-0-329" name="__codelineno-0-329"></a>        <span class="n">control_treatment_arm</span><span class="p">,</span>
-<a id="__codelineno-0-330" name="__codelineno-0-330"></a>        <span class="n">locations</span><span class="p">,</span>
-<a id="__codelineno-0-331" name="__codelineno-0-331"></a>        <span class="n">alpha</span><span class="p">,</span>
-<a id="__codelineno-0-332" name="__codelineno-0-332"></a>        <span class="n">display_progress</span><span class="p">,</span>
-<a id="__codelineno-0-333" name="__codelineno-0-333"></a>    <span class="p">)</span>
+<a id="__codelineno-0-306" name="__codelineno-0-306"></a><span class="sd">        # Compute LDTE with ML adjustment</span>
+<a id="__codelineno-0-307" name="__codelineno-0-307"></a><span class="sd">        locations = np.linspace(Y.min(), Y.max(), 20)</span>
+<a id="__codelineno-0-308" name="__codelineno-0-308"></a><span class="sd">        ldte, lower, upper = estimator.predict_ldte(</span>
+<a id="__codelineno-0-309" name="__codelineno-0-309"></a><span class="sd">            target_treatment_arm=1,</span>
+<a id="__codelineno-0-310" name="__codelineno-0-310"></a><span class="sd">            control_treatment_arm=0,</span>
+<a id="__codelineno-0-311" name="__codelineno-0-311"></a><span class="sd">            locations=locations</span>
+<a id="__codelineno-0-312" name="__codelineno-0-312"></a><span class="sd">        )</span>
+<a id="__codelineno-0-313" name="__codelineno-0-313"></a>
+<a id="__codelineno-0-314" name="__codelineno-0-314"></a><span class="sd">        print(f&quot;Adjusted LDTE: {ldte.mean():.3f}&quot;)</span>
+<a id="__codelineno-0-315" name="__codelineno-0-315"></a><span class="sd">        ```</span>
+<a id="__codelineno-0-316" name="__codelineno-0-316"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-317" name="__codelineno-0-317"></a>    <span class="k">if</span> <span class="n">locations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-318" name="__codelineno-0-318"></a>        <span class="n">locations</span> <span class="o">=</span> <span class="n">_infer_default_locations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">for_intervals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-0-319" name="__codelineno-0-319"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">last_locations</span> <span class="o">=</span> <span class="n">locations</span>
+<a id="__codelineno-0-320" name="__codelineno-0-320"></a>    <span class="k">return</span> <span class="n">compute_ldte</span><span class="p">(</span>
+<a id="__codelineno-0-321" name="__codelineno-0-321"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-322" name="__codelineno-0-322"></a>        <span class="n">target_treatment_arm</span><span class="p">,</span>
+<a id="__codelineno-0-323" name="__codelineno-0-323"></a>        <span class="n">control_treatment_arm</span><span class="p">,</span>
+<a id="__codelineno-0-324" name="__codelineno-0-324"></a>        <span class="n">locations</span><span class="p">,</span>
+<a id="__codelineno-0-325" name="__codelineno-0-325"></a>        <span class="n">alpha</span><span class="p">,</span>
+<a id="__codelineno-0-326" name="__codelineno-0-326"></a>        <span class="n">display_progress</span><span class="p">,</span>
+<a id="__codelineno-0-327" name="__codelineno-0-327"></a>    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2168,43 +2153,48 @@ to provide precise estimates of treatment effects on interval probabilities.</p>
         - Lower bounds (np.ndarray): Lower confidence interval bounds
         - Upper bounds (np.ndarray): Upper confidence interval bounds</p>
 <p>Example:
-    .. code-block:: python</p>
-<div class="highlight"><pre><span></span><code>    import numpy as np
-    from sklearn.linear_model import LogisticRegression
-    from dte_adj import AdjustedLocalDistributionEstimator
-
-    # Generate confounded data with strata
-    np.random.seed(42)
-    X = np.random.randn(1000, 5)
-    strata = np.random.choice([0, 1], size=1000)
-    # Treatment assignment depends on covariates
-    Z_prob = 1 / (1 + np.exp(-(X[:, 0] + strata)))
-    Z = np.random.binomial(1, Z_prob, 1000)
-    D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)
-    Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)
-
-    # Fit adjusted local estimator
-    base_model = LogisticRegression()
-    estimator = AdjustedLocalDistributionEstimator(base_model, folds=3)
-    estimator.fit(X, Z, D, Y, strata)
-
-    # Define interval boundaries
-    locations = np.array([-2, -1, 0, 1, 2])
-
-    # Compute LPTE with ML adjustment
-    lpte, lower, upper = estimator.predict_lpte(
-        target_treatment_arm=1,
-        control_treatment_arm=0,
-        locations=locations
-    )
-
-    print(f&quot;Adjusted LPTE: {lpte}&quot;)
-</code></pre></div>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdjustedLocalDistributionEstimator</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Generate confounded data with strata</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># Treatment assignment depends on covariates</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">Z_prob</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">strata</span><span class="p">)))</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Z_prob</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.3</span> <span class="o">+</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">Z</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">strata</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="c1"># Fit adjusted local estimator</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">base_model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="n">estimator</span> <span class="o">=</span> <span class="n">AdjustedLocalDistributionEstimator</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">strata</span><span class="p">)</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="c1"># Define interval boundaries</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">locations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="c1"># Compute LPTE with ML adjustment</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="n">lpte</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_lpte</span><span class="p">(</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    <span class="n">target_treatment_arm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>    <span class="n">control_treatment_arm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    <span class="n">locations</span><span class="o">=</span><span class="n">locations</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="p">)</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adjusted LPTE: </span><span class="si">{</span><span class="n">lpte</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div></p>
 
 
             <details class="quote">
               <summary>Source code in <code>dte_adj/local.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-335">335</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-329">329</a></span>
+<span class="normal"><a href="#__codelineno-0-330">330</a></span>
+<span class="normal"><a href="#__codelineno-0-331">331</a></span>
+<span class="normal"><a href="#__codelineno-0-332">332</a></span>
+<span class="normal"><a href="#__codelineno-0-333">333</a></span>
+<span class="normal"><a href="#__codelineno-0-334">334</a></span>
+<span class="normal"><a href="#__codelineno-0-335">335</a></span>
 <span class="normal"><a href="#__codelineno-0-336">336</a></span>
 <span class="normal"><a href="#__codelineno-0-337">337</a></span>
 <span class="normal"><a href="#__codelineno-0-338">338</a></span>
@@ -2276,95 +2266,85 @@ to provide precise estimates of treatment effects on interval probabilities.</p>
 <span class="normal"><a href="#__codelineno-0-404">404</a></span>
 <span class="normal"><a href="#__codelineno-0-405">405</a></span>
 <span class="normal"><a href="#__codelineno-0-406">406</a></span>
-<span class="normal"><a href="#__codelineno-0-407">407</a></span>
-<span class="normal"><a href="#__codelineno-0-408">408</a></span>
-<span class="normal"><a href="#__codelineno-0-409">409</a></span>
-<span class="normal"><a href="#__codelineno-0-410">410</a></span>
-<span class="normal"><a href="#__codelineno-0-411">411</a></span>
-<span class="normal"><a href="#__codelineno-0-412">412</a></span>
-<span class="normal"><a href="#__codelineno-0-413">413</a></span>
-<span class="normal"><a href="#__codelineno-0-414">414</a></span>
-<span class="normal"><a href="#__codelineno-0-415">415</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-335" name="__codelineno-0-335"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict_lpte</span><span class="p">(</span>
-<a id="__codelineno-0-336" name="__codelineno-0-336"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-337" name="__codelineno-0-337"></a>    <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<a id="__codelineno-0-338" name="__codelineno-0-338"></a>    <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<a id="__codelineno-0-339" name="__codelineno-0-339"></a>    <span class="n">locations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-340" name="__codelineno-0-340"></a>    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
-<a id="__codelineno-0-341" name="__codelineno-0-341"></a>    <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-0-342" name="__codelineno-0-342"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<a id="__codelineno-0-343" name="__codelineno-0-343"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-344" name="__codelineno-0-344"></a><span class="sd">    Compute Local Probability Treatment Effects (LPTE) using ML adjustment.</span>
-<a id="__codelineno-0-345" name="__codelineno-0-345"></a>
-<a id="__codelineno-0-346" name="__codelineno-0-346"></a><span class="sd">    This method combines machine learning adjustment with local treatment effect estimation</span>
-<a id="__codelineno-0-347" name="__codelineno-0-347"></a><span class="sd">    to provide precise estimates of treatment effects on interval probabilities.</span>
-<a id="__codelineno-0-348" name="__codelineno-0-348"></a>
-<a id="__codelineno-0-349" name="__codelineno-0-349"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-350" name="__codelineno-0-350"></a><span class="sd">        target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
-<a id="__codelineno-0-351" name="__codelineno-0-351"></a><span class="sd">        control_treatment_arm (int): The index of the treatment arm of the control group.</span>
-<a id="__codelineno-0-352" name="__codelineno-0-352"></a><span class="sd">        locations (np.ndarray, optional): Scalar values defining interval boundaries for</span>
-<a id="__codelineno-0-353" name="__codelineno-0-353"></a><span class="sd">            probability computation. For each interval (locations[i], locations[i+1]], the LPTE</span>
-<a id="__codelineno-0-354" name="__codelineno-0-354"></a><span class="sd">            is computed. If None, boundaries spanning the observed outcome range are generated</span>
-<a id="__codelineno-0-355" name="__codelineno-0-355"></a><span class="sd">            automatically with the left endpoint placed just below ``outcomes.min()``. The</span>
-<a id="__codelineno-0-356" name="__codelineno-0-356"></a><span class="sd">            number of boundaries is determined from data size and distribution via</span>
-<a id="__codelineno-0-357" name="__codelineno-0-357"></a><span class="sd">            ``np.histogram_bin_edges(outcomes, bins=&#39;auto&#39;)``. The actual array used is stored</span>
-<a id="__codelineno-0-358" name="__codelineno-0-358"></a><span class="sd">            on ``self.last_locations``.</span>
-<a id="__codelineno-0-359" name="__codelineno-0-359"></a><span class="sd">        alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
-<a id="__codelineno-0-360" name="__codelineno-0-360"></a><span class="sd">        display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
-<a id="__codelineno-0-361" name="__codelineno-0-361"></a>
-<a id="__codelineno-0-362" name="__codelineno-0-362"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-363" name="__codelineno-0-363"></a><span class="sd">        Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
-<a id="__codelineno-0-364" name="__codelineno-0-364"></a><span class="sd">            - Expected LPTEs (np.ndarray): Local treatment effect estimates for each interval,</span>
-<a id="__codelineno-0-365" name="__codelineno-0-365"></a><span class="sd">              shape (len(locations)-1,)</span>
-<a id="__codelineno-0-366" name="__codelineno-0-366"></a><span class="sd">            - Lower bounds (np.ndarray): Lower confidence interval bounds</span>
-<a id="__codelineno-0-367" name="__codelineno-0-367"></a><span class="sd">            - Upper bounds (np.ndarray): Upper confidence interval bounds</span>
+<span class="normal"><a href="#__codelineno-0-407">407</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-329" name="__codelineno-0-329"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict_lpte</span><span class="p">(</span>
+<a id="__codelineno-0-330" name="__codelineno-0-330"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-331" name="__codelineno-0-331"></a>    <span class="n">target_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<a id="__codelineno-0-332" name="__codelineno-0-332"></a>    <span class="n">control_treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<a id="__codelineno-0-333" name="__codelineno-0-333"></a>    <span class="n">locations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-334" name="__codelineno-0-334"></a>    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+<a id="__codelineno-0-335" name="__codelineno-0-335"></a>    <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-336" name="__codelineno-0-336"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<a id="__codelineno-0-337" name="__codelineno-0-337"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-338" name="__codelineno-0-338"></a><span class="sd">    Compute Local Probability Treatment Effects (LPTE) using ML adjustment.</span>
+<a id="__codelineno-0-339" name="__codelineno-0-339"></a>
+<a id="__codelineno-0-340" name="__codelineno-0-340"></a><span class="sd">    This method combines machine learning adjustment with local treatment effect estimation</span>
+<a id="__codelineno-0-341" name="__codelineno-0-341"></a><span class="sd">    to provide precise estimates of treatment effects on interval probabilities.</span>
+<a id="__codelineno-0-342" name="__codelineno-0-342"></a>
+<a id="__codelineno-0-343" name="__codelineno-0-343"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-344" name="__codelineno-0-344"></a><span class="sd">        target_treatment_arm (int): The index of the treatment arm of the treatment group.</span>
+<a id="__codelineno-0-345" name="__codelineno-0-345"></a><span class="sd">        control_treatment_arm (int): The index of the treatment arm of the control group.</span>
+<a id="__codelineno-0-346" name="__codelineno-0-346"></a><span class="sd">        locations (np.ndarray, optional): Scalar values defining interval boundaries for</span>
+<a id="__codelineno-0-347" name="__codelineno-0-347"></a><span class="sd">            probability computation. For each interval (locations[i], locations[i+1]], the LPTE</span>
+<a id="__codelineno-0-348" name="__codelineno-0-348"></a><span class="sd">            is computed. If None, boundaries spanning the observed outcome range are generated</span>
+<a id="__codelineno-0-349" name="__codelineno-0-349"></a><span class="sd">            automatically with the left endpoint placed just below ``outcomes.min()``. The</span>
+<a id="__codelineno-0-350" name="__codelineno-0-350"></a><span class="sd">            number of boundaries is determined from data size and distribution via</span>
+<a id="__codelineno-0-351" name="__codelineno-0-351"></a><span class="sd">            ``np.histogram_bin_edges(outcomes, bins=&#39;auto&#39;)``. The actual array used is stored</span>
+<a id="__codelineno-0-352" name="__codelineno-0-352"></a><span class="sd">            on ``self.last_locations``.</span>
+<a id="__codelineno-0-353" name="__codelineno-0-353"></a><span class="sd">        alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.</span>
+<a id="__codelineno-0-354" name="__codelineno-0-354"></a><span class="sd">        display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
+<a id="__codelineno-0-355" name="__codelineno-0-355"></a>
+<a id="__codelineno-0-356" name="__codelineno-0-356"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-357" name="__codelineno-0-357"></a><span class="sd">        Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:</span>
+<a id="__codelineno-0-358" name="__codelineno-0-358"></a><span class="sd">            - Expected LPTEs (np.ndarray): Local treatment effect estimates for each interval,</span>
+<a id="__codelineno-0-359" name="__codelineno-0-359"></a><span class="sd">              shape (len(locations)-1,)</span>
+<a id="__codelineno-0-360" name="__codelineno-0-360"></a><span class="sd">            - Lower bounds (np.ndarray): Lower confidence interval bounds</span>
+<a id="__codelineno-0-361" name="__codelineno-0-361"></a><span class="sd">            - Upper bounds (np.ndarray): Upper confidence interval bounds</span>
+<a id="__codelineno-0-362" name="__codelineno-0-362"></a>
+<a id="__codelineno-0-363" name="__codelineno-0-363"></a><span class="sd">    Example:</span>
+<a id="__codelineno-0-364" name="__codelineno-0-364"></a><span class="sd">        ```python</span>
+<a id="__codelineno-0-365" name="__codelineno-0-365"></a><span class="sd">        import numpy as np</span>
+<a id="__codelineno-0-366" name="__codelineno-0-366"></a><span class="sd">        from sklearn.linear_model import LogisticRegression</span>
+<a id="__codelineno-0-367" name="__codelineno-0-367"></a><span class="sd">        from dte_adj import AdjustedLocalDistributionEstimator</span>
 <a id="__codelineno-0-368" name="__codelineno-0-368"></a>
-<a id="__codelineno-0-369" name="__codelineno-0-369"></a><span class="sd">    Example:</span>
-<a id="__codelineno-0-370" name="__codelineno-0-370"></a><span class="sd">        .. code-block:: python</span>
-<a id="__codelineno-0-371" name="__codelineno-0-371"></a>
-<a id="__codelineno-0-372" name="__codelineno-0-372"></a><span class="sd">            import numpy as np</span>
-<a id="__codelineno-0-373" name="__codelineno-0-373"></a><span class="sd">            from sklearn.linear_model import LogisticRegression</span>
-<a id="__codelineno-0-374" name="__codelineno-0-374"></a><span class="sd">            from dte_adj import AdjustedLocalDistributionEstimator</span>
-<a id="__codelineno-0-375" name="__codelineno-0-375"></a>
-<a id="__codelineno-0-376" name="__codelineno-0-376"></a><span class="sd">            # Generate confounded data with strata</span>
-<a id="__codelineno-0-377" name="__codelineno-0-377"></a><span class="sd">            np.random.seed(42)</span>
-<a id="__codelineno-0-378" name="__codelineno-0-378"></a><span class="sd">            X = np.random.randn(1000, 5)</span>
-<a id="__codelineno-0-379" name="__codelineno-0-379"></a><span class="sd">            strata = np.random.choice([0, 1], size=1000)</span>
-<a id="__codelineno-0-380" name="__codelineno-0-380"></a><span class="sd">            # Treatment assignment depends on covariates</span>
-<a id="__codelineno-0-381" name="__codelineno-0-381"></a><span class="sd">            Z_prob = 1 / (1 + np.exp(-(X[:, 0] + strata)))</span>
-<a id="__codelineno-0-382" name="__codelineno-0-382"></a><span class="sd">            Z = np.random.binomial(1, Z_prob, 1000)</span>
-<a id="__codelineno-0-383" name="__codelineno-0-383"></a><span class="sd">            D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)</span>
-<a id="__codelineno-0-384" name="__codelineno-0-384"></a><span class="sd">            Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)</span>
-<a id="__codelineno-0-385" name="__codelineno-0-385"></a>
-<a id="__codelineno-0-386" name="__codelineno-0-386"></a><span class="sd">            # Fit adjusted local estimator</span>
-<a id="__codelineno-0-387" name="__codelineno-0-387"></a><span class="sd">            base_model = LogisticRegression()</span>
-<a id="__codelineno-0-388" name="__codelineno-0-388"></a><span class="sd">            estimator = AdjustedLocalDistributionEstimator(base_model, folds=3)</span>
-<a id="__codelineno-0-389" name="__codelineno-0-389"></a><span class="sd">            estimator.fit(X, Z, D, Y, strata)</span>
-<a id="__codelineno-0-390" name="__codelineno-0-390"></a>
-<a id="__codelineno-0-391" name="__codelineno-0-391"></a><span class="sd">            # Define interval boundaries</span>
-<a id="__codelineno-0-392" name="__codelineno-0-392"></a><span class="sd">            locations = np.array([-2, -1, 0, 1, 2])</span>
+<a id="__codelineno-0-369" name="__codelineno-0-369"></a><span class="sd">        # Generate confounded data with strata</span>
+<a id="__codelineno-0-370" name="__codelineno-0-370"></a><span class="sd">        np.random.seed(42)</span>
+<a id="__codelineno-0-371" name="__codelineno-0-371"></a><span class="sd">        X = np.random.randn(1000, 5)</span>
+<a id="__codelineno-0-372" name="__codelineno-0-372"></a><span class="sd">        strata = np.random.choice([0, 1], size=1000)</span>
+<a id="__codelineno-0-373" name="__codelineno-0-373"></a><span class="sd">        # Treatment assignment depends on covariates</span>
+<a id="__codelineno-0-374" name="__codelineno-0-374"></a><span class="sd">        Z_prob = 1 / (1 + np.exp(-(X[:, 0] + strata)))</span>
+<a id="__codelineno-0-375" name="__codelineno-0-375"></a><span class="sd">        Z = np.random.binomial(1, Z_prob, 1000)</span>
+<a id="__codelineno-0-376" name="__codelineno-0-376"></a><span class="sd">        D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)</span>
+<a id="__codelineno-0-377" name="__codelineno-0-377"></a><span class="sd">        Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)</span>
+<a id="__codelineno-0-378" name="__codelineno-0-378"></a>
+<a id="__codelineno-0-379" name="__codelineno-0-379"></a><span class="sd">        # Fit adjusted local estimator</span>
+<a id="__codelineno-0-380" name="__codelineno-0-380"></a><span class="sd">        base_model = LogisticRegression()</span>
+<a id="__codelineno-0-381" name="__codelineno-0-381"></a><span class="sd">        estimator = AdjustedLocalDistributionEstimator(base_model, folds=3)</span>
+<a id="__codelineno-0-382" name="__codelineno-0-382"></a><span class="sd">        estimator.fit(X, Z, D, Y, strata)</span>
+<a id="__codelineno-0-383" name="__codelineno-0-383"></a>
+<a id="__codelineno-0-384" name="__codelineno-0-384"></a><span class="sd">        # Define interval boundaries</span>
+<a id="__codelineno-0-385" name="__codelineno-0-385"></a><span class="sd">        locations = np.array([-2, -1, 0, 1, 2])</span>
+<a id="__codelineno-0-386" name="__codelineno-0-386"></a>
+<a id="__codelineno-0-387" name="__codelineno-0-387"></a><span class="sd">        # Compute LPTE with ML adjustment</span>
+<a id="__codelineno-0-388" name="__codelineno-0-388"></a><span class="sd">        lpte, lower, upper = estimator.predict_lpte(</span>
+<a id="__codelineno-0-389" name="__codelineno-0-389"></a><span class="sd">            target_treatment_arm=1,</span>
+<a id="__codelineno-0-390" name="__codelineno-0-390"></a><span class="sd">            control_treatment_arm=0,</span>
+<a id="__codelineno-0-391" name="__codelineno-0-391"></a><span class="sd">            locations=locations</span>
+<a id="__codelineno-0-392" name="__codelineno-0-392"></a><span class="sd">        )</span>
 <a id="__codelineno-0-393" name="__codelineno-0-393"></a>
-<a id="__codelineno-0-394" name="__codelineno-0-394"></a><span class="sd">            # Compute LPTE with ML adjustment</span>
-<a id="__codelineno-0-395" name="__codelineno-0-395"></a><span class="sd">            lpte, lower, upper = estimator.predict_lpte(</span>
-<a id="__codelineno-0-396" name="__codelineno-0-396"></a><span class="sd">                target_treatment_arm=1,</span>
-<a id="__codelineno-0-397" name="__codelineno-0-397"></a><span class="sd">                control_treatment_arm=0,</span>
-<a id="__codelineno-0-398" name="__codelineno-0-398"></a><span class="sd">                locations=locations</span>
-<a id="__codelineno-0-399" name="__codelineno-0-399"></a><span class="sd">            )</span>
-<a id="__codelineno-0-400" name="__codelineno-0-400"></a>
-<a id="__codelineno-0-401" name="__codelineno-0-401"></a><span class="sd">            print(f&quot;Adjusted LPTE: {lpte}&quot;)</span>
-<a id="__codelineno-0-402" name="__codelineno-0-402"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-403" name="__codelineno-0-403"></a>    <span class="k">if</span> <span class="n">locations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-404" name="__codelineno-0-404"></a>        <span class="n">locations</span> <span class="o">=</span> <span class="n">_infer_default_locations</span><span class="p">(</span>
-<a id="__codelineno-0-405" name="__codelineno-0-405"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">for_intervals</span><span class="o">=</span><span class="kc">True</span>
-<a id="__codelineno-0-406" name="__codelineno-0-406"></a>        <span class="p">)</span>
-<a id="__codelineno-0-407" name="__codelineno-0-407"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">last_locations</span> <span class="o">=</span> <span class="n">locations</span>
-<a id="__codelineno-0-408" name="__codelineno-0-408"></a>    <span class="k">return</span> <span class="n">compute_lpte</span><span class="p">(</span>
-<a id="__codelineno-0-409" name="__codelineno-0-409"></a>        <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-410" name="__codelineno-0-410"></a>        <span class="n">target_treatment_arm</span><span class="p">,</span>
-<a id="__codelineno-0-411" name="__codelineno-0-411"></a>        <span class="n">control_treatment_arm</span><span class="p">,</span>
-<a id="__codelineno-0-412" name="__codelineno-0-412"></a>        <span class="n">locations</span><span class="p">,</span>
-<a id="__codelineno-0-413" name="__codelineno-0-413"></a>        <span class="n">alpha</span><span class="p">,</span>
-<a id="__codelineno-0-414" name="__codelineno-0-414"></a>        <span class="n">display_progress</span><span class="p">,</span>
-<a id="__codelineno-0-415" name="__codelineno-0-415"></a>    <span class="p">)</span>
+<a id="__codelineno-0-394" name="__codelineno-0-394"></a><span class="sd">        print(f&quot;Adjusted LPTE: {lpte}&quot;)</span>
+<a id="__codelineno-0-395" name="__codelineno-0-395"></a><span class="sd">        ```</span>
+<a id="__codelineno-0-396" name="__codelineno-0-396"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-397" name="__codelineno-0-397"></a>    <span class="k">if</span> <span class="n">locations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-398" name="__codelineno-0-398"></a>        <span class="n">locations</span> <span class="o">=</span> <span class="n">_infer_default_locations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">for_intervals</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-399" name="__codelineno-0-399"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">last_locations</span> <span class="o">=</span> <span class="n">locations</span>
+<a id="__codelineno-0-400" name="__codelineno-0-400"></a>    <span class="k">return</span> <span class="n">compute_lpte</span><span class="p">(</span>
+<a id="__codelineno-0-401" name="__codelineno-0-401"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-402" name="__codelineno-0-402"></a>        <span class="n">target_treatment_arm</span><span class="p">,</span>
+<a id="__codelineno-0-403" name="__codelineno-0-403"></a>        <span class="n">control_treatment_arm</span><span class="p">,</span>
+<a id="__codelineno-0-404" name="__codelineno-0-404"></a>        <span class="n">locations</span><span class="p">,</span>
+<a id="__codelineno-0-405" name="__codelineno-0-405"></a>        <span class="n">alpha</span><span class="p">,</span>
+<a id="__codelineno-0-406" name="__codelineno-0-406"></a>        <span class="n">display_progress</span><span class="p">,</span>
+<a id="__codelineno-0-407" name="__codelineno-0-407"></a>    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
