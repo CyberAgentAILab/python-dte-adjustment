@@ -19,24 +19,24 @@ class SimpleDistributionEstimator(SimpleStratifiedDistributionEstimator):
     covariate adjustment is not needed.
 
     Example:
-        .. code-block:: python
+        ```python
+        import numpy as np
+        from dte_adj import SimpleDistributionEstimator
 
-            import numpy as np
-            from dte_adj import SimpleDistributionEstimator
+        # Generate sample data
+        X = np.random.randn(1000, 5)
+        D = np.random.binomial(1, 0.5, 1000)  # Random treatment
+        Y = X[:, 0] + 2 * D + np.random.randn(1000)
 
-            # Generate sample data
-            X = np.random.randn(1000, 5)
-            D = np.random.binomial(1, 0.5, 1000)  # Random treatment
-            Y = X[:, 0] + 2 * D + np.random.randn(1000)
+        # Fit simple estimator
+        estimator = SimpleDistributionEstimator()
+        estimator.fit(X, D, Y)
 
-            # Fit simple estimator
-            estimator = SimpleDistributionEstimator()
-            estimator.fit(X, D, Y)
-
-            # Compute treatment effects
-            locations = np.linspace(Y.min(), Y.max(), 20)
-            dte, lower, upper = estimator.predict_dte(1, 0, locations)
-            pte, pte_lower, pte_upper = estimator.predict_pte(1, 0, locations)
+        # Compute treatment effects
+        locations = np.linspace(Y.min(), Y.max(), 20)
+        dte, lower, upper = estimator.predict_dte(1, 0, locations)
+        pte, pte_lower, pte_upper = estimator.predict_pte(1, 0, locations)
+        ```
     """
 
     def __init__(self):
@@ -89,26 +89,26 @@ class AdjustedDistributionEstimator(AdjustedStratifiedDistributionEstimator):
     assignment depends on observed covariates.
 
     Example:
-        .. code-block:: python
+        ```python
+        import numpy as np
+        from sklearn.ensemble import RandomForestClassifier
+        from dte_adj import AdjustedDistributionEstimator
 
-            import numpy as np
-            from sklearn.ensemble import RandomForestClassifier
-            from dte_adj import AdjustedDistributionEstimator
+        # Generate confounded data
+        X = np.random.randn(1000, 5)
+        treatment_prob = 1 / (1 + np.exp(-(X[:, 0] + X[:, 1])))
+        D = np.random.binomial(1, treatment_prob, 1000)
+        Y = X.sum(axis=1) + 2 * D + np.random.randn(1000)
 
-            # Generate confounded data
-            X = np.random.randn(1000, 5)
-            treatment_prob = 1 / (1 + np.exp(-(X[:, 0] + X[:, 1])))
-            D = np.random.binomial(1, treatment_prob, 1000)
-            Y = X.sum(axis=1) + 2 * D + np.random.randn(1000)
+        # Fit adjusted estimator
+        base_model = RandomForestClassifier(n_estimators=100)
+        estimator = AdjustedDistributionEstimator(base_model, folds=3)
+        estimator.fit(X, D, Y)
 
-            # Fit adjusted estimator
-            base_model = RandomForestClassifier(n_estimators=100)
-            estimator = AdjustedDistributionEstimator(base_model, folds=3)
-            estimator.fit(X, D, Y)
-
-            # Compute adjusted treatment effects
-            locations = np.linspace(Y.min(), Y.max(), 20)
-            dte, lower, upper = estimator.predict_dte(1, 0, locations, variance_type="moment")
+        # Compute adjusted treatment effects
+        locations = np.linspace(Y.min(), Y.max(), 20)
+        dte, lower, upper = estimator.predict_dte(1, 0, locations, variance_type="moment")
+        ```
     """
 
     def fit(
