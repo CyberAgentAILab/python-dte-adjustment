@@ -14,7 +14,7 @@ The dte_adj package provides several types of estimators for computing distribut
 * **Utility Functions**: Helper functions for confidence intervals and statistical computations
 * **Plotting Utilities**: Visualization tools for treatment effects and distributions
 
-For theoretical foundations, see Byambadalai et al. (2024) [#simple2024]_ for simple randomization, Byambadalai et al. (2025) [#car2025]_ for covariate-adaptive randomization, and Byambadalai et al. (2024) [#compliance2025]_ for imperfect compliance scenarios.
+For theoretical foundations, see Byambadalai et al. (2024) [#simple2024]_ for simple randomization, Byambadalai et al. (2025) [#car2025]_ for covariate-adaptive randomization, and Byambadalai et al. (2025) [#compliance2025]_ for imperfect compliance scenarios.
 
 For multi-task learning approaches that train models for all locations simultaneously (using ``is_multi_task=True``), see the neural network framework in [#multitask2025]_.
 
