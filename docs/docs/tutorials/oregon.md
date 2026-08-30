@@ -215,7 +215,7 @@ lpte_ml, lpte_lower_ml, lpte_upper_ml = ml_local_estimator.predict_lpte(
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
 # Simple local estimator
-plot(outcome_ed_costs_locations[1:], lpte_simple, lpte_lower_simple, lpte_upper_simple,
+plot(outcome_ed_costs_locations, lpte_simple, lpte_lower_simple, lpte_upper_simple,
     chart_type="bar",
     title="Effects of Emergency Department Costs (Simple Local Estimator)",
     xlabel="Emergency Department Costs",
@@ -224,7 +224,7 @@ plot(outcome_ed_costs_locations[1:], lpte_simple, lpte_lower_simple, lpte_upper_
     ax=ax1)
 
 # ML-adjusted local estimator
-plot(outcome_ed_costs_locations[1:], lpte_ml, lpte_lower_ml, lpte_upper_ml,
+plot(outcome_ed_costs_locations, lpte_ml, lpte_lower_ml, lpte_upper_ml,
     chart_type="bar",
     title="Effects of Emergency Department Costs (ML-Adjusted Local Estimator)",
     xlabel="Emergency Department Costs",
@@ -275,13 +275,13 @@ Let's compare the results from both simple and machine learning-adjusted local e
 
 ```python
 # Compute LDTE: Treatment vs Control
-ldte_simple, lower_simple, upper_simple = simple_local_estimator.predict_ldte(
+ldte_visits_simple, lower_visits_simple, upper_visits_simple = simple_local_estimator.predict_ldte(
     target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
     control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
     locations=outcome_ed_visits_locations
 )
 
-ldte_ml, lower_ml, upper_ml = ml_local_estimator.predict_ldte(
+ldte_visits_ml, lower_visits_ml, upper_visits_ml = ml_local_estimator.predict_ldte(
     target_treatment_arm=1,  # Selected for treatment (Enrolled)
     control_treatment_arm=0,  # Not selected for treatment (Not enrolled)
     locations=outcome_ed_visits_locations
@@ -291,14 +291,14 @@ ldte_ml, lower_ml, upper_ml = ml_local_estimator.predict_ldte(
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
 # Visualize Treatment vs Control using dte_adj's plot function
-plot(outcome_ed_visits_locations, ldte_simple, lower_simple, upper_simple,
+plot(outcome_ed_visits_locations, ldte_visits_simple, lower_visits_simple, upper_visits_simple,
      title="ED Visits: Treatment vs Control (Simple Local Estimator)",
      xlabel="Emergency Department Visits",
      ylabel="Local Distribution Treatment Effect",
      color="purple",
      ax=ax1)
 
-plot(outcome_ed_visits_locations, ldte_ml, lower_ml, upper_ml,
+plot(outcome_ed_visits_locations, ldte_visits_ml, lower_visits_ml, upper_visits_ml,
      title="ED Visits: Treatment vs Control (ML-Adjusted Local Estimator)",
      xlabel="Emergency Department Visits",
      ylabel="Local Distribution Treatment Effect",
@@ -324,13 +324,13 @@ The confidence intervals are not substantially narrower with ML adjustment. Both
 
 ```python
 # Compute Local Probability Treatment Effects
-lpte_simple, lpte_lower_simple, lpte_upper_simple = simple_local_estimator.predict_lpte(
+lpte_visits_simple, lpte_visits_lower_simple, lpte_visits_upper_simple = simple_local_estimator.predict_lpte(
     target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
     control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
     locations=np.insert(outcome_ed_visits_locations, 0, -1)
 )
 
-lpte_ml, lpte_lower_ml, lpte_upper_ml = ml_local_estimator.predict_lpte(
+lpte_visits_ml, lpte_visits_lower_ml, lpte_visits_upper_ml = ml_local_estimator.predict_lpte(
     target_treatment_arm=1,  # Z=1 Selected for treatment (Enrolled)
     control_treatment_arm=0,  # Z=0 Not selected for treatment (Not enrolled)
     locations=np.insert(outcome_ed_visits_locations, 0, -1)
@@ -339,7 +339,7 @@ lpte_ml, lpte_lower_ml, lpte_upper_ml = ml_local_estimator.predict_lpte(
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
 # Simple local estimator
-plot(outcome_ed_visits_locations[1:], lpte_simple, lpte_lower_simple, lpte_upper_simple,
+plot(outcome_ed_visits_locations, lpte_visits_simple, lpte_visits_lower_simple, lpte_visits_upper_simple,
     chart_type="bar",
     title="Effects of Emergency Department Visits (Simple Local Estimator)",
     xlabel="Emergency Department Visits",
@@ -348,7 +348,7 @@ plot(outcome_ed_visits_locations[1:], lpte_simple, lpte_lower_simple, lpte_upper
     ax=ax1)
 
 # ML-adjusted local estimator
-plot(outcome_ed_visits_locations[1:], lpte_ml, lpte_lower_ml, lpte_upper_ml,
+plot(outcome_ed_visits_locations, lpte_visits_ml, lpte_visits_lower_ml, lpte_visits_upper_ml,
     chart_type="bar",
     title="Effects of Emergency Department Visits (ML-Adjusted Local Estimator)",
     xlabel="Emergency Department Visits",
