@@ -25,8 +25,8 @@ print(f"Dataset shape: {df.shape}")
 print(f"Average spend by segment:\n{df.groupby('segment')['spend'].mean()}")
 
 # Prepare the data for dte_adj analysis
-# Create treatment indicator: 0=No E-Mail, 1=Mens E-Mail, 2=Women E-Mail
-treatment_mapping = {'No E-Mail': 0, 'Mens E-Mail': 1, 'Women E-Mail': 2}
+# Create treatment indicator: 0=No E-Mail, 1=Mens E-Mail, 2=Womens E-Mail
+treatment_mapping = {'No E-Mail': 0, 'Mens E-Mail': 1, 'Womens E-Mail': 2}
 D = df['segment'].map(treatment_mapping).values
 
 # Use spend as the outcome variable (revenue)
@@ -62,7 +62,7 @@ print(f"Women's Email: ${revenue[D==2].mean():.2f}")
 print("\nConversion Rates:")
 print(f"No Email: {df[df['segment']=='No E-Mail']['conversion'].mean():.3f}")
 print(f"Men's Email: {df[df['segment']=='Mens E-Mail']['conversion'].mean():.3f}")
-print(f"Women's Email: {df[df['segment']=='Women E-Mail']['conversion'].mean():.3f}")
+print(f"Women's Email: {df[df['segment']=='Womens E-Mail']['conversion'].mean():.3f}")
 ```
 
 ### Email Campaign Effectiveness Analysis
@@ -151,14 +151,14 @@ import matplotlib.pyplot as plt
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
 # Women's vs Control PTE
-plot(revenue_locations[1:], pte_women_ctrl, pte_lower_women_ctrl, pte_upper_women_ctrl,
+plot(revenue_locations, pte_women_ctrl, pte_lower_women_ctrl, pte_upper_women_ctrl,
     chart_type="bar",
     title="Women's Email vs Control",
     xlabel="Spending Category ($)", ylabel="Probability Treatment Effect",
     ax=ax1)
 
 # Men's vs Control PTE
-plot(revenue_locations[1:], pte_men_ctrl, pte_lower_men_ctrl, pte_upper_men_ctrl,
+plot(revenue_locations, pte_men_ctrl, pte_lower_men_ctrl, pte_upper_men_ctrl,
     chart_type="bar",
     title="Men's Email vs Control",
     xlabel="Spending Category ($)", ylabel="Probability Treatment Effect",
@@ -268,14 +268,14 @@ pte_ml, pte_lower_ml, pte_upper_ml = ml_estimator.predict_pte(
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
 # Simple estimator
-plot(revenue_locations[1:], pte_simple, pte_lower_simple, pte_upper_simple,
+plot(revenue_locations, pte_simple, pte_lower_simple, pte_upper_simple,
     chart_type="bar",
     title="Spending Category Effects: Women's vs Men's (Simple Estimator)",
     xlabel="Spending Category", ylabel="Probability Treatment Effect", color="purple",
     ax=ax1)
 
 # ML-adjusted estimator
-plot(revenue_locations[1:], pte_ml, pte_lower_ml, pte_upper_ml,
+plot(revenue_locations, pte_ml, pte_lower_ml, pte_upper_ml,
     chart_type="bar",
     title="Spending Category Effects: Women's vs Men's (ML-Adjusted Estimator)",
     xlabel="Spending Category", ylabel="Probability Treatment Effect",
