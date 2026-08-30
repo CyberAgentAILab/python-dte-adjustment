@@ -18,7 +18,7 @@
     ```
 
 ## Basic Usage
-Examples of how to use this package are available in [this Get-started Guide](https://cyberagentailab.github.io/python-dte-adjustment/get_started.html).
+Examples of how to use this package are available in [this Get-started Guide](https://cyberagentailab.github.io/python-dte-adjustment/get_started/).
 
 ## Theoretical Foundations
 
