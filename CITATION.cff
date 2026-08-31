@@ -49,7 +49,7 @@ references:
     publisher:
       name: "JMLR.org"
     url: "https://arxiv.org/abs/2407.16037"
-  - type: article
+  - type: conference-paper
     title: "On Efficient Estimation of Distributional Treatment Effects under Covariate-Adaptive Randomization"
     authors:
       - family-names: Byambadalai
@@ -61,6 +61,10 @@ references:
       - family-names: Yasui
         given-names: Shota
     year: 2025
+    conference:
+      name: "Proceedings of the 42nd International Conference on Machine Learning"
+    publisher:
+      name: "JMLR.org"
     url: "https://arxiv.org/abs/2506.05945"
     repository: "arXiv:2506.05945"
   - type: article
@@ -75,11 +79,11 @@ references:
       - family-names: Yasui
         given-names: Shota
       - family-names: Uto
-        given-names: Sho
+        given-names: Shingo
     year: 2025
     url: "https://arxiv.org/abs/2507.07738"
     repository: "arXiv:2507.07738"
-  - type: article
+  - type: conference-paper
     title: "Beyond the Average: Distributional Causal Inference under Imperfect Compliance"
     authors:
       - family-names: Byambadalai
@@ -91,5 +95,9 @@ references:
       - family-names: Yasui
         given-names: Shota
     year: 2025
+    conference:
+      name: "Advances in Neural Information Processing Systems 38"
+    publisher:
+      name: "Neural Information Processing Systems Foundation, Inc. (NeurIPS)"
     url: "https://arxiv.org/abs/2509.15594"
     repository: "arXiv:2509.15594"
