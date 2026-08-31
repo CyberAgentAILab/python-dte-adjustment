@@ -18,4 +18,4 @@ Byambadalai et al. (2025)[^car2025] propose a flexible distribution regression f
     options:
       inherited_members: true
 
-[^car2025]: Byambadalai, U., Hirata, T., Oka, T., & Yasui, S. (2025). On Efficient Estimation of Distributional Treatment Effects under Covariate-Adaptive Randomization. arXiv preprint [arXiv:2506.05945](https://arxiv.org/abs/2506.05945).
+[^car2025]: Byambadalai, U., Hirata, T., Oka, T., & Yasui, S. (2025). On Efficient Estimation of Distributional Treatment Effects under Covariate-Adaptive Randomization. In Proceedings of the 42nd International Conference on Machine Learning (ICML'25). [arXiv:2506.05945](https://arxiv.org/abs/2506.05945).

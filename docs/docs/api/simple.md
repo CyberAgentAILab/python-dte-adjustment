@@ -20,4 +20,4 @@ Byambadalai et al. (2024)[^simple2024] propose a regression adjustment method th
       inherited_members: true
       show_inheritance_diagram: true
 
-[^simple2024]: Byambadalai, U., Oka, T., & Yasui, S. (2024). Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction. arXiv preprint [arXiv:2407.16037](https://arxiv.org/abs/2407.16037).
+[^simple2024]: Byambadalai, U., Oka, T., & Yasui, S. (2024). Estimating Distributional Treatment Effects in Randomized Experiments: Machine Learning for Variance Reduction. In Proceedings of the 41st International Conference on Machine Learning (ICML'24). [arXiv:2407.16037](https://arxiv.org/abs/2407.16037).
