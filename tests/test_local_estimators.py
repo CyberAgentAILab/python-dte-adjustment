@@ -391,3 +391,76 @@ class TestE2E(unittest.TestCase):
             ),
             "Adjusted estimator does not have narrower intervals",
         )
+
+
+class TestLocalBootstrapInference(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        np.random.seed(0)
+        data = generate_data(n=2000)
+        cls.locations = np.arange(0, 12, 2.0)
+        cls.estimator = SimpleLocalDistributionEstimator().fit(
+            data["X"], data["Z"], data["D"], data["Y"], data["strata"]
+        )
+        cls.data = data
+        cls.moment = cls.estimator.predict_ldte(
+            1, 0, cls.locations, display_progress=False
+        )
+
+    def test_default_is_moment(self):
+        explicit = self.estimator.predict_ldte(
+            1, 0, self.locations, variance_type="moment", display_progress=False
+        )
+        for a, b in zip(self.moment, explicit):
+            np.testing.assert_allclose(a, b)
+
+    def test_multiplier_matches_moment(self):
+        np.random.seed(1)
+        beta, lower, upper = self.estimator.predict_ldte(
+            1,
+            0,
+            self.locations,
+            variance_type="multiplier",
+            n_bootstrap=2000,
+            display_progress=False,
+        )
+        np.testing.assert_allclose(beta, self.moment[0])
+        moment_half = (self.moment[2] - self.moment[1]) / 2
+        np.testing.assert_allclose((upper - lower) / 2, moment_half, rtol=0.1)
+
+    def test_uniform_band_is_wider_than_pointwise(self):
+        np.random.seed(2)
+        beta, lower, upper = self.estimator.predict_ldte(
+            1,
+            0,
+            self.locations,
+            variance_type="uniform",
+            n_bootstrap=1000,
+            display_progress=False,
+        )
+        self.assertTrue(np.all(lower <= beta) and np.all(beta <= upper))
+        self.assertTrue(np.all(upper - lower > self.moment[2] - self.moment[1]))
+
+    def test_lpte_bootstrap_for_adjusted_estimator(self):
+        np.random.seed(3)
+        d = self.data
+        estimator = AdjustedLocalDistributionEstimator(
+            LogisticRegression(), folds=2
+        ).fit(d["X"], d["Z"], d["D"], d["Y"], d["strata"])
+        for variance_type in ("multiplier", "uniform"):
+            beta, lower, upper = estimator.predict_lpte(
+                1,
+                0,
+                self.locations,
+                variance_type=variance_type,
+                n_bootstrap=100,
+                display_progress=False,
+            )
+            self.assertEqual(beta.shape, (len(self.locations) - 1,))
+            self.assertTrue(np.all(lower <= beta) and np.all(beta <= upper))
+
+    def test_invalid_variance_type(self):
+        with self.assertRaises(ValueError):
+            self.estimator.predict_ldte(
+                1, 0, self.locations, variance_type="simple", display_progress=False
+            )

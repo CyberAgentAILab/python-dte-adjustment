@@ -92,3 +92,32 @@ class TestInferDefaultLocations(unittest.TestCase):
         outcomes = np.full(50, 3.0)
         result = _infer_default_locations(outcomes, for_intervals=True)
         self.assertLess(result[0], 3.0)
+
+
+class TestMultiplierBootstrapBands(unittest.TestCase):
+    def test_pointwise_se_matches_influence_variance(self):
+        from dte_adj.util import _multiplier_bootstrap_bands
+
+        np.random.seed(0)
+        n = 2000
+        influence = np.random.randn(n, 3) * np.array([1.0, 2.0, 0.5])
+        estimate = np.zeros(3)
+        lower, upper = _multiplier_bootstrap_bands(
+            estimate, influence, 0.05, "multiplier", 2000
+        )
+        expected_se = np.sqrt((influence**2).mean(axis=0) / n)
+        np.testing.assert_allclose((upper - lower) / (2 * 1.959964), expected_se, rtol=0.1)
+
+    def test_uniform_ignores_zero_variance_locations(self):
+        from dte_adj.util import _multiplier_bootstrap_bands
+
+        np.random.seed(0)
+        influence = np.random.randn(500, 3)
+        influence[:, 2] = 0.0
+        estimate = np.array([0.1, 0.2, 1.0])
+        lower, upper = _multiplier_bootstrap_bands(
+            estimate, influence, 0.05, "uniform", 200
+        )
+        self.assertTrue(np.all(np.isfinite(lower)) and np.all(np.isfinite(upper)))
+        self.assertAlmostEqual(lower[2], 1.0)
+        self.assertAlmostEqual(upper[2], 1.0)

@@ -247,6 +247,62 @@ def compute_confidence_intervals(
         raise ValueError(f"Invalid variance type was specified: {variance_type}")
 
 
+def _multiplier_bootstrap_bands(
+    estimate: np.ndarray,
+    influence_function: np.ndarray,
+    alpha: float,
+    variance_type: str,
+    n_bootstrap: int,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Confidence bands from a multiplier bootstrap of per-observation influence functions.
+
+    Each draw reweights the influence functions with i.i.d. multipliers of mean zero and
+    unit variance, ``xi = eta1 / sqrt(2) + (eta2 ** 2 - 1) / 2`` (the same multipliers as
+    :func:`compute_confidence_intervals`), so stratum structure that is already encoded in
+    the influence functions is preserved without refitting any model.
+
+    Args:
+        estimate (np.ndarray): Point estimates, shape (n_loc,).
+        influence_function (np.ndarray): Influence function of each observation, shape
+            (n_obs, n_loc), such that ``mean(influence_function**2, axis=0) / n_obs`` is the
+            asymptotic variance of ``estimate``.
+        alpha (float): Significance level.
+        variance_type (str): "multiplier" for pointwise bands or "uniform" for uniform bands
+            (simultaneous over all locations, via the max-t statistic).
+        n_bootstrap (int): Number of bootstrap draws.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: Lower and upper bounds.
+    """
+    num_obs = influence_function.shape[0]
+    omega = (influence_function**2).mean(axis=0)
+
+    boot_draw = np.zeros((n_bootstrap, influence_function.shape[1]))
+    for b in range(n_bootstrap):
+        eta1 = np.random.normal(0, 1, num_obs)
+        eta2 = np.random.normal(0, 1, num_obs)
+        xi = eta1 / np.sqrt(2) + (eta2**2 - 1) / 2
+        boot_draw[b] = (xi[:, np.newaxis] * influence_function).mean(axis=0)
+
+    if variance_type == "multiplier":
+        se = boot_draw.std(axis=0)
+        return estimate + norm.ppf(alpha / 2) * se, estimate + norm.ppf(
+            1 - alpha / 2
+        ) * se
+
+    # Uniform band: critical value from the max of studentized draws, ignoring locations
+    # with (numerically) zero variance, e.g. a CDF evaluated at or above the maximum outcome.
+    valid = omega > 1e-12 * max(omega.max(), 1e-300)
+    if not valid.any():
+        return estimate.copy(), estimate.copy()
+    tstats = np.abs(boot_draw[:, valid]) / np.sqrt(omega[valid] / num_obs)
+    critical_value = np.quantile(tstats.max(axis=1), 1 - alpha)
+    se = (np.quantile(boot_draw, 0.75, axis=0) - np.quantile(boot_draw, 0.25, axis=0)) / (
+        norm.ppf(0.75) - norm.ppf(0.25)
+    )
+    return estimate - critical_value * se, estimate + critical_value * se
+
+
 def _compute_local_treatment_effects_core(
     estimator: "SimpleStratifiedDistributionEstimator | AdjustedLocalDistributionEstimator",
     target_treatment_arm: int,
@@ -255,6 +311,8 @@ def _compute_local_treatment_effects_core(
     alpha: float,
     use_intervals: bool = False,
     display_progress: bool = False,
+    variance_type: str = "moment",
+    n_bootstrap: int = 500,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Core computation logic shared between LDTE and LPTE.
@@ -267,6 +325,9 @@ def _compute_local_treatment_effects_core(
         alpha (float): Significance level of the confidence bound.
         use_intervals (bool): If True, compute interval probabilities (LPTE), else cumulative (LDTE).
         display_progress (bool): Whether to display a progress bar.
+        variance_type (str): "moment" (analytic), "multiplier" (pointwise multiplier
+            bootstrap) or "uniform" (uniform band via multiplier bootstrap).
+        n_bootstrap (int): Number of bootstrap draws for "multiplier" and "uniform".
 
     Returns:
         Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -274,6 +335,12 @@ def _compute_local_treatment_effects_core(
             - Lower bounds
             - Upper bounds
     """
+    if variance_type not in ("moment", "multiplier", "uniform"):
+        raise ValueError(
+            f"Invalid variance type was specified: {variance_type}. "
+            "Available values are moment, multiplier, and uniform."
+        )
+
     X = estimator.covariates
     Z = estimator.treatment_arms
     D = estimator.treatment_indicator
@@ -383,6 +450,18 @@ def _compute_local_treatment_effects_core(
 
     xi_2_dict = {s: xi(s) for s in s_list}
     xi_2 = np.array([xi_2_dict[s] for s in S])
+    if variance_type != "moment":
+        # Per-observation influence function. xi_t / xi_c are centered within each
+        # stratum x arm cell and xi_2 is constant within a stratum, so the cross terms
+        # vanish and mean(influence**2) equals the analytic sigma below.
+        influence = (
+            Z.reshape(-1, 1) * xi_t + (1 - Z).reshape(-1, 1) * xi_c + xi_2
+        ) / psi_b.mean()
+        lower_bound, upper_bound = _multiplier_bootstrap_bands(
+            beta, influence, alpha, variance_type, n_bootstrap
+        )
+        return beta, lower_bound, upper_bound
+
     sigma = (
         Z.reshape(-1, 1) * xi_t**2 + (1 - Z).reshape(-1, 1) * xi_c**2 + xi_2**2
     ).mean(axis=0) / (psi_b.mean()) ** 2
@@ -403,6 +482,8 @@ def compute_ldte(
     locations: np.ndarray,
     alpha: float = 0.05,
     display_progress: bool = False,
+    variance_type: str = "moment",
+    n_bootstrap: int = 500,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Compute Local Distribution Treatment Effects (LDTE) using the provided formula.
@@ -414,6 +495,8 @@ def compute_ldte(
         locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.
         alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
         display_progress (bool, optional): Whether to display a progress bar. Defaults to False.
+        variance_type (str, optional): "moment", "multiplier", or "uniform". Defaults to "moment".
+        n_bootstrap (int, optional): Number of bootstrap draws. Defaults to 500.
 
     Returns:
         Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -429,6 +512,8 @@ def compute_ldte(
         alpha,
         use_intervals=False,
         display_progress=display_progress,
+        variance_type=variance_type,
+        n_bootstrap=n_bootstrap,
     )
 
 
@@ -439,6 +524,8 @@ def compute_lpte(
     locations: np.ndarray,
     alpha: float = 0.05,
     display_progress: bool = False,
+    variance_type: str = "moment",
+    n_bootstrap: int = 500,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Compute Local Probability Treatment Effects (LPTE) using the provided formula.
@@ -450,6 +537,8 @@ def compute_lpte(
         locations (np.ndarray): Scalar values to be used for computing the interval probabilities.
         alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
         display_progress (bool, optional): Whether to display a progress bar. Defaults to False.
+        variance_type (str, optional): "moment", "multiplier", or "uniform". Defaults to "moment".
+        n_bootstrap (int, optional): Number of bootstrap draws. Defaults to 500.
 
     Returns:
         Tuple[np.ndarray, np.ndarray, np.ndarray]: A tuple containing:
@@ -465,4 +554,6 @@ def compute_lpte(
         alpha,
         use_intervals=True,
         display_progress=display_progress,
+        variance_type=variance_type,
+        n_bootstrap=n_bootstrap,
     )
