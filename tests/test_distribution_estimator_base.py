@@ -161,7 +161,15 @@ class TestDistributionEstimatorBase(unittest.TestCase):
         target_treatment_arm = 1
         control_treatment_arm = 0
         quantiles = np.array([0.1 * i for i in range(1, 10)])
-        expected_qte = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        expected_qte = np.ones(9)
+
+        # CDF of outcomes 0..19: arm 0 is (y + 1) / 20, arm 1 is y / 20 (shifted by one)
+        def shifted_cdf(arm, locations, covariates, treatment_arms, outcomes):
+            n = outcomes.shape[0]
+            cdf = np.clip((locations + (1 - arm)) / 20, 0, 1)
+            return cdf, np.zeros((n, len(locations))), np.zeros((n, len(locations)))
+
+        self.estimator.compute_cumulative_distribution.side_effect = shifted_cdf
 
         # Act
         qte, lower_bound, upper_bound = self.estimator.predict_qte(

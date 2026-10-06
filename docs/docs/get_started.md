@@ -75,6 +75,9 @@ plot(locations, dte, lower_bound, upper_bound, title="DTE of simple estimator")
 
 ![DTE of empirical estimator](assets/dte_empirical.png)
 
+!!! note "Input requirements"
+    `treatment_arms`, `outcomes` and `strata` must not contain missing values (NaN); `fit` raises a `ValueError` otherwise. They may be 1-D arrays or single columns of shape `(n, 1)`. Missing values in `covariates` are not checked: simple estimators ignore covariates, while for adjusted estimators it depends on whether your base model accepts them (e.g. scikit-learn's `HistGradientBoostingClassifier` does, `LogisticRegression` does not).
+
 To initialize the adjusted distribution function, the base model for conditional distribution function needs to be passed.
 In the following example, Logistic Regression is used. Please make sure that your base model implements `fit` and `predict_proba` methods.
 
@@ -135,6 +138,8 @@ plot(quantiles, qte, lower_bound, upper_bound, title="QTE of adjusted estimator"
 ![QTE of adjusted estimator](assets/qte.png)
 
 You can use any model with `predict_proba` or `predict` method to adjust the distribution function estimation.
+
+The adjustment is meant for randomized experiments: it reduces the variance of the estimates (tighter confidence intervals) and does not correct for confounding. Cross-fitting assigns folds at random, so with very small samples a fold can end up with no training data for a treatment arm; in that case a `ValueError` is raised and you should reduce `folds` (e.g. `folds=2`).
 For example, the following code use XGBoost classifier to estimate the conditional distribution.
 
 ```python
