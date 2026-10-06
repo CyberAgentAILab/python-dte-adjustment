@@ -888,6 +888,10 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">plot</span><span class="p">(</span><span class="n">locations</span><span class="p">,</span> <span class="n">dte</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;DTE of simple estimator&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p><img alt="DTE of empirical estimator" src="../assets/dte_empirical.png" /></p>
+<div class="admonition note">
+<p class="admonition-title">Input requirements</p>
+<p><code>treatment_arms</code>, <code>outcomes</code> and <code>strata</code> must not contain missing values (NaN); <code>fit</code> raises a <code>ValueError</code> otherwise. They may be 1-D arrays or single columns of shape <code>(n, 1)</code>. Missing values in <code>covariates</code> are not checked: simple estimators ignore covariates, while for adjusted estimators it depends on whether your base model accepts them (e.g. scikit-learn's <code>HistGradientBoostingClassifier</code> does, <code>LogisticRegression</code> does not).</p>
+</div>
 <p>To initialize the adjusted distribution function, the base model for conditional distribution function needs to be passed.
 In the following example, Logistic Regression is used. Please make sure that your base model implements <code>fit</code> and <code>predict_proba</code> methods.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
@@ -924,7 +928,8 @@ For each interval, the starting point is not included but the ending point is in
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">plot</span><span class="p">(</span><span class="n">quantiles</span><span class="p">,</span> <span class="n">qte</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;QTE of adjusted estimator&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p><img alt="QTE of adjusted estimator" src="../assets/qte.png" /></p>
-<p>You can use any model with <code>predict_proba</code> or <code>predict</code> method to adjust the distribution function estimation.
+<p>You can use any model with <code>predict_proba</code> or <code>predict</code> method to adjust the distribution function estimation.</p>
+<p>The adjustment is meant for randomized experiments: it reduces the variance of the estimates (tighter confidence intervals) and does not correct for confounding. Cross-fitting assigns folds at random, so with very small samples a fold can end up with no training data for a treatment arm; in that case a <code>ValueError</code> is raised and you should reduce <code>folds</code> (e.g. <code>folds=2</code>).
 For example, the following code use XGBoost classifier to estimate the conditional distribution.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">xgboost</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xgb</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">estimator</span> <span class="o">=</span> <span class="n">dte_adj</span><span class="o">.</span><span class="n">AdjustedDistributionEstimator</span><span class="p">(</span><span class="n">xgb</span><span class="o">.</span><span class="n">XGBClassifier</span><span class="p">(),</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>

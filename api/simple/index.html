@@ -1161,8 +1161,8 @@
 using simple (unadjusted) estimation methods.</p>
 <p>This estimator computes Distribution Treatment Effects (DTE), Probability Treatment Effects (PTE),
 and Quantile Treatment Effects (QTE) without using machine learning models for adjustment.
-It provides a baseline approach suitable when treatment assignment is random or when
-covariate adjustment is not needed.</p>
+It provides a baseline approach for randomized experiments where covariate adjustment
+is not needed.</p>
 <p>Example:
     <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDistributionEstimator</span>
@@ -2023,8 +2023,7 @@ the covariate-adaptive randomization (CAR) design. For estimators without strata
 
             <details class="quote">
               <summary>Source code in <code>dte_adj/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-455">455</a></span>
-<span class="normal"><a href="#__codelineno-0-456">456</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-456">456</a></span>
 <span class="normal"><a href="#__codelineno-0-457">457</a></span>
 <span class="normal"><a href="#__codelineno-0-458">458</a></span>
 <span class="normal"><a href="#__codelineno-0-459">459</a></span>
@@ -2054,38 +2053,39 @@ the covariate-adaptive randomization (CAR) design. For estimators without strata
 <span class="normal"><a href="#__codelineno-0-483">483</a></span>
 <span class="normal"><a href="#__codelineno-0-484">484</a></span>
 <span class="normal"><a href="#__codelineno-0-485">485</a></span>
-<span class="normal"><a href="#__codelineno-0-486">486</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-455" name="__codelineno-0-455"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span>
-<a id="__codelineno-0-456" name="__codelineno-0-456"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-<a id="__codelineno-0-457" name="__codelineno-0-457"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<a id="__codelineno-0-458" name="__codelineno-0-458"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-459" name="__codelineno-0-459"></a><span class="sd">    Compute cumulative distribution values.</span>
-<a id="__codelineno-0-460" name="__codelineno-0-460"></a>
-<a id="__codelineno-0-461" name="__codelineno-0-461"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-462" name="__codelineno-0-462"></a><span class="sd">        treatment_arm (int): The index of the treatment arm.</span>
-<a id="__codelineno-0-463" name="__codelineno-0-463"></a><span class="sd">        locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
-<a id="__codelineno-0-464" name="__codelineno-0-464"></a><span class="sd">        display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
-<a id="__codelineno-0-465" name="__codelineno-0-465"></a>
-<a id="__codelineno-0-466" name="__codelineno-0-466"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-467" name="__codelineno-0-467"></a><span class="sd">        np.ndarray: Estimated cumulative distribution values for the input.</span>
-<a id="__codelineno-0-468" name="__codelineno-0-468"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-469" name="__codelineno-0-469"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-470" name="__codelineno-0-470"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-<a id="__codelineno-0-471" name="__codelineno-0-471"></a>            <span class="s2">&quot;This estimator has not been trained yet. Please call fit first&quot;</span>
-<a id="__codelineno-0-472" name="__codelineno-0-472"></a>        <span class="p">)</span>
-<a id="__codelineno-0-473" name="__codelineno-0-473"></a>
-<a id="__codelineno-0-474" name="__codelineno-0-474"></a>    <span class="k">if</span> <span class="n">treatment_arm</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">:</span>
-<a id="__codelineno-0-475" name="__codelineno-0-475"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-<a id="__codelineno-0-476" name="__codelineno-0-476"></a>            <span class="sa">f</span><span class="s2">&quot;This target treatment arm was not included in the training data: </span><span class="si">{</span><span class="n">treatment_arm</span><span class="si">}</span><span class="s2">&quot;</span>
-<a id="__codelineno-0-477" name="__codelineno-0-477"></a>        <span class="p">)</span>
-<a id="__codelineno-0-478" name="__codelineno-0-478"></a>
-<a id="__codelineno-0-479" name="__codelineno-0-479"></a>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-<a id="__codelineno-0-480" name="__codelineno-0-480"></a>        <span class="n">treatment_arm</span><span class="p">,</span>
-<a id="__codelineno-0-481" name="__codelineno-0-481"></a>        <span class="n">locations</span><span class="p">,</span>
-<a id="__codelineno-0-482" name="__codelineno-0-482"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">covariates</span><span class="p">,</span>
-<a id="__codelineno-0-483" name="__codelineno-0-483"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
-<a id="__codelineno-0-484" name="__codelineno-0-484"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span>
-<a id="__codelineno-0-485" name="__codelineno-0-485"></a>        <span class="n">display_progress</span><span class="o">=</span><span class="n">display_progress</span><span class="p">,</span>
-<a id="__codelineno-0-486" name="__codelineno-0-486"></a>    <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="normal"><a href="#__codelineno-0-486">486</a></span>
+<span class="normal"><a href="#__codelineno-0-487">487</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-456" name="__codelineno-0-456"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span>
+<a id="__codelineno-0-457" name="__codelineno-0-457"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-0-458" name="__codelineno-0-458"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<a id="__codelineno-0-459" name="__codelineno-0-459"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-460" name="__codelineno-0-460"></a><span class="sd">    Compute cumulative distribution values.</span>
+<a id="__codelineno-0-461" name="__codelineno-0-461"></a>
+<a id="__codelineno-0-462" name="__codelineno-0-462"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-463" name="__codelineno-0-463"></a><span class="sd">        treatment_arm (int): The index of the treatment arm.</span>
+<a id="__codelineno-0-464" name="__codelineno-0-464"></a><span class="sd">        locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
+<a id="__codelineno-0-465" name="__codelineno-0-465"></a><span class="sd">        display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
+<a id="__codelineno-0-466" name="__codelineno-0-466"></a>
+<a id="__codelineno-0-467" name="__codelineno-0-467"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-468" name="__codelineno-0-468"></a><span class="sd">        np.ndarray: Estimated cumulative distribution values for the input.</span>
+<a id="__codelineno-0-469" name="__codelineno-0-469"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-470" name="__codelineno-0-470"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-471" name="__codelineno-0-471"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+<a id="__codelineno-0-472" name="__codelineno-0-472"></a>            <span class="s2">&quot;This estimator has not been trained yet. Please call fit first&quot;</span>
+<a id="__codelineno-0-473" name="__codelineno-0-473"></a>        <span class="p">)</span>
+<a id="__codelineno-0-474" name="__codelineno-0-474"></a>
+<a id="__codelineno-0-475" name="__codelineno-0-475"></a>    <span class="k">if</span> <span class="n">treatment_arm</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">:</span>
+<a id="__codelineno-0-476" name="__codelineno-0-476"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+<a id="__codelineno-0-477" name="__codelineno-0-477"></a>            <span class="sa">f</span><span class="s2">&quot;This target treatment arm was not included in the training data: </span><span class="si">{</span><span class="n">treatment_arm</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-478" name="__codelineno-0-478"></a>        <span class="p">)</span>
+<a id="__codelineno-0-479" name="__codelineno-0-479"></a>
+<a id="__codelineno-0-480" name="__codelineno-0-480"></a>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
+<a id="__codelineno-0-481" name="__codelineno-0-481"></a>        <span class="n">treatment_arm</span><span class="p">,</span>
+<a id="__codelineno-0-482" name="__codelineno-0-482"></a>        <span class="n">locations</span><span class="p">,</span>
+<a id="__codelineno-0-483" name="__codelineno-0-483"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">covariates</span><span class="p">,</span>
+<a id="__codelineno-0-484" name="__codelineno-0-484"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
+<a id="__codelineno-0-485" name="__codelineno-0-485"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span>
+<a id="__codelineno-0-486" name="__codelineno-0-486"></a>        <span class="n">display_progress</span><span class="o">=</span><span class="n">display_progress</span><span class="p">,</span>
+<a id="__codelineno-0-487" name="__codelineno-0-487"></a>    <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2143,13 +2143,7 @@ the covariate-adaptive randomization (CAR) design. For estimators without strata
 <span class="normal"><a href="#__codelineno-0-70">70</a></span>
 <span class="normal"><a href="#__codelineno-0-71">71</a></span>
 <span class="normal"><a href="#__codelineno-0-72">72</a></span>
-<span class="normal"><a href="#__codelineno-0-73">73</a></span>
-<span class="normal"><a href="#__codelineno-0-74">74</a></span>
-<span class="normal"><a href="#__codelineno-0-75">75</a></span>
-<span class="normal"><a href="#__codelineno-0-76">76</a></span>
-<span class="normal"><a href="#__codelineno-0-77">77</a></span>
-<span class="normal"><a href="#__codelineno-0-78">78</a></span>
-<span class="normal"><a href="#__codelineno-0-79">79</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
 <a id="__codelineno-0-51" name="__codelineno-0-51"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">covariates</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">ArrayLike</span>
 <a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleDistributionEstimator</span><span class="p">:</span>
 <a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2163,22 +2157,16 @@ the covariate-adaptive randomization (CAR) design. For estimators without strata
 <a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    Returns:</span>
 <a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">        SimpleDistributionEstimator: The fitted estimator.</span>
 <a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="n">covariates</span> <span class="o">=</span> <span class="n">_convert_to_ndarray</span><span class="p">(</span><span class="n">covariates</span><span class="p">)</span>
-<a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="n">treatment_arms</span> <span class="o">=</span> <span class="n">_convert_to_ndarray</span><span class="p">(</span><span class="n">treatment_arms</span><span class="p">)</span>
-<a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="n">outcomes</span> <span class="o">=</span> <span class="n">_convert_to_ndarray</span><span class="p">(</span><span class="n">outcomes</span><span class="p">)</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="n">covariates</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">,</span> <span class="n">strata</span> <span class="o">=</span> <span class="n">_prepare_fit_inputs</span><span class="p">(</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>        <span class="n">covariates</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">,</span> <span class="n">outcomes</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="p">)</span>
 <a id="__codelineno-0-67" name="__codelineno-0-67"></a>
-<a id="__codelineno-0-68" name="__codelineno-0-68"></a>    <span class="k">if</span> <span class="n">covariates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">treatment_arms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-<a id="__codelineno-0-69" name="__codelineno-0-69"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The shape of covariates and treatment_arm should be same&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-70" name="__codelineno-0-70"></a>
-<a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="k">if</span> <span class="n">covariates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-<a id="__codelineno-0-72" name="__codelineno-0-72"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The shape of covariates and outcome should be same&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-73" name="__codelineno-0-73"></a>
-<a id="__codelineno-0-74" name="__codelineno-0-74"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">covariates</span> <span class="o">=</span> <span class="n">covariates</span>
-<a id="__codelineno-0-75" name="__codelineno-0-75"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span> <span class="o">=</span> <span class="n">treatment_arms</span>
-<a id="__codelineno-0-76" name="__codelineno-0-76"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="n">outcomes</span>
-<a id="__codelineno-0-77" name="__codelineno-0-77"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">covariates</span><span class="p">))</span>
-<a id="__codelineno-0-78" name="__codelineno-0-78"></a>
-<a id="__codelineno-0-79" name="__codelineno-0-79"></a>    <span class="k">return</span> <span class="bp">self</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">covariates</span> <span class="o">=</span> <span class="n">covariates</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span> <span class="o">=</span> <span class="n">treatment_arms</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="n">outcomes</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">strata</span> <span class="o">=</span> <span class="n">strata</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a>    <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2205,19 +2193,26 @@ the covariate-adaptive randomization (CAR) design. For estimators without strata
 
 
         <p>A class for computing distribution treatment effects using machine learning adjustment.</p>
-<p>This estimator uses cross-fitting with ML models to adjust for confounding when computing
-Distribution Treatment Effects (DTE), Probability Treatment Effects (PTE), and
-Quantile Treatment Effects (QTE). It provides more precise estimates when treatment
-assignment depends on observed covariates.</p>
+<p>This estimator uses cross-fitting with ML models of the conditional distribution given
+covariates to compute Distribution Treatment Effects (DTE), Probability Treatment Effects
+(PTE), and Quantile Treatment Effects (QTE) with reduced variance. It is designed for
+randomized experiments, where treatment is assigned independently of the covariates: in
+that setting the estimator stays consistent regardless of how well the ML model fits, and
+a good fit yields tighter confidence intervals than <code>SimpleDistributionEstimator</code>.</p>
+<p>Note:
+    The method targets efficiency, not bias correction. It does not correct for
+    confounding in observational data; if treatment assignment depends on covariates, the
+    estimates are valid only under selection on observables, and <code>fit</code> assumes the
+    assignment probability is constant across observations (no propensity weighting).</p>
 <p>Example:
     <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dte_adj</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdjustedDistributionEstimator</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Generate confounded data</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">treatment_prob</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])))</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">treatment_prob</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Generate data from a randomized experiment: treatment is independent of X,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># while the outcome depends on X (this is what the ML adjustment exploits)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">D</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># Fit adjusted estimator</span>
@@ -2233,7 +2228,9 @@ assignment depends on observed covariates.</p>
         <p>Initializes the AdjustedDistributionEstimator.</p>
 <p>Args:
     base_model (scikit-learn estimator): The base model implementing used for conditional distribution function estimators. The model should implement fit(data, targets) and predict_proba(data).
-    folds (int): The number of folds for cross-fitting.
+    folds (int): The number of folds for cross-fitting. Folds are assigned at random, so
+        with small samples a fold may by chance leave no training observations for the
+        target arm; a ValueError suggesting fewer folds is raised in that case.
     is_multi_task(bool): Whether to use multi-task learning. If True, your base model needs to support multi-task prediction (n_samples, n_features) -&gt; (n_samples, n_targets).</p>
 <p>Returns:
     AdjustedDistributionEstimator: An instance of the estimator.</p>
@@ -2246,9 +2243,7 @@ assignment depends on observed covariates.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>dte_adj/stratified.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-160">160</a></span>
-<span class="normal"><a href="#__codelineno-0-161">161</a></span>
-<span class="normal"><a href="#__codelineno-0-162">162</a></span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-162">162</a></span>
 <span class="normal"><a href="#__codelineno-0-163">163</a></span>
 <span class="normal"><a href="#__codelineno-0-164">164</a></span>
 <span class="normal"><a href="#__codelineno-0-165">165</a></span>
@@ -2267,28 +2262,34 @@ assignment depends on observed covariates.</p>
 <span class="normal"><a href="#__codelineno-0-178">178</a></span>
 <span class="normal"><a href="#__codelineno-0-179">179</a></span>
 <span class="normal"><a href="#__codelineno-0-180">180</a></span>
-<span class="normal"><a href="#__codelineno-0-181">181</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-160" name="__codelineno-0-160"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">is_multi_task</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<a id="__codelineno-0-161" name="__codelineno-0-161"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-162" name="__codelineno-0-162"></a><span class="sd">    Initializes the AdjustedDistributionEstimator.</span>
-<a id="__codelineno-0-163" name="__codelineno-0-163"></a>
-<a id="__codelineno-0-164" name="__codelineno-0-164"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-165" name="__codelineno-0-165"></a><span class="sd">        base_model (scikit-learn estimator): The base model implementing used for conditional distribution function estimators. The model should implement fit(data, targets) and predict_proba(data).</span>
-<a id="__codelineno-0-166" name="__codelineno-0-166"></a><span class="sd">        folds (int): The number of folds for cross-fitting.</span>
-<a id="__codelineno-0-167" name="__codelineno-0-167"></a><span class="sd">        is_multi_task(bool): Whether to use multi-task learning. If True, your base model needs to support multi-task prediction (n_samples, n_features) -&gt; (n_samples, n_targets).</span>
-<a id="__codelineno-0-168" name="__codelineno-0-168"></a>
-<a id="__codelineno-0-169" name="__codelineno-0-169"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-170" name="__codelineno-0-170"></a><span class="sd">        AdjustedDistributionEstimator: An instance of the estimator.</span>
-<a id="__codelineno-0-171" name="__codelineno-0-171"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-172" name="__codelineno-0-172"></a>    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="s2">&quot;predict&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span>
-<a id="__codelineno-0-173" name="__codelineno-0-173"></a>        <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-174" name="__codelineno-0-174"></a>    <span class="p">):</span>
-<a id="__codelineno-0-175" name="__codelineno-0-175"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-<a id="__codelineno-0-176" name="__codelineno-0-176"></a>            <span class="s2">&quot;Base model should implement either predict_proba or predict&quot;</span>
-<a id="__codelineno-0-177" name="__codelineno-0-177"></a>        <span class="p">)</span>
-<a id="__codelineno-0-178" name="__codelineno-0-178"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">base_model</span> <span class="o">=</span> <span class="n">base_model</span>
-<a id="__codelineno-0-179" name="__codelineno-0-179"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">=</span> <span class="n">folds</span>
-<a id="__codelineno-0-180" name="__codelineno-0-180"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">is_multi_task</span> <span class="o">=</span> <span class="n">is_multi_task</span>
-<a id="__codelineno-0-181" name="__codelineno-0-181"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="normal"><a href="#__codelineno-0-181">181</a></span>
+<span class="normal"><a href="#__codelineno-0-182">182</a></span>
+<span class="normal"><a href="#__codelineno-0-183">183</a></span>
+<span class="normal"><a href="#__codelineno-0-184">184</a></span>
+<span class="normal"><a href="#__codelineno-0-185">185</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-162" name="__codelineno-0-162"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">is_multi_task</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<a id="__codelineno-0-163" name="__codelineno-0-163"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-164" name="__codelineno-0-164"></a><span class="sd">    Initializes the AdjustedDistributionEstimator.</span>
+<a id="__codelineno-0-165" name="__codelineno-0-165"></a>
+<a id="__codelineno-0-166" name="__codelineno-0-166"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-167" name="__codelineno-0-167"></a><span class="sd">        base_model (scikit-learn estimator): The base model implementing used for conditional distribution function estimators. The model should implement fit(data, targets) and predict_proba(data).</span>
+<a id="__codelineno-0-168" name="__codelineno-0-168"></a><span class="sd">        folds (int): The number of folds for cross-fitting. Folds are assigned at random, so</span>
+<a id="__codelineno-0-169" name="__codelineno-0-169"></a><span class="sd">            with small samples a fold may by chance leave no training observations for the</span>
+<a id="__codelineno-0-170" name="__codelineno-0-170"></a><span class="sd">            target arm; a ValueError suggesting fewer folds is raised in that case.</span>
+<a id="__codelineno-0-171" name="__codelineno-0-171"></a><span class="sd">        is_multi_task(bool): Whether to use multi-task learning. If True, your base model needs to support multi-task prediction (n_samples, n_features) -&gt; (n_samples, n_targets).</span>
+<a id="__codelineno-0-172" name="__codelineno-0-172"></a>
+<a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="sd">        AdjustedDistributionEstimator: An instance of the estimator.</span>
+<a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-176" name="__codelineno-0-176"></a>    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="s2">&quot;predict&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span>
+<a id="__codelineno-0-177" name="__codelineno-0-177"></a>        <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-178" name="__codelineno-0-178"></a>    <span class="p">):</span>
+<a id="__codelineno-0-179" name="__codelineno-0-179"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+<a id="__codelineno-0-180" name="__codelineno-0-180"></a>            <span class="s2">&quot;Base model should implement either predict_proba or predict&quot;</span>
+<a id="__codelineno-0-181" name="__codelineno-0-181"></a>        <span class="p">)</span>
+<a id="__codelineno-0-182" name="__codelineno-0-182"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">base_model</span> <span class="o">=</span> <span class="n">base_model</span>
+<a id="__codelineno-0-183" name="__codelineno-0-183"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">=</span> <span class="n">folds</span>
+<a id="__codelineno-0-184" name="__codelineno-0-184"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">is_multi_task</span> <span class="o">=</span> <span class="n">is_multi_task</span>
+<a id="__codelineno-0-185" name="__codelineno-0-185"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
@@ -3105,8 +3106,7 @@ the covariate-adaptive randomization (CAR) design. For estimators without strata
 
             <details class="quote">
               <summary>Source code in <code>dte_adj/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-455">455</a></span>
-<span class="normal"><a href="#__codelineno-0-456">456</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-456">456</a></span>
 <span class="normal"><a href="#__codelineno-0-457">457</a></span>
 <span class="normal"><a href="#__codelineno-0-458">458</a></span>
 <span class="normal"><a href="#__codelineno-0-459">459</a></span>
@@ -3136,38 +3136,39 @@ the covariate-adaptive randomization (CAR) design. For estimators without strata
 <span class="normal"><a href="#__codelineno-0-483">483</a></span>
 <span class="normal"><a href="#__codelineno-0-484">484</a></span>
 <span class="normal"><a href="#__codelineno-0-485">485</a></span>
-<span class="normal"><a href="#__codelineno-0-486">486</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-455" name="__codelineno-0-455"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span>
-<a id="__codelineno-0-456" name="__codelineno-0-456"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-<a id="__codelineno-0-457" name="__codelineno-0-457"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<a id="__codelineno-0-458" name="__codelineno-0-458"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-459" name="__codelineno-0-459"></a><span class="sd">    Compute cumulative distribution values.</span>
-<a id="__codelineno-0-460" name="__codelineno-0-460"></a>
-<a id="__codelineno-0-461" name="__codelineno-0-461"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-462" name="__codelineno-0-462"></a><span class="sd">        treatment_arm (int): The index of the treatment arm.</span>
-<a id="__codelineno-0-463" name="__codelineno-0-463"></a><span class="sd">        locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
-<a id="__codelineno-0-464" name="__codelineno-0-464"></a><span class="sd">        display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
-<a id="__codelineno-0-465" name="__codelineno-0-465"></a>
-<a id="__codelineno-0-466" name="__codelineno-0-466"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-467" name="__codelineno-0-467"></a><span class="sd">        np.ndarray: Estimated cumulative distribution values for the input.</span>
-<a id="__codelineno-0-468" name="__codelineno-0-468"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-469" name="__codelineno-0-469"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-470" name="__codelineno-0-470"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-<a id="__codelineno-0-471" name="__codelineno-0-471"></a>            <span class="s2">&quot;This estimator has not been trained yet. Please call fit first&quot;</span>
-<a id="__codelineno-0-472" name="__codelineno-0-472"></a>        <span class="p">)</span>
-<a id="__codelineno-0-473" name="__codelineno-0-473"></a>
-<a id="__codelineno-0-474" name="__codelineno-0-474"></a>    <span class="k">if</span> <span class="n">treatment_arm</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">:</span>
-<a id="__codelineno-0-475" name="__codelineno-0-475"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-<a id="__codelineno-0-476" name="__codelineno-0-476"></a>            <span class="sa">f</span><span class="s2">&quot;This target treatment arm was not included in the training data: </span><span class="si">{</span><span class="n">treatment_arm</span><span class="si">}</span><span class="s2">&quot;</span>
-<a id="__codelineno-0-477" name="__codelineno-0-477"></a>        <span class="p">)</span>
-<a id="__codelineno-0-478" name="__codelineno-0-478"></a>
-<a id="__codelineno-0-479" name="__codelineno-0-479"></a>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
-<a id="__codelineno-0-480" name="__codelineno-0-480"></a>        <span class="n">treatment_arm</span><span class="p">,</span>
-<a id="__codelineno-0-481" name="__codelineno-0-481"></a>        <span class="n">locations</span><span class="p">,</span>
-<a id="__codelineno-0-482" name="__codelineno-0-482"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">covariates</span><span class="p">,</span>
-<a id="__codelineno-0-483" name="__codelineno-0-483"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
-<a id="__codelineno-0-484" name="__codelineno-0-484"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span>
-<a id="__codelineno-0-485" name="__codelineno-0-485"></a>        <span class="n">display_progress</span><span class="o">=</span><span class="n">display_progress</span><span class="p">,</span>
-<a id="__codelineno-0-486" name="__codelineno-0-486"></a>    <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="normal"><a href="#__codelineno-0-486">486</a></span>
+<span class="normal"><a href="#__codelineno-0-487">487</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-456" name="__codelineno-0-456"></a><span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span>
+<a id="__codelineno-0-457" name="__codelineno-0-457"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">treatment_arm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locations</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">display_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-0-458" name="__codelineno-0-458"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<a id="__codelineno-0-459" name="__codelineno-0-459"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-460" name="__codelineno-0-460"></a><span class="sd">    Compute cumulative distribution values.</span>
+<a id="__codelineno-0-461" name="__codelineno-0-461"></a>
+<a id="__codelineno-0-462" name="__codelineno-0-462"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-463" name="__codelineno-0-463"></a><span class="sd">        treatment_arm (int): The index of the treatment arm.</span>
+<a id="__codelineno-0-464" name="__codelineno-0-464"></a><span class="sd">        locations (np.ndarray): Scalar values to be used for computing the cumulative distribution.</span>
+<a id="__codelineno-0-465" name="__codelineno-0-465"></a><span class="sd">        display_progress (bool, optional): Whether to display a progress bar. Defaults to True.</span>
+<a id="__codelineno-0-466" name="__codelineno-0-466"></a>
+<a id="__codelineno-0-467" name="__codelineno-0-467"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-468" name="__codelineno-0-468"></a><span class="sd">        np.ndarray: Estimated cumulative distribution values for the input.</span>
+<a id="__codelineno-0-469" name="__codelineno-0-469"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-470" name="__codelineno-0-470"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-471" name="__codelineno-0-471"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+<a id="__codelineno-0-472" name="__codelineno-0-472"></a>            <span class="s2">&quot;This estimator has not been trained yet. Please call fit first&quot;</span>
+<a id="__codelineno-0-473" name="__codelineno-0-473"></a>        <span class="p">)</span>
+<a id="__codelineno-0-474" name="__codelineno-0-474"></a>
+<a id="__codelineno-0-475" name="__codelineno-0-475"></a>    <span class="k">if</span> <span class="n">treatment_arm</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">:</span>
+<a id="__codelineno-0-476" name="__codelineno-0-476"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+<a id="__codelineno-0-477" name="__codelineno-0-477"></a>            <span class="sa">f</span><span class="s2">&quot;This target treatment arm was not included in the training data: </span><span class="si">{</span><span class="n">treatment_arm</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-478" name="__codelineno-0-478"></a>        <span class="p">)</span>
+<a id="__codelineno-0-479" name="__codelineno-0-479"></a>
+<a id="__codelineno-0-480" name="__codelineno-0-480"></a>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cumulative_distribution</span><span class="p">(</span>
+<a id="__codelineno-0-481" name="__codelineno-0-481"></a>        <span class="n">treatment_arm</span><span class="p">,</span>
+<a id="__codelineno-0-482" name="__codelineno-0-482"></a>        <span class="n">locations</span><span class="p">,</span>
+<a id="__codelineno-0-483" name="__codelineno-0-483"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">covariates</span><span class="p">,</span>
+<a id="__codelineno-0-484" name="__codelineno-0-484"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span><span class="p">,</span>
+<a id="__codelineno-0-485" name="__codelineno-0-485"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">,</span>
+<a id="__codelineno-0-486" name="__codelineno-0-486"></a>        <span class="n">display_progress</span><span class="o">=</span><span class="n">display_progress</span><span class="p">,</span>
+<a id="__codelineno-0-487" name="__codelineno-0-487"></a>    <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3202,9 +3203,7 @@ the covariate-adaptive randomization (CAR) design. For estimators without strata
 
             <details class="quote">
               <summary>Source code in <code>dte_adj/simple.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-114">114</a></span>
-<span class="normal"><a href="#__codelineno-0-115">115</a></span>
-<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-116">116</a></span>
 <span class="normal"><a href="#__codelineno-0-117">117</a></span>
 <span class="normal"><a href="#__codelineno-0-118">118</a></span>
 <span class="normal"><a href="#__codelineno-0-119">119</a></span>
@@ -3227,40 +3226,30 @@ the covariate-adaptive randomization (CAR) design. For estimators without strata
 <span class="normal"><a href="#__codelineno-0-136">136</a></span>
 <span class="normal"><a href="#__codelineno-0-137">137</a></span>
 <span class="normal"><a href="#__codelineno-0-138">138</a></span>
-<span class="normal"><a href="#__codelineno-0-139">139</a></span>
-<span class="normal"><a href="#__codelineno-0-140">140</a></span>
-<span class="normal"><a href="#__codelineno-0-141">141</a></span>
-<span class="normal"><a href="#__codelineno-0-142">142</a></span>
-<span class="normal"><a href="#__codelineno-0-143">143</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
-<a id="__codelineno-0-115" name="__codelineno-0-115"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">covariates</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">ArrayLike</span>
-<a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdjustedDistributionEstimator</span><span class="p">:</span>
-<a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="sd">    Set parameters.</span>
-<a id="__codelineno-0-119" name="__codelineno-0-119"></a>
-<a id="__codelineno-0-120" name="__codelineno-0-120"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-121" name="__codelineno-0-121"></a><span class="sd">        covariates: Pre-treatment covariates.</span>
-<a id="__codelineno-0-122" name="__codelineno-0-122"></a><span class="sd">        treatment_arms: The index of the treatment arm.</span>
-<a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="sd">        outcomes: Scalar-valued observed outcome.</span>
-<a id="__codelineno-0-124" name="__codelineno-0-124"></a>
-<a id="__codelineno-0-125" name="__codelineno-0-125"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-126" name="__codelineno-0-126"></a><span class="sd">        AdjustedDistributionEstimator: The fitted estimator.</span>
-<a id="__codelineno-0-127" name="__codelineno-0-127"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-128" name="__codelineno-0-128"></a>    <span class="n">covariates</span> <span class="o">=</span> <span class="n">_convert_to_ndarray</span><span class="p">(</span><span class="n">covariates</span><span class="p">)</span>
-<a id="__codelineno-0-129" name="__codelineno-0-129"></a>    <span class="n">treatment_arms</span> <span class="o">=</span> <span class="n">_convert_to_ndarray</span><span class="p">(</span><span class="n">treatment_arms</span><span class="p">)</span>
-<a id="__codelineno-0-130" name="__codelineno-0-130"></a>    <span class="n">outcomes</span> <span class="o">=</span> <span class="n">_convert_to_ndarray</span><span class="p">(</span><span class="n">outcomes</span><span class="p">)</span>
-<a id="__codelineno-0-131" name="__codelineno-0-131"></a>
-<a id="__codelineno-0-132" name="__codelineno-0-132"></a>    <span class="k">if</span> <span class="n">covariates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">treatment_arms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-<a id="__codelineno-0-133" name="__codelineno-0-133"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The shape of covariates and treatment_arm should be same&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-134" name="__codelineno-0-134"></a>
-<a id="__codelineno-0-135" name="__codelineno-0-135"></a>    <span class="k">if</span> <span class="n">covariates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">outcomes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-<a id="__codelineno-0-136" name="__codelineno-0-136"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The shape of covariates and outcome should be same&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-137" name="__codelineno-0-137"></a>
-<a id="__codelineno-0-138" name="__codelineno-0-138"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">covariates</span> <span class="o">=</span> <span class="n">covariates</span>
-<a id="__codelineno-0-139" name="__codelineno-0-139"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span> <span class="o">=</span> <span class="n">treatment_arms</span>
-<a id="__codelineno-0-140" name="__codelineno-0-140"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="n">outcomes</span>
-<a id="__codelineno-0-141" name="__codelineno-0-141"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">strata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">covariates</span><span class="p">))</span>
-<a id="__codelineno-0-142" name="__codelineno-0-142"></a>
-<a id="__codelineno-0-143" name="__codelineno-0-143"></a>    <span class="k">return</span> <span class="bp">self</span>
+<span class="normal"><a href="#__codelineno-0-139">139</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">covariates</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">ArrayLike</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdjustedDistributionEstimator</span><span class="p">:</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-120" name="__codelineno-0-120"></a><span class="sd">    Set parameters.</span>
+<a id="__codelineno-0-121" name="__codelineno-0-121"></a>
+<a id="__codelineno-0-122" name="__codelineno-0-122"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="sd">        covariates: Pre-treatment covariates.</span>
+<a id="__codelineno-0-124" name="__codelineno-0-124"></a><span class="sd">        treatment_arms: The index of the treatment arm.</span>
+<a id="__codelineno-0-125" name="__codelineno-0-125"></a><span class="sd">        outcomes: Scalar-valued observed outcome.</span>
+<a id="__codelineno-0-126" name="__codelineno-0-126"></a>
+<a id="__codelineno-0-127" name="__codelineno-0-127"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-128" name="__codelineno-0-128"></a><span class="sd">        AdjustedDistributionEstimator: The fitted estimator.</span>
+<a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130"></a>    <span class="n">covariates</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">,</span> <span class="n">strata</span> <span class="o">=</span> <span class="n">_prepare_fit_inputs</span><span class="p">(</span>
+<a id="__codelineno-0-131" name="__codelineno-0-131"></a>        <span class="n">covariates</span><span class="p">,</span> <span class="n">treatment_arms</span><span class="p">,</span> <span class="n">outcomes</span>
+<a id="__codelineno-0-132" name="__codelineno-0-132"></a>    <span class="p">)</span>
+<a id="__codelineno-0-133" name="__codelineno-0-133"></a>
+<a id="__codelineno-0-134" name="__codelineno-0-134"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">covariates</span> <span class="o">=</span> <span class="n">covariates</span>
+<a id="__codelineno-0-135" name="__codelineno-0-135"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">treatment_arms</span> <span class="o">=</span> <span class="n">treatment_arms</span>
+<a id="__codelineno-0-136" name="__codelineno-0-136"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="n">outcomes</span>
+<a id="__codelineno-0-137" name="__codelineno-0-137"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">strata</span> <span class="o">=</span> <span class="n">strata</span>
+<a id="__codelineno-0-138" name="__codelineno-0-138"></a>
+<a id="__codelineno-0-139" name="__codelineno-0-139"></a>    <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
