@@ -2,7 +2,11 @@ import unittest
 import numpy as np
 from unittest.mock import patch, MagicMock
 from sklearn.linear_model import LogisticRegression
-from dte_adj import SimpleDistributionEstimator, AdjustedDistributionEstimator
+from dte_adj import (
+    SimpleDistributionEstimator,
+    SimpleStratifiedDistributionEstimator,
+    AdjustedDistributionEstimator,
+)
 
 np.random.seed(123)
 
@@ -285,3 +289,64 @@ class TestE2E(unittest.TestCase):
             ),
             "Adjusted estimator does not have narrower intervals",
         )
+
+
+class TestInputShapes(unittest.TestCase):
+    def setUp(self):
+        self.X = np.zeros((4, 1))
+        self.D = np.array([0, 0, 1, 1])
+        self.Y = np.array([0.0, 1.0, 2.0, 3.0])
+
+    def test_single_column_outcomes_match_1d(self):
+        results = []
+        for outcomes in (self.Y, self.Y[:, None]):
+            est = SimpleDistributionEstimator().fit(self.X, self.D, outcomes)
+            effect, lower, upper = est.predict_dte(
+                1, 0, np.array([1.0]), display_progress=False
+            )
+            results.append((effect, lower, upper))
+        for a, b in zip(*results):
+            self.assertEqual(a.shape, (1,))
+            np.testing.assert_allclose(a, b)
+        np.testing.assert_allclose(results[1][0], [-1.0])
+
+    def test_single_column_treatment_arms_and_strata(self):
+        est = SimpleDistributionEstimator().fit(self.X, self.D[:, None], self.Y)
+        self.assertEqual(est.treatment_arms.shape, (4,))
+        est = SimpleStratifiedDistributionEstimator().fit(
+            self.X, self.D, self.Y, np.zeros((4, 1))
+        )
+        self.assertEqual(est.strata.shape, (4,))
+
+    def test_multi_column_outcomes_rejected(self):
+        with self.assertRaises(ValueError):
+            SimpleDistributionEstimator().fit(self.X, self.D, np.zeros((4, 2)))
+
+    def test_missing_values_rejected(self):
+        Y = self.Y.copy()
+        Y[0] = np.nan
+        with self.assertRaises(ValueError) as cm:
+            SimpleDistributionEstimator().fit(self.X, self.D, Y)
+        self.assertIn("outcomes", str(cm.exception))
+        with self.assertRaises(ValueError):
+            SimpleDistributionEstimator().fit(
+                self.X, np.array([0, 1, np.nan, 1]), self.Y
+            )
+
+    def test_covariates_with_nan_allowed_for_simple(self):
+        X = self.X.copy()
+        X[0, 0] = np.nan
+        SimpleDistributionEstimator().fit(X, self.D, self.Y)
+
+
+class TestFoldValidation(unittest.TestCase):
+    def test_empty_training_fold_raises_informative_error(self):
+        X = np.zeros((6, 2))
+        D = np.array([0, 0, 0, 1, 1, 1])
+        Y = np.arange(6.0)
+        est = AdjustedDistributionEstimator(MagicMock(), folds=2).fit(X, D, Y)
+        # All treated units fall in fold 0 -> training set for fold 0 is empty
+        with patch("numpy.random.randint", return_value=np.array([1, 1, 1, 0, 0, 0])):
+            with self.assertRaises(ValueError) as cm:
+                est.predict(1, np.array([2.0]), display_progress=False)
+        self.assertIn("Reduce `folds`", str(cm.exception))

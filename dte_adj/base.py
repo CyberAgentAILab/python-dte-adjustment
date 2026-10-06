@@ -418,30 +418,31 @@ class DistributionEstimatorBase(ABC):
         locations = np.sort(outcomes)
 
         def find_quantile(quantile, arm):
+            # Smallest location y with F(y) >= quantile, i.e. the generalized inverse
+            # of the estimated CDF. Returns the largest location if no such y exists.
             low, high = 0, locations.shape[0] - 1
-            result = -1
-            while low <= high:
-                mid = (low + high) // 2
-                # Temporarily store original strata and use the provided strata
-                original_strata = self.strata
-                self.strata = strata
+            result = locations[-1]
+            # Temporarily use the provided strata when evaluating the CDF
+            original_strata = self.strata
+            self.strata = strata
+            try:
+                while low <= high:
+                    mid = (low + high) // 2
+                    val, _, _ = self._compute_cumulative_distribution(
+                        arm,
+                        np.full((1), locations[mid]),
+                        covariates,
+                        treatment_arms,
+                        outcomes,
+                    )
 
-                val, _, _ = self._compute_cumulative_distribution(
-                    arm,
-                    np.full((1), locations[mid]),
-                    covariates,
-                    treatment_arms,
-                    outcomes,
-                )
-
-                # Restore original strata
+                    if val[0] >= quantile - 1e-12:
+                        result = locations[mid]
+                        high = mid - 1
+                    else:
+                        low = mid + 1
+            finally:
                 self.strata = original_strata
-
-                if val[0] <= quantile:
-                    result = locations[mid]
-                    low = mid + 1
-                else:
-                    high = mid - 1
             return result
 
         result = np.zeros(quantiles.shape)

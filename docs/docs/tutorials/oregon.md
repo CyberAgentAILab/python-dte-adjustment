@@ -531,7 +531,7 @@ plt.show()
     - Simple: LDTE ≈ -0.55 at zero costs, converging to zero around $15,000-$20,000
     - ML-Adjusted: LDTE ≈ -0.10 to -0.15 at zero costs, stable pattern with improved confidence intervals
     - Much larger magnitude effects in the Simple estimator, indicating households with multiple members show substantially stronger treatment effects
-    - ML adjustment provides more conservative estimates, potentially controlling for confounding household characteristics
+    - ML adjustment provides more conservative estimates and tighter confidence intervals by exploiting household characteristics that predict the outcome (the lottery itself randomizes treatment, so this is variance reduction rather than confounding correction)
 
 **2. Heterogeneity Across Strata**
 
@@ -540,7 +540,7 @@ The stratified analysis reveals substantial treatment effect heterogeneity:
 - **"Signed self up" stratum**: Moderate effects (LDTE ≈ -0.18 to -0.20), suggesting single-person households have more modest increases in ED utilization
 - **"Signed self up + others" stratum**: Large effects in Simple estimator (LDTE ≈ -0.55), suggesting multi-person households experience much greater increases in ED access when not adjusting for covariates
 - The 3-4x larger effect in the "signed self up + others" group (Simple estimator) indicates that household composition is a critical moderator of insurance impact
-- However, ML adjustment substantially reduces this estimate, suggesting that some of the observed effect may be attributable to observable household characteristics rather than pure treatment effects
+- However, ML adjustment substantially reduces this estimate. Because treatment is randomized, the adjusted and unadjusted estimators target the same quantity, so a large gap is more likely sampling noise in the small stratum (reduced by the adjustment) than a difference in what is being estimated
 
 **3. Comparison of Estimation Methods**
 
@@ -551,14 +551,14 @@ The stratified analysis reveals substantial treatment effect heterogeneity:
     - The Simple estimator shows the largest treatment effects across all strata (LDTE ≈ -0.55)
     - ML adjustment substantially reduces the estimated effect and stabilizes confidence intervals
     - This divergence suggests that observable covariates (e.g., household size, age composition, baseline health status) explain a significant portion of the treatment effect heterogeneity
-    - The improved stability of ML-adjusted estimates indicates successful control for confounding factors that may have been correlated with both treatment assignment and outcomes
+    - The improved stability of ML-adjusted estimates reflects variance reduction from covariates that are predictive of the outcome
 
 **4. Practical Implications**
 
 - **Household structure matters**: Multi-person households show substantially larger treatment effects in unadjusted analyses, likely because insurance coverage enables care-seeking for multiple family members.
-- **The role of covariates**: The difference between Simple and ML-adjusted estimates in the "signed self up + others" stratum highlights the importance of controlling for household characteristics. The unadjusted effect may overstate the pure treatment effect by conflating insurance provision with pre-existing household differences.
+- **The role of covariates**: The difference between Simple and ML-adjusted estimates in the "signed self up + others" stratum highlights how much precision household characteristics can add. The unadjusted estimate is noisier in this small stratum and may overstate the effect by chance.
 - **Stratification reveals hidden heterogeneity**: The overall population estimate masks substantial variation across household types, demonstrating the value of subgroup analysis.
-- **Model specification considerations**: ML adjustment improves estimation stability in smaller strata and provides more defensible causal estimates by controlling for observable confounders. The convergence of all estimates to zero at higher cost levels confirms that the treatment primarily affects the lower tail of the cost distribution.
+- **Model specification considerations**: ML adjustment improves estimation stability in smaller strata and provides more precise estimates by exploiting predictive covariates (it is not a correction for confounding, since treatment is randomized). The convergence of all estimates to zero at higher cost levels confirms that the treatment primarily affects the lower tail of the cost distribution.
 
 ### Conclusion
 

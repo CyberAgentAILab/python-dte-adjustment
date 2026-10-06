@@ -10,7 +10,8 @@ from dte_adj.util import (
     ArrayLike,
     compute_ldte,
     compute_lpte,
-    _convert_to_ndarray,
+    _to_1d,
+    _check_no_missing,
     _infer_default_locations,
 )
 
@@ -55,8 +56,13 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
         Returns:
             SimpleLocalDistributionEstimator: The fitted estimator.
         """
-        treatment_indicator = _convert_to_ndarray(treatment_indicator)
+        treatment_indicator = _to_1d("treatment_indicator", treatment_indicator)
         super().fit(covariates, treatment_arms, outcomes, strata)
+        if treatment_indicator.shape[0] != self.covariates.shape[0]:
+            raise ValueError(
+                "The shape of covariates and treatment_indicator should be same"
+            )
+        _check_no_missing("treatment_indicator", treatment_indicator)
         self.treatment_indicator = treatment_indicator
 
         return self
@@ -219,9 +225,10 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
     A class for computing Local Distribution Treatment Effects (LDTE) and Local Probability
     Treatment Effects (LPTE) using machine learning adjustment.
 
-    This estimator combines the benefits of ML adjustment with local treatment effect estimation,
-    providing precise estimates of treatment effects that are weighted by treatment propensity
-    within each stratum. It uses cross-fitting to avoid overfitting issues.
+    This estimator combines ML adjustment with local treatment effect estimation, providing
+    variance-reduced estimates in randomized experiments with partial compliance. The ML
+    adjustment targets efficiency (tighter confidence intervals), not correction for
+    confounding. It uses cross-fitting to avoid overfitting issues.
     """
 
     def fit(
@@ -245,8 +252,13 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         Returns:
             AdjustedLocalDistributionEstimator: The fitted estimator.
         """
-        treatment_indicator = _convert_to_ndarray(treatment_indicator)
+        treatment_indicator = _to_1d("treatment_indicator", treatment_indicator)
         super().fit(covariates, treatment_arms, outcomes, strata)
+        if treatment_indicator.shape[0] != self.covariates.shape[0]:
+            raise ValueError(
+                "The shape of covariates and treatment_indicator should be same"
+            )
+        _check_no_missing("treatment_indicator", treatment_indicator)
         self.treatment_indicator = treatment_indicator
 
         return self
@@ -288,13 +300,12 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
             from sklearn.ensemble import RandomForestClassifier
             from dte_adj import AdjustedLocalDistributionEstimator
 
-            # Generate confounded data with strata
+            # Generate data with strata from a randomized experiment
             np.random.seed(42)
             X = np.random.randn(1000, 5)
             strata = np.random.choice([0, 1], size=1000)
-            # Treatment assignment depends on covariates
-            Z_prob = 1 / (1 + np.exp(-(X[:, 0] + X[:, 1] + strata)))
-            Z = np.random.binomial(1, Z_prob, 1000)
+            # Treatment assignment is random (independent of covariates)
+            Z = np.random.binomial(1, 0.5, 1000)
             D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)
             Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)
 
@@ -366,13 +377,12 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
             from sklearn.linear_model import LogisticRegression
             from dte_adj import AdjustedLocalDistributionEstimator
 
-            # Generate confounded data with strata
+            # Generate data with strata from a randomized experiment
             np.random.seed(42)
             X = np.random.randn(1000, 5)
             strata = np.random.choice([0, 1], size=1000)
-            # Treatment assignment depends on covariates
-            Z_prob = 1 / (1 + np.exp(-(X[:, 0] + strata)))
-            Z = np.random.binomial(1, Z_prob, 1000)
+            # Treatment assignment is random (independent of covariates)
+            Z = np.random.binomial(1, 0.5, 1000)
             D = np.random.binomial(1, 0.3 + 0.4 * Z, 1000)
             Y = X.sum(axis=1) + 2 * D + strata + np.random.randn(1000)
 

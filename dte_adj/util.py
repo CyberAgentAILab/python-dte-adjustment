@@ -32,6 +32,79 @@ def _convert_to_ndarray(data: ArrayLike) -> np.ndarray:
     return np.asarray(data)
 
 
+def _to_1d(name: str, data: ArrayLike) -> np.ndarray:
+    """Convert to a 1-D ndarray, accepting a single-column 2-D input as well."""
+    arr = _convert_to_ndarray(data)
+    if arr.ndim == 2 and arr.shape[1] == 1:
+        arr = arr[:, 0]
+    if arr.ndim != 1:
+        raise ValueError(
+            f"{name} must be a 1-D array (or a single column), got shape {arr.shape}"
+        )
+    return arr
+
+
+def _check_no_missing(name: str, arr: np.ndarray) -> None:
+    """Raise if a float array contains missing values (NaN)."""
+    if arr.dtype.kind in "fc" and np.isnan(arr).any():
+        raise ValueError(
+            f"{name} must not contain missing values (NaN). "
+            "Drop or impute the affected observations before calling fit."
+        )
+
+
+def _prepare_fit_inputs(
+    covariates: ArrayLike,
+    treatment_arms: ArrayLike,
+    outcomes: ArrayLike,
+    strata: ArrayLike = None,
+):
+    """Convert and validate the inputs shared by every ``fit`` method.
+
+    ``treatment_arms``, ``outcomes`` and ``strata`` are flattened to 1-D (a single
+    column such as shape ``(n, 1)`` is accepted) and must not contain NaN.
+    ``covariates`` are passed through unchanged; whether missing values in them are
+    acceptable depends on the base model used by adjusted estimators. If ``strata``
+    is None, all observations are placed in a single stratum.
+    """
+    covariates = _convert_to_ndarray(covariates)
+    treatment_arms = _to_1d("treatment_arms", treatment_arms)
+    outcomes = _to_1d("outcomes", outcomes)
+
+    if covariates.shape[0] != treatment_arms.shape[0]:
+        raise ValueError("The shape of covariates and treatment_arm should be same")
+
+    if covariates.shape[0] != outcomes.shape[0]:
+        raise ValueError("The shape of covariates and outcome should be same")
+
+    if strata is None:
+        strata = np.zeros(covariates.shape[0])
+    else:
+        strata = _to_1d("strata", strata)
+        if covariates.shape[0] != strata.shape[0]:
+            raise ValueError("The shape of covariates and strata should be same")
+
+    _check_no_missing("treatment_arms", treatment_arms)
+    _check_no_missing("outcomes", outcomes)
+    _check_no_missing("strata", strata)
+    return covariates, treatment_arms, outcomes, strata
+
+
+def _check_folds_have_training_data(
+    folds: np.ndarray, n_folds: int, treatment_mask: np.ndarray
+) -> None:
+    """Raise an informative error if cross-fitting would train on no data."""
+    for fold in range(n_folds):
+        if not ((folds != fold) & treatment_mask).any():
+            raise ValueError(
+                f"Cross-fitting produced a fold ({fold} of {n_folds}) whose "
+                "complementary training set contains no observations of the target "
+                "treatment arm. This can happen by chance when the sample (or the "
+                "treatment arm) is small relative to the number of folds. "
+                "Reduce `folds` (e.g. folds=2) or use more data."
+            )
+
+
 def _infer_default_locations(
     outcomes: np.ndarray,
     for_intervals: bool = False,

@@ -5,7 +5,11 @@ from typing import Tuple, Any
 from copy import deepcopy
 from tqdm.auto import tqdm
 from dte_adj.base import DistributionEstimatorBase
-from dte_adj.util import ArrayLike, _convert_to_ndarray
+from dte_adj.util import (
+    ArrayLike,
+    _prepare_fit_inputs,
+    _check_folds_have_training_data,
+)
 
 
 class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
@@ -30,16 +34,9 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         Returns:
             DistributionEstimatorBase: The fitted estimator.
         """
-        covariates = _convert_to_ndarray(covariates)
-        treatment_arms = _convert_to_ndarray(treatment_arms)
-        outcomes = _convert_to_ndarray(outcomes)
-        strata = _convert_to_ndarray(strata)
-
-        if covariates.shape[0] != treatment_arms.shape[0]:
-            raise ValueError("The shape of covariates and treatment_arm should be same")
-
-        if covariates.shape[0] != outcomes.shape[0]:
-            raise ValueError("The shape of covariates and outcome should be same")
+        covariates, treatment_arms, outcomes, strata = _prepare_fit_inputs(
+            covariates, treatment_arms, outcomes, strata
+        )
 
         self.covariates = covariates
         self.treatment_arms = treatment_arms
@@ -155,7 +152,12 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
 
 
 class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
-    """A class is for estimating the adjusted distribution function and computing the Distributional parameters for CAR."""
+    """A class is for estimating the adjusted distribution function and computing the Distributional parameters for CAR.
+
+    The ML adjustment (cross-fitted conditional distribution models) is intended to reduce
+    the variance of estimates in randomized experiments, where treatment assignment is
+    independent of covariates within strata. It does not correct for confounding.
+    """
 
     def __init__(self, base_model: Any, folds=3, is_multi_task=False):
         """
@@ -163,7 +165,9 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
 
         Args:
             base_model (scikit-learn estimator): The base model implementing used for conditional distribution function estimators. The model should implement fit(data, targets) and predict_proba(data).
-            folds (int): The number of folds for cross-fitting.
+            folds (int): The number of folds for cross-fitting. Folds are assigned at random, so
+                with small samples a fold may by chance leave no training observations for the
+                target arm; a ValueError suggesting fewer folds is raised in that case.
             is_multi_task(bool): Whether to use multi-task learning. If True, your base model needs to support multi-task prediction (n_samples, n_features) -> (n_samples, n_targets).
 
         Returns:
@@ -199,16 +203,9 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         Returns:
             DistributionEstimatorBase: The fitted estimator.
         """
-        covariates = _convert_to_ndarray(covariates)
-        treatment_arms = _convert_to_ndarray(treatment_arms)
-        outcomes = _convert_to_ndarray(outcomes)
-        strata = _convert_to_ndarray(strata)
-
-        if covariates.shape[0] != treatment_arms.shape[0]:
-            raise ValueError("The shape of covariates and treatment_arm should be same")
-
-        if covariates.shape[0] != outcomes.shape[0]:
-            raise ValueError("The shape of covariates and outcome should be same")
+        covariates, treatment_arms, outcomes, strata = _prepare_fit_inputs(
+            covariates, treatment_arms, outcomes, strata
+        )
 
         self.covariates = covariates
         self.treatment_arms = treatment_arms
@@ -249,6 +246,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         prediction = np.zeros((n_records, n_loc))
         treatment_mask = treatment_arms == target_treatment_arm
         folds = np.random.randint(self.folds, size=n_records)
+        _check_folds_have_training_data(folds, self.folds, treatment_mask)
         strata = self.strata
         s_list = np.unique(strata)
         if self.is_multi_task:
@@ -360,6 +358,7 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         prediction = np.zeros((n_records, n_loc - 1))
         treatment_mask = treatment_arms == target_treatment_arm
         folds = np.random.randint(self.folds, size=n_records)
+        _check_folds_have_training_data(folds, self.folds, treatment_mask)
         strata = self.strata
         s_list = np.unique(strata)
         binominals = (outcomes[:, np.newaxis] <= locations) * 1  # (n_records, n_loc)

@@ -5,7 +5,7 @@ from dte_adj.stratified import (
     SimpleStratifiedDistributionEstimator,
     AdjustedStratifiedDistributionEstimator,
 )
-from dte_adj.util import ArrayLike, _convert_to_ndarray
+from dte_adj.util import ArrayLike, _prepare_fit_inputs
 
 
 class SimpleDistributionEstimator(SimpleStratifiedDistributionEstimator):
@@ -15,8 +15,8 @@ class SimpleDistributionEstimator(SimpleStratifiedDistributionEstimator):
 
     This estimator computes Distribution Treatment Effects (DTE), Probability Treatment Effects (PTE),
     and Quantile Treatment Effects (QTE) without using machine learning models for adjustment.
-    It provides a baseline approach suitable when treatment assignment is random or when
-    covariate adjustment is not needed.
+    It provides a baseline approach for randomized experiments where covariate adjustment
+    is not needed.
 
     Example:
         ```python
@@ -61,20 +61,14 @@ class SimpleDistributionEstimator(SimpleStratifiedDistributionEstimator):
         Returns:
             SimpleDistributionEstimator: The fitted estimator.
         """
-        covariates = _convert_to_ndarray(covariates)
-        treatment_arms = _convert_to_ndarray(treatment_arms)
-        outcomes = _convert_to_ndarray(outcomes)
-
-        if covariates.shape[0] != treatment_arms.shape[0]:
-            raise ValueError("The shape of covariates and treatment_arm should be same")
-
-        if covariates.shape[0] != outcomes.shape[0]:
-            raise ValueError("The shape of covariates and outcome should be same")
+        covariates, treatment_arms, outcomes, strata = _prepare_fit_inputs(
+            covariates, treatment_arms, outcomes
+        )
 
         self.covariates = covariates
         self.treatment_arms = treatment_arms
         self.outcomes = outcomes
-        self.strata = np.zeros(len(self.covariates))
+        self.strata = strata
 
         return self
 
@@ -83,10 +77,18 @@ class AdjustedDistributionEstimator(AdjustedStratifiedDistributionEstimator):
     """
     A class for computing distribution treatment effects using machine learning adjustment.
 
-    This estimator uses cross-fitting with ML models to adjust for confounding when computing
-    Distribution Treatment Effects (DTE), Probability Treatment Effects (PTE), and
-    Quantile Treatment Effects (QTE). It provides more precise estimates when treatment
-    assignment depends on observed covariates.
+    This estimator uses cross-fitting with ML models of the conditional distribution given
+    covariates to compute Distribution Treatment Effects (DTE), Probability Treatment Effects
+    (PTE), and Quantile Treatment Effects (QTE) with reduced variance. It is designed for
+    randomized experiments, where treatment is assigned independently of the covariates: in
+    that setting the estimator stays consistent regardless of how well the ML model fits, and
+    a good fit yields tighter confidence intervals than ``SimpleDistributionEstimator``.
+
+    Note:
+        The method targets efficiency, not bias correction. It does not correct for
+        confounding in observational data; if treatment assignment depends on covariates, the
+        estimates are valid only under selection on observables, and ``fit`` assumes the
+        assignment probability is constant across observations (no propensity weighting).
 
     Example:
         ```python
@@ -94,10 +96,10 @@ class AdjustedDistributionEstimator(AdjustedStratifiedDistributionEstimator):
         from sklearn.ensemble import RandomForestClassifier
         from dte_adj import AdjustedDistributionEstimator
 
-        # Generate confounded data
+        # Generate data from a randomized experiment: treatment is independent of X,
+        # while the outcome depends on X (this is what the ML adjustment exploits)
         X = np.random.randn(1000, 5)
-        treatment_prob = 1 / (1 + np.exp(-(X[:, 0] + X[:, 1])))
-        D = np.random.binomial(1, treatment_prob, 1000)
+        D = np.random.binomial(1, 0.5, 1000)
         Y = X.sum(axis=1) + 2 * D + np.random.randn(1000)
 
         # Fit adjusted estimator
@@ -125,19 +127,13 @@ class AdjustedDistributionEstimator(AdjustedStratifiedDistributionEstimator):
         Returns:
             AdjustedDistributionEstimator: The fitted estimator.
         """
-        covariates = _convert_to_ndarray(covariates)
-        treatment_arms = _convert_to_ndarray(treatment_arms)
-        outcomes = _convert_to_ndarray(outcomes)
-
-        if covariates.shape[0] != treatment_arms.shape[0]:
-            raise ValueError("The shape of covariates and treatment_arm should be same")
-
-        if covariates.shape[0] != outcomes.shape[0]:
-            raise ValueError("The shape of covariates and outcome should be same")
+        covariates, treatment_arms, outcomes, strata = _prepare_fit_inputs(
+            covariates, treatment_arms, outcomes
+        )
 
         self.covariates = covariates
         self.treatment_arms = treatment_arms
         self.outcomes = outcomes
-        self.strata = np.zeros(len(self.covariates))
+        self.strata = strata
 
         return self
