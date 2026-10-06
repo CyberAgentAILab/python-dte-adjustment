@@ -73,6 +73,8 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
         control_treatment_arm: int,
         locations: Optional[np.ndarray] = None,
         alpha: float = 0.05,
+        variance_type: str = "moment",
+        n_bootstrap: int = 500,
         display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -91,6 +93,12 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
                 distribution via ``np.histogram_bin_edges(outcomes, bins='auto')``. The actual
                 array used is stored on ``self.last_locations``.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+            variance_type (str, optional): Variance type to be used to compute confidence intervals.
+                Available values are "moment" (analytic, pointwise), "multiplier" (pointwise
+                multiplier bootstrap), and "uniform" (uniform band over all locations via
+                multiplier bootstrap). Defaults to "moment".
+            n_bootstrap (int, optional): Number of bootstrap draws for "multiplier" and
+                "uniform". Defaults to 500.
             display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
@@ -139,6 +147,8 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
             locations,
             alpha,
             display_progress,
+            variance_type=variance_type,
+            n_bootstrap=n_bootstrap,
         )
 
     def predict_lpte(
@@ -147,6 +157,8 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
         control_treatment_arm: int,
         locations: Optional[np.ndarray] = None,
         alpha: float = 0.05,
+        variance_type: str = "moment",
+        n_bootstrap: int = 500,
         display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -167,6 +179,12 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
                 ``np.histogram_bin_edges(outcomes, bins='auto')``. The actual array used is stored
                 on ``self.last_locations``.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+            variance_type (str, optional): Variance type to be used to compute confidence intervals.
+                Available values are "moment" (analytic, pointwise), "multiplier" (pointwise
+                multiplier bootstrap), and "uniform" (uniform band over all locations via
+                multiplier bootstrap). Defaults to "moment".
+            n_bootstrap (int, optional): Number of bootstrap draws for "multiplier" and
+                "uniform". Defaults to 500.
             display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
@@ -217,6 +235,8 @@ class SimpleLocalDistributionEstimator(SimpleStratifiedDistributionEstimator):
             locations,
             alpha,
             display_progress,
+            variance_type=variance_type,
+            n_bootstrap=n_bootstrap,
         )
 
 
@@ -269,6 +289,8 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         control_treatment_arm: int,
         locations: Optional[np.ndarray] = None,
         alpha: float = 0.05,
+        variance_type: str = "moment",
+        n_bootstrap: int = 500,
         display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -286,6 +308,12 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
                 distribution via ``np.histogram_bin_edges(outcomes, bins='auto')``. The actual
                 array used is stored on ``self.last_locations``.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+            variance_type (str, optional): Variance type to be used to compute confidence intervals.
+                Available values are "moment" (analytic, pointwise), "multiplier" (pointwise
+                multiplier bootstrap), and "uniform" (uniform band over all locations via
+                multiplier bootstrap). Defaults to "moment".
+            n_bootstrap (int, optional): Number of bootstrap draws for "multiplier" and
+                "uniform". Defaults to 500.
             display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
@@ -335,6 +363,8 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
             locations,
             alpha,
             display_progress,
+            variance_type=variance_type,
+            n_bootstrap=n_bootstrap,
         )
 
     def predict_lpte(
@@ -343,6 +373,8 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
         control_treatment_arm: int,
         locations: Optional[np.ndarray] = None,
         alpha: float = 0.05,
+        variance_type: str = "moment",
+        n_bootstrap: int = 500,
         display_progress: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -362,6 +394,12 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
                 ``np.histogram_bin_edges(outcomes, bins='auto')``. The actual array used is stored
                 on ``self.last_locations``.
             alpha (float, optional): Significance level of the confidence bound. Defaults to 0.05.
+            variance_type (str, optional): Variance type to be used to compute confidence intervals.
+                Available values are "moment" (analytic, pointwise), "multiplier" (pointwise
+                multiplier bootstrap), and "uniform" (uniform band over all locations via
+                multiplier bootstrap). Defaults to "moment".
+            n_bootstrap (int, optional): Number of bootstrap draws for "multiplier" and
+                "uniform". Defaults to 500.
             display_progress (bool, optional): Whether to display a progress bar. Defaults to True.
 
         Returns:
@@ -414,4 +452,6 @@ class AdjustedLocalDistributionEstimator(AdjustedStratifiedDistributionEstimator
             locations,
             alpha,
             display_progress,
+            variance_type=variance_type,
+            n_bootstrap=n_bootstrap,
         )

@@ -182,6 +182,18 @@ plt.tight_layout()
 plt.show()
 ```
 
+By default the confidence intervals are pointwise and analytic (`variance_type="moment"`). As with `predict_dte`, `predict_ldte` and `predict_lpte` also accept `variance_type="multiplier"` (pointwise multiplier bootstrap) and `variance_type="uniform"` (a band that holds simultaneously over all locations), with `n_bootstrap` controlling the number of draws:
+
+```python
+ldte_ml, lower_uniform, upper_uniform = ml_local_estimator.predict_ldte(
+    target_treatment_arm=1,
+    control_treatment_arm=0,
+    locations=outcome_ed_costs_locations,
+    variance_type="uniform",
+    n_bootstrap=500,
+)
+```
+
 The analysis produces the following local distribution treatment effects visualization:
 
 ![Oregon Health Insurance Experiment LDTE Analysis](../assets/oregon_ldte_costs_comparison.png)
