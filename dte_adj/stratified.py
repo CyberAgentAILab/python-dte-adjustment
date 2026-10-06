@@ -246,8 +246,8 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         prediction = np.zeros((n_records, n_loc))
         treatment_mask = treatment_arms == target_treatment_arm
         folds = np.random.randint(self.folds, size=n_records)
-        _check_folds_have_training_data(folds, self.folds, treatment_mask)
         strata = self.strata
+        _check_folds_have_training_data(folds, self.folds, treatment_mask, strata)
         s_list = np.unique(strata)
         if self.is_multi_task:
             binomial = (outcomes.reshape(-1, 1) <= locations) * 1  # (n_records, n_loc)
@@ -260,16 +260,23 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                     s_mask = strata == s
                     weight = (s_mask & treatment_mask).sum() / s_mask.sum()
                     superset_mask = (folds == fold) & s_mask
+                    if not superset_mask.any():
+                        continue
                     subset_train_mask = (folds != fold) & s_mask & treatment_mask
                     covariates_train = covariates[subset_train_mask]
                     binomial_train = binomial[subset_train_mask]
                     if len(np.unique(binomial_train)) > 1:
                         self.model = deepcopy(self.base_model)
                         self.model.fit(covariates_train, binomial_train)
-
-                    pred = self._compute_model_prediction(
-                        self.model, covariates[superset_mask]
-                    )
+                        pred = self._compute_model_prediction(
+                            self.model, covariates[superset_mask]
+                        )
+                    else:
+                        # All training labels are identical, so predict that constant
+                        # rather than reusing a model fit on another fold or stratum.
+                        pred = np.broadcast_to(
+                            binomial_train[0], (superset_mask.sum(), n_loc)
+                        )
                     prediction[superset_mask] = (
                         pred
                         + treatment_mask[superset_mask].reshape(-1, 1)
@@ -295,6 +302,8 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                         s_mask = strata == s
                         weight = (s_mask & treatment_mask).sum() / s_mask.sum()
                         superset_mask = (folds == fold) & s_mask
+                        if not superset_mask.any():
+                            continue
                         subset_train_mask = (folds != fold) & s_mask & treatment_mask
                         covariates_train = covariates[subset_train_mask]
                         binomial_train = binomial[subset_train_mask]
@@ -358,8 +367,8 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
         prediction = np.zeros((n_records, n_loc - 1))
         treatment_mask = treatment_arms == target_treatment_arm
         folds = np.random.randint(self.folds, size=n_records)
-        _check_folds_have_training_data(folds, self.folds, treatment_mask)
         strata = self.strata
+        _check_folds_have_training_data(folds, self.folds, treatment_mask, strata)
         s_list = np.unique(strata)
         binominals = (outcomes[:, np.newaxis] <= locations) * 1  # (n_records, n_loc)
         interval_iter = range(len(locations) - 1)
@@ -378,6 +387,8 @@ class AdjustedStratifiedDistributionEstimator(DistributionEstimatorBase):
                     s_mask = strata == s
                     weight = (s_mask & treatment_mask).sum() / s_mask.sum()
                     superset_mask = (folds == fold) & s_mask
+                    if not superset_mask.any():
+                        continue
                     subset_train_mask = (folds != fold) & s_mask & treatment_mask
                     covariates_train = covariates[subset_train_mask]
                     binomial_train = binomial[subset_train_mask]
