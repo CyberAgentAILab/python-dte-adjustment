@@ -91,18 +91,48 @@ def _prepare_fit_inputs(
 
 
 def _check_folds_have_training_data(
-    folds: np.ndarray, n_folds: int, treatment_mask: np.ndarray
+    folds: np.ndarray,
+    n_folds: int,
+    treatment_mask: np.ndarray,
+    strata: np.ndarray,
 ) -> None:
-    """Raise an informative error if cross-fitting would train on no data."""
+    """Raise an informative error if cross-fitting would train on no data.
+
+    Every fold that contains observations of a stratum needs at least one observation of
+    the target treatment arm from the same stratum in the remaining folds, since the
+    held-out fold is predicted from them.
+    """
+    advice = (
+        "This can happen by chance when the sample (or a treatment arm or stratum) is "
+        "small relative to the number of folds. Reduce `folds` (e.g. folds=2), merge "
+        "small strata, or use more data."
+    )
     for fold in range(n_folds):
         if not ((folds != fold) & treatment_mask).any():
             raise ValueError(
                 f"Cross-fitting produced a fold ({fold} of {n_folds}) whose "
                 "complementary training set contains no observations of the target "
-                "treatment arm. This can happen by chance when the sample (or the "
-                "treatment arm) is small relative to the number of folds. "
-                "Reduce `folds` (e.g. folds=2) or use more data."
+                f"treatment arm. {advice}"
             )
+    for s in np.unique(strata):
+        s_mask = strata == s
+        n_target = (s_mask & treatment_mask).sum()
+        if n_target == 0:
+            raise ValueError(
+                f"Stratum {s} contains no observations of the target treatment arm, so "
+                "its distribution function cannot be estimated. Merge it with another "
+                "stratum or drop it."
+            )
+        for fold in range(n_folds):
+            if (folds == fold)[s_mask].any() and not (
+                (folds != fold) & s_mask & treatment_mask
+            ).any():
+                raise ValueError(
+                    f"Cross-fitting produced a fold ({fold} of {n_folds}) for which "
+                    f"stratum {s} has no training observations of the target treatment "
+                    f"arm (the stratum has {n_target} such observation(s) in total). "
+                    f"{advice}"
+                )
 
 
 def _infer_default_locations(

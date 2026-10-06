@@ -1,11 +1,12 @@
 import unittest
 import numpy as np
 from unittest.mock import patch, MagicMock
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, LinearRegression
 from dte_adj import (
     SimpleDistributionEstimator,
     SimpleStratifiedDistributionEstimator,
     AdjustedDistributionEstimator,
+    AdjustedStratifiedDistributionEstimator,
 )
 
 np.random.seed(123)
@@ -350,3 +351,62 @@ class TestFoldValidation(unittest.TestCase):
             with self.assertRaises(ValueError) as cm:
                 est.predict(1, np.array([2.0]), display_progress=False)
         self.assertIn("Reduce `folds`", str(cm.exception))
+
+
+class TestSmallSampleFolds(unittest.TestCase):
+    def setUp(self):
+        self.X = np.random.RandomState(0).randn(8, 2)
+        self.D = np.array([0, 1, 0, 1, 0, 1, 0, 1])
+        self.Y = np.arange(8.0)
+
+    def test_empty_prediction_fold_is_skipped(self):
+        # folds=3 but no record is assigned to fold 2
+        est = AdjustedDistributionEstimator(LogisticRegression(), folds=3).fit(
+            self.X, self.D, self.Y
+        )
+        with patch(
+            "numpy.random.randint", return_value=np.array([0, 0, 1, 1, 0, 0, 1, 1])
+        ):
+            dte, lower, upper = est.predict_dte(
+                1, 0, np.array([2.0, 4.0]), display_progress=False
+            )
+        self.assertTrue(np.all(np.isfinite(dte)))
+
+    def test_stratum_without_training_data_raises_informative_error(self):
+        strata = np.array([0, 0, 0, 0, 1, 1, 1, 1])
+        est = AdjustedStratifiedDistributionEstimator(
+            LogisticRegression(), folds=2
+        ).fit(self.X, self.D, self.Y, strata)
+        # Both treated units of stratum 1 (indices 5 and 7) are in fold 0
+        with patch(
+            "numpy.random.randint", return_value=np.array([0, 0, 1, 1, 1, 0, 1, 0])
+        ):
+            with self.assertRaises(ValueError) as cm:
+                est.predict(1, np.array([2.0]), display_progress=False)
+        self.assertIn("stratum 1", str(cm.exception))
+        self.assertIn("Reduce `folds`", str(cm.exception))
+
+    def test_stratum_without_target_arm_raises(self):
+        strata = np.array([0, 0, 0, 0, 1, 0, 1, 0])  # stratum 1 has only control units
+        est = AdjustedStratifiedDistributionEstimator(
+            LogisticRegression(), folds=2
+        ).fit(self.X, self.D, self.Y, strata)
+        with self.assertRaises(ValueError) as cm:
+            est.predict(1, np.array([2.0]), display_progress=False)
+        self.assertIn("Stratum 1 contains no observations", str(cm.exception))
+
+    def test_multi_task_constant_labels_do_not_reuse_stale_model(self):
+        # In fold 0 / stratum 1 the training labels are all 1 (outcomes below every
+        # location), so no model is fit there and the constant must be predicted.
+        strata = np.array([0, 0, 0, 0, 1, 1, 1, 1])
+        Y = np.array([5.0, 6.0, 7.0, 8.0, 0.0, 0.0, 0.0, 0.0])
+        est = AdjustedStratifiedDistributionEstimator(
+            LinearRegression(), folds=2, is_multi_task=True
+        ).fit(self.X, self.D, Y, strata)
+        with patch(
+            "numpy.random.randint", return_value=np.array([0, 0, 1, 1, 0, 0, 1, 1])
+        ):
+            _, _, superset = est._compute_cumulative_distribution(
+                1, np.array([1.0, 2.0]), est.covariates, est.treatment_arms, Y
+            )
+        np.testing.assert_allclose(superset[4:], 1.0)
