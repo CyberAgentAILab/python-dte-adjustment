@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
-title: "dte_adj: A Python Package for Estimating Distributional Treatment Effects in Randomized Experiments"
+title: "dte_adj: A Python Package for Estimating Distributional Treatment Effects"
 version: 0.1.11
 date-released: 2026-10-14
 url: "https://github.com/CyberAgentAILab/python-dte-adjustment"
