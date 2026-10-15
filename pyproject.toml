@@ -28,7 +28,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "build>=1.2.2,<1.7.0",
-  "ruff>=0.12.2,<0.17.0",
+  "ruff>=0.12.2,<0.18.0",
   "mkdocs>=1.6,<2.0",
   "mkdocs-material>=9.5,<10.0",
   "mkdocstrings[python]>=0.26,<1.1",
@@ -50,7 +50,7 @@ homepage = "https://github.com/CyberAgentAILab/python-dte-adjustment"
 dev-dependencies = [
   "build>=1.2.2,<1.7.0",
   "build>=1.2.2,<1.4.0",
-  "ruff>=0.12.2,<0.17.0",
+  "ruff>=0.12.2,<0.18.0",
   "mkdocs>=1.6,<2.0",
   "mkdocs-material>=9.5,<10.0",
   "mkdocstrings[python]>=0.26,<1.1",
