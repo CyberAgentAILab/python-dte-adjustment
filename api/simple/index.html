@@ -2243,7 +2243,10 @@ a good fit yields tighter confidence intervals than <code>SimpleDistributionEsti
 
                   <details class="quote">
                     <summary>Source code in <code>dte_adj/stratified.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-162">162</a></span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-159">159</a></span>
+<span class="normal"><a href="#__codelineno-0-160">160</a></span>
+<span class="normal"><a href="#__codelineno-0-161">161</a></span>
+<span class="normal"><a href="#__codelineno-0-162">162</a></span>
 <span class="normal"><a href="#__codelineno-0-163">163</a></span>
 <span class="normal"><a href="#__codelineno-0-164">164</a></span>
 <span class="normal"><a href="#__codelineno-0-165">165</a></span>
@@ -2263,33 +2266,30 @@ a good fit yields tighter confidence intervals than <code>SimpleDistributionEsti
 <span class="normal"><a href="#__codelineno-0-179">179</a></span>
 <span class="normal"><a href="#__codelineno-0-180">180</a></span>
 <span class="normal"><a href="#__codelineno-0-181">181</a></span>
-<span class="normal"><a href="#__codelineno-0-182">182</a></span>
-<span class="normal"><a href="#__codelineno-0-183">183</a></span>
-<span class="normal"><a href="#__codelineno-0-184">184</a></span>
-<span class="normal"><a href="#__codelineno-0-185">185</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-162" name="__codelineno-0-162"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">is_multi_task</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<a id="__codelineno-0-163" name="__codelineno-0-163"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-164" name="__codelineno-0-164"></a><span class="sd">    Initializes the AdjustedDistributionEstimator.</span>
-<a id="__codelineno-0-165" name="__codelineno-0-165"></a>
-<a id="__codelineno-0-166" name="__codelineno-0-166"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-167" name="__codelineno-0-167"></a><span class="sd">        base_model (scikit-learn estimator): The base model implementing used for conditional distribution function estimators. The model should implement fit(data, targets) and predict_proba(data).</span>
-<a id="__codelineno-0-168" name="__codelineno-0-168"></a><span class="sd">        folds (int): The number of folds for cross-fitting. Folds are assigned at random, so</span>
-<a id="__codelineno-0-169" name="__codelineno-0-169"></a><span class="sd">            with small samples a fold may by chance leave no training observations for the</span>
-<a id="__codelineno-0-170" name="__codelineno-0-170"></a><span class="sd">            target arm; a ValueError suggesting fewer folds is raised in that case.</span>
-<a id="__codelineno-0-171" name="__codelineno-0-171"></a><span class="sd">        is_multi_task(bool): Whether to use multi-task learning. If True, your base model needs to support multi-task prediction (n_samples, n_features) -&gt; (n_samples, n_targets).</span>
-<a id="__codelineno-0-172" name="__codelineno-0-172"></a>
-<a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="sd">        AdjustedDistributionEstimator: An instance of the estimator.</span>
-<a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-176" name="__codelineno-0-176"></a>    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="s2">&quot;predict&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span>
-<a id="__codelineno-0-177" name="__codelineno-0-177"></a>        <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-178" name="__codelineno-0-178"></a>    <span class="p">):</span>
-<a id="__codelineno-0-179" name="__codelineno-0-179"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-<a id="__codelineno-0-180" name="__codelineno-0-180"></a>            <span class="s2">&quot;Base model should implement either predict_proba or predict&quot;</span>
-<a id="__codelineno-0-181" name="__codelineno-0-181"></a>        <span class="p">)</span>
-<a id="__codelineno-0-182" name="__codelineno-0-182"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">base_model</span> <span class="o">=</span> <span class="n">base_model</span>
-<a id="__codelineno-0-183" name="__codelineno-0-183"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">=</span> <span class="n">folds</span>
-<a id="__codelineno-0-184" name="__codelineno-0-184"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">is_multi_task</span> <span class="o">=</span> <span class="n">is_multi_task</span>
-<a id="__codelineno-0-185" name="__codelineno-0-185"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="normal"><a href="#__codelineno-0-182">182</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-159" name="__codelineno-0-159"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">is_multi_task</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<a id="__codelineno-0-160" name="__codelineno-0-160"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-161" name="__codelineno-0-161"></a><span class="sd">    Initializes the AdjustedDistributionEstimator.</span>
+<a id="__codelineno-0-162" name="__codelineno-0-162"></a>
+<a id="__codelineno-0-163" name="__codelineno-0-163"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-164" name="__codelineno-0-164"></a><span class="sd">        base_model (scikit-learn estimator): The base model implementing used for conditional distribution function estimators. The model should implement fit(data, targets) and predict_proba(data).</span>
+<a id="__codelineno-0-165" name="__codelineno-0-165"></a><span class="sd">        folds (int): The number of folds for cross-fitting. Folds are assigned at random, so</span>
+<a id="__codelineno-0-166" name="__codelineno-0-166"></a><span class="sd">            with small samples a fold may by chance leave no training observations for the</span>
+<a id="__codelineno-0-167" name="__codelineno-0-167"></a><span class="sd">            target arm; a ValueError suggesting fewer folds is raised in that case.</span>
+<a id="__codelineno-0-168" name="__codelineno-0-168"></a><span class="sd">        is_multi_task(bool): Whether to use multi-task learning. If True, your base model needs to support multi-task prediction (n_samples, n_features) -&gt; (n_samples, n_targets).</span>
+<a id="__codelineno-0-169" name="__codelineno-0-169"></a>
+<a id="__codelineno-0-170" name="__codelineno-0-170"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-171" name="__codelineno-0-171"></a><span class="sd">        AdjustedDistributionEstimator: An instance of the estimator.</span>
+<a id="__codelineno-0-172" name="__codelineno-0-172"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-173" name="__codelineno-0-173"></a>    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="s2">&quot;predict&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span>
+<a id="__codelineno-0-174" name="__codelineno-0-174"></a>        <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-175" name="__codelineno-0-175"></a>    <span class="p">):</span>
+<a id="__codelineno-0-176" name="__codelineno-0-176"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+<a id="__codelineno-0-177" name="__codelineno-0-177"></a>            <span class="s2">&quot;Base model should implement either predict_proba or predict&quot;</span>
+<a id="__codelineno-0-178" name="__codelineno-0-178"></a>        <span class="p">)</span>
+<a id="__codelineno-0-179" name="__codelineno-0-179"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">base_model</span> <span class="o">=</span> <span class="n">base_model</span>
+<a id="__codelineno-0-180" name="__codelineno-0-180"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">folds</span> <span class="o">=</span> <span class="n">folds</span>
+<a id="__codelineno-0-181" name="__codelineno-0-181"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">is_multi_task</span> <span class="o">=</span> <span class="n">is_multi_task</span>
+<a id="__codelineno-0-182" name="__codelineno-0-182"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
