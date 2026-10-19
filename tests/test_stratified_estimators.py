@@ -62,6 +62,28 @@ class TestStratifiedEstimators(unittest.TestCase):
         self.assertTrue(np.array_equal(estimator.outcomes, self.Y))
         self.assertTrue(np.array_equal(estimator.strata, self.strata))
 
+    def test_simple_stratified_distribution_values(self):
+        X = np.zeros((4, 1))
+        W = np.array([0, 1, 0, 1])
+        Y = np.array([0, 1, 2, 3])
+        strata = np.array([0, 0, 1, 1])
+        locations = np.array([0, 1, 2, 3])
+        estimator = SimpleStratifiedDistributionEstimator().fit(X, W, Y, strata)
+
+        cdf = estimator._compute_cumulative_distribution(1, locations, X, W, Y)
+        expected_prediction = np.array(
+            [[0, 1, 1, 1], [0, 1, 1, 1], [0, 0, 0, 1], [0, 0, 0, 1]]
+        )
+        np.testing.assert_array_equal(cdf[0], np.array([0, 0.5, 0.5, 1]))
+        np.testing.assert_array_equal(cdf[1], expected_prediction)
+        np.testing.assert_array_equal(cdf[2], expected_prediction)
+
+        pte = estimator._compute_interval_probability(1, locations, X, W, Y)
+        for cdf_values, pte_values in zip(cdf, pte):
+            np.testing.assert_array_equal(
+                pte_values, cdf_values[..., 1:] - cdf_values[..., :-1]
+            )
+
     def test_simple_stratified_estimator_predict_dte(self):
         estimator = SimpleStratifiedDistributionEstimator()
         estimator.fit(self.X, self.W, self.Y, self.strata)

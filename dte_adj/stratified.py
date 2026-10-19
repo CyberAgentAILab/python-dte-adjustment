@@ -71,9 +71,6 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
                 - np.ndarray: Adjusted cumulative distribution for each observation.
                 - np.ndarray: Conditional cumulative distribution for each observation.
         """
-        n_records = outcomes.shape[0]
-        n_loc = locations.shape[0]
-        prediction = np.zeros((n_records, n_loc))
         treatment_mask = treatment_arms == target_treatment_arm
 
         strata = self.strata
@@ -82,13 +79,15 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         for s in s_list:
             s_mask = strata == s
             w_s[s] = (s_mask & treatment_mask).sum() / s_mask.sum()
-        for j in range(n_records):
-            s = strata[j]
-            prediction[j] = (outcomes[j] <= locations) / w_s[s] * treatment_mask[j]
+        weights = np.array([w_s[s] for s in strata])[:, np.newaxis]
+        prediction = (
+            (outcomes[:, np.newaxis] <= locations)
+            / weights
+            * treatment_mask[:, np.newaxis]
+        )
 
         unconditional_pred = {s: prediction[s == strata].mean(axis=0) for s in s_list}
         conditional_prediction = np.array([unconditional_pred[s] for s in strata])
-        weights = np.array([w_s[s] for s in strata])[:, np.newaxis]
         prediction = (
             (outcomes[:, np.newaxis] <= locations) - conditional_prediction
         ) / weights * treatment_mask[:, np.newaxis] + conditional_prediction
@@ -120,9 +119,6 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
                 - np.ndarray: Adjusted for each observation.
                 - np.ndarray: Conditional for each observation.
         """
-        n_records = outcomes.shape[0]
-        n_loc = locations.shape[0]
-        prediction = np.zeros((n_records, n_loc))
         treatment_mask = treatment_arms == target_treatment_arm
 
         strata = self.strata
@@ -131,14 +127,15 @@ class SimpleStratifiedDistributionEstimator(DistributionEstimatorBase):
         for s in s_list:
             s_mask = strata == s
             w_s[s] = (s_mask & treatment_mask).sum() / s_mask.sum()
-        for i, outcome in enumerate(locations):
-            for j in range(n_records):
-                s = strata[j]
-                prediction[j, i] = (outcomes[j] <= outcome) / w_s[s] * treatment_mask[j]
+        weights = np.array([w_s[s] for s in strata])[:, np.newaxis]
+        prediction = (
+            (outcomes[:, np.newaxis] <= locations)
+            / weights
+            * treatment_mask[:, np.newaxis]
+        )
 
         unconditional_pred = {s: prediction[s == strata].mean(axis=0) for s in s_list}
         conditional_prediction = np.array([unconditional_pred[s] for s in strata])
-        weights = np.array([w_s[s] for s in strata])[:, np.newaxis]
         prediction = (
             (outcomes[:, np.newaxis] <= locations) - conditional_prediction
         ) / weights * treatment_mask[:, np.newaxis] + conditional_prediction
